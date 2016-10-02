@@ -61,6 +61,11 @@ if(!empty($_POST)){
 
 			$dbh->exec($sql);
 
+			// clear the artisan cache so playerlist is regened
+			// also regen the JS player list
+			exec('php '.ARTISAN_PATH.' cache:clear');
+			exec('php '.ARTISAN_PATH.' generate:js-player-list');
+
 			header("Location: players.php");
 			die();
 
