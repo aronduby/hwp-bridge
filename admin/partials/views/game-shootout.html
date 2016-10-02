@@ -1,0 +1,56 @@
+<ng-include src="'partials/includes/header.html'"></ng-include>
+
+<section class="scores split">
+	<header><h2>Current Score</h2></header>
+	<section>
+		<section>
+			<header><h3>Hudsonville</h3></header>
+			<section>
+				<h4>{{game.score[0]}}</h4>
+			</section>
+		</section>
+		<section>
+			<header><h3>{{game.opponent}}</h3></header>
+			<section>
+				<h4>{{game.score[1]}}</h4>
+			</section>
+		</section>
+	</section>
+</section>
+
+<ng-include src="'partials/includes/boxscore.html'" ng-controller="boxScoreCtrl"></ng-include>
+
+<section class="shootout-opponent split">
+	<header><h2>{{game.opponent}}</h2></header>
+	<section>
+		<div><button class="btn btn-large btn-success btn-block" ng-click="shotThem('made')">Made</button></div>
+		<div><button class="btn btn-large btn-warning btn-block" ng-click="shotThem('missed')">Missed</button></div>
+		<div><button class="btn btn-large btn-danger btn-block" ng-click="shotThem('blocked')">Blocked</button></div>
+	</section>
+</section>
+
+<section>
+	<header>
+		<div class="btn-group btn-group-sm pull-right">
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'number_sort'" ng-click="reverse=!reverse">#</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'first_name'" ng-click="reverse=!reverse">Fn</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'last_name'" ng-click="reverse=!reverse">Ln</button>
+		</div>
+		<h2>Hudsonville</h2>
+	</header>
+	<section>
+		<ul class="players">
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-if="player.name_key != game.goalie" ng-click="shotUs(player.name_key)" ng-class="{
+				disabled: player.shoot_out_taken > 0,
+				'success': player.shoot_out_made > 0,
+				'error': (player.shoot_out_made == 0 && player.shoot_out_taken > 0)
+			}">
+				<strong class="player-name" hwp-player-name player="player"></strong>
+				<i ng-class="{
+					'glyphicon glyphicon-ok-sign': player.shoot_out_made > 0, 
+					'glyphicon glyphicon-remove-sign': (player.shoot_out_made == 0 && player.shoot_out_taken > 0)
+				}"></i>
+			</li>
+		</ul>
+	</section>
+</section>

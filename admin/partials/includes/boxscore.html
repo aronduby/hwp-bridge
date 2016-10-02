@@ -1,0 +1,8 @@
+<table class="box-score">
+    <tr>
+        <td ng-repeat="quarter_score in boxscore[0] track by $index" ng-class="{'won': quarter_score > boxscore[1][$index] }"> {{ quarter_score }} </td>
+    </tr>
+    <tr>
+        <td ng-repeat="quarter_score in boxscore[1] track by $index" ng-class="{'won': quarter_score > boxscore[0][$index] }"> {{ quarter_score }} </td>
+    </tr>
+</table>

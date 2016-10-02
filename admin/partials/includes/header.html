@@ -1,0 +1,14 @@
+<header class="page-header">
+    <button ng-controller="HistoryCtrl" class="btn btn-info pull-left" ng-click="undo()"><i class="glyphicon glyphicon-warning-sign"></i></button>
+	<button ng-controller="ShoutCtrl" class="btn btn-info pull-right" ng-click="shout()"><i class="glyphicon glyphicon-bullhorn"></i></button>
+	<h1>vs {{game.opponent}}</h1>
+	<nav>
+		<ul>
+			<li ng-class="{active: game.status=='start'}"><a ng-href="#/game/{{game.game_id}}/" title="start">Start</a></li>
+			<li ng-class="{active: game.status=='inplay'}"><a ng-href="#/game/{{game.game_id}}/inplay" title="in play">In Play</a></li>
+			<li ng-class="{active: game.status=='quarter'}"><a ng-href="#/game/{{game.game_id}}/quarter" title="quarter">Quarter</a></li>
+			<li ng-class="{active: game.status=='final'}"><a ng-href="#/game/{{game.game_id}}/final" title="final">Final</a></li>
+			<li ng-class="{active: game.status=='shootout', disabled: game.status!='shootout'}"><a ng-href="#/game/{{game.game_id}}/shootout" title="shoot out">Shoot Out</a></li>
+		</ul>
+	</nav>
+</header>

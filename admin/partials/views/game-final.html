@@ -1,0 +1,47 @@
+<div cg-busy="finalTracker"></div>
+
+<ng-include src="'partials/includes/header.html'"></ng-include>
+
+<section class="final split">
+	<header><h2>Game Over</h2></header>
+	<section>
+		<div><button class="btn btn-warning btn-large btn-block" ng-disabled="game.quarters_played < 3" ng-click="postFinal();"><i class="glyphicon glyphicon-ok-circle"></i> Final</button></div>
+	</section>
+</section>
+
+
+<section class="overtime split">
+	<header><h2>Overtime</h2></header>
+	<section>
+		<div><button class="btn btn-warning btn-large btn-block" ng-disabled="game.quarters_played != 3" ng-click="game.setQuartersPlayed(4)"><i class="glyphicon glyphicon-ok-circle"></i> Overtime 1</button></div>
+		<div><button class="btn btn-warning btn-large btn-block" ng-disabled="game.quarters_played != 4" ng-click="game.setQuartersPlayed(5)"><i class="glyphicon glyphicon-ok-circle"></i> Overtime 2</button></div>
+		<div><button class="btn btn-danger btn-large btn-block" ng-disabled="game.quarters_played < 3" ng-click="shootout()"><i class="glyphicon glyphicon-ok-circle glyphicon"></i> Shoot Out!</button></div>
+	</section>
+</section>
+
+<section class="">
+	<header>
+		<h2>Box Score</h2>
+	</header>
+	<ng-include src="'partials/includes/boxscore.html'" ng-controller="boxScoreCtrl"></ng-include>
+</section>
+
+<section class="spint">
+	<header>
+		<div class="btn-group btn-group-sm pull-right">
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'number_sort'" ng-click="reverse=!reverse">#</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'first_name'" ng-click="reverse=!reverse">Fn</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'last_name'" ng-click="reverse=!reverse">Ln</button>
+		</div>
+		<h2>Overtime Spint Taken By</h2>
+	</header>
+	<section>
+		<ul class="players">
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-click="sprintTakenBy(player.name_key)">
+				<strong class="player-title">{{ player | capAndName }}</strong>
+			</li>
+		</ul>
+	</section>
+</section>
+
+

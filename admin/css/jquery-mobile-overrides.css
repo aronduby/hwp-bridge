@@ -1,0 +1,13 @@
+.ui-content form > .ui-header,
+.ui-content form > .ui-footer{
+    margin:-15px;
+    margin-bottom:15px;
+}
+    .ui-content form > .ui-footer{
+        margin-bottom:-15px;
+    }
+
+.ui-content form > .ui-listview + .ui-header,
+.ui-content form > .ui-listview + .ui-footer{
+    margin-top:15px;
+}

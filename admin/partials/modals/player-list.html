@@ -1,0 +1,21 @@
+<div class="modal-container">
+	<header class="modal-header">
+		<button type="button" class="close" aria-hidden="true" ng-click="cancel()">&times;</button>
+		<h4 class="modal-title">{{title}}</h4>
+	</header>
+	<section class="modal-body">
+		<ul class="unstyled players">
+			<li ng-click="select(false)">No One</li>
+			<li ng-repeat="player in players | toArray | orderBy:order_by:reverse" ng-if="player.name_key != skip" ng-click="select(player.name_key)">
+				{{player | capAndName}}
+			</li>
+		</ul>
+	</section>
+	<footer class="modal-footer">
+		<div class="btn-group btn-group-block btn-group-large">
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'number_sort'" ng-click="reverse=!reverse">#</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'first_name'" ng-click="reverse=!reverse">Fn</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'last_name'" ng-click="reverse=!reverse">Ln</button>
+		</div>
+	</footer>
+</div>

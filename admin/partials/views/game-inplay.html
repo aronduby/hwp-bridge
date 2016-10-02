@@ -1,0 +1,158 @@
+<ng-include src="'partials/includes/header.html'"></ng-include>
+
+<section class="scores split">
+	<header><h2>Current Score</h2></header>
+	<section>
+		<section>
+			<header><h3>Hudsonville</h3></header>
+			<section>
+				<h4>{{game.score[0]}}</h4>
+			</section>
+		</section>
+		<section>
+			<header><h3>{{game.opponent}}</h3></header>
+			<section>
+				<h4>{{game.score[1]}}</h4>
+			</section>
+		</section>
+	</section>
+</section>
+
+<ng-include src="'partials/includes/boxscore.html'" ng-controller="boxScoreCtrl"></ng-include>
+
+<section class="goalie">
+	<header>
+		<button class="btn btn-info pull-right" ng-click="changeGoalie()"><i class="glyphicon glyphicon-retweet"></i></button>
+		<h2>Goalie: <hwp-player-name player="game.stats[game.goalie]"></hwp-player-name></h2>
+	</header>
+	<section>
+		<ul class="stats">
+			<li><hwp-goalie-stats player="game.stats[game.goalie]"></hwp-goalie-stats>
+		</ul>
+	</section>
+</section>
+
+<section class="field">
+	<header>
+		<div class="btn-group btn-group-sm pull-right">
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'number_sort'" ng-click="reverse=!reverse">#</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'first_name'" ng-click="reverse=!reverse">Fn</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'last_name'" ng-click="reverse=!reverse">Ln</button>
+		</div>
+		<h2>Field</h2>
+	</header>
+	<section>
+		<ul class="names">
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isPlayerKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
+				<strong class="player-name" hwp-player-name player="player"></strong>
+			</li>
+		</ul><ul class="stats">
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isPlayerKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
+				<hwp-field-stats player="player"></hwp-field-stats>
+			</li>
+		</ul>
+	</section>
+</section>
+
+
+<section class="timeouts split">
+	<header><h2>Time Outs</h2></header>
+	<section>
+		<section>
+			<header><h3>Hudsonville</h3></header>
+			<section>
+				<button class="btn btn-block btn-large btn-info" ng-click="timeout(true)">Timeout</button>
+			</section>
+		</section>
+		<section>
+			<header><h3>{{game.opponent}}</h3></header>
+			<section>
+				<button class="btn btn-block btn-large btn-info" ng-click="timeout(false)">Timeout</button>
+			</section>
+		</section>
+	</section>
+</section>
+
+
+<section class="carded split">
+	<header><h2>Carded</h2></header>
+	<section>
+		<section>
+			<header><h3>Hudsonville</h3></header>
+			<section>
+				<ul>
+					<li ng-repeat="who in ['Josh','Jordan','Travis']">
+						<div class="btn-group btn-group-block btn-group-large">
+							<button class="btn btn-warning" ng-click="game.carded(who,'yellow')">{{who}}</button>
+							<button class="btn btn-danger" ng-click="game.carded(who,'red')">{{who}}</button>
+					</li>
+				</ul>
+			</section>
+		</section>
+		<section>
+			<header><h3>{{game.opponent}}</h3></header>
+			<section>
+				<ul>
+					<li>
+						<div class="btn-group btn-group-block btn-group-large">
+							<button class="btn btn-warning" ng-click="game.carded(game.opponent,'yellow')">{{game.opponent}}</button>
+							<button class="btn btn-danger" ng-click="game.carded(game.opponent,'red')">{{game.opponent}}</button>
+						</div>
+					</li>
+				</ul>
+			</section>
+		</section>
+	</section>
+</section>
+
+<section class="advantages-converted split">
+	<header><h2>Advantages Converted</h2></header>
+	<section>
+		<section>
+			<header><h3>Hudsonville</h3></header>
+			<section>
+				{{game.advantage_conversion[0].converted}} / {{game.advantage_conversion[0].drawn}}
+			</section>
+		</section>
+
+		<section>
+			<header><h3>{{game.opponent}}</h3></header>
+			<section>
+				{{game.advantage_conversion[1].converted}} / {{game.advantage_conversion[1].drawn}}
+			</section>
+		</section>
+	</section>
+</section>
+
+
+<section class="kickouts" ng-show="game.kickouts[0].length > 0 || game.kickouts[1].length > 0">
+	<h4>Kickouts</h4>
+	<section class="us" ng-show="game.kickouts[0].length > 0">
+		<h5>Hudsonville:</h5>
+		<ul>
+			<li ng-repeat="name_key in game.kickouts[0]" ng-click="game.kickoutOver(name_key)">{{game.stats[name_key] | capAndName}}</li>
+		</ul>
+	</section>
+	<section class="them" ng-show="game.kickouts[1].length > 0">
+		<h5>{{game.opponent}}:</h5>
+		<ul>
+			<li ng-repeat="name_key in game.kickouts[1] track by $index" ng-click="game.kickoutOver(false)">Player {{$index + 1}}</li>
+		</ul>
+	</section>
+</section>
+
+<section class="kickouts kickouts-fixed" ng-show="game.kickouts[0].length > 0 || game.kickouts[1].length > 0">
+	<h4>Kickouts</h4>
+	<section class="us" ng-show="game.kickouts[0].length > 0">
+		<h5>Hudsonville:</h5>
+		<ul>
+			<li ng-repeat="name_key in game.kickouts[0]" ng-click="game.kickoutOver(name_key)">{{game.stats[name_key] | capAndName}}</li>
+		</ul>
+	</section>
+	<section class="them" ng-show="game.kickouts[1].length > 0">
+		<h5>{{game.opponent}}:</h5>
+		<ul>
+			<li ng-repeat="name_key in game.kickouts[1] track by $index" ng-click="game.kickoutOver(false)">Player {{$index + 1}}</li>
+		</ul>
+	</section>
+</section>

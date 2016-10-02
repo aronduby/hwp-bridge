@@ -1,0 +1,25 @@
+{
+    "name": "aronduby/hudsonvillewaterpolo",
+    "require": {
+        "predis/predis": "^1.0",
+        "slim/slim": "~2.0",
+        "clue/socks": "0.4.*",
+        "aronduby/dump": "*",
+        "monolog/monolog": "*",
+        "swiftmailer/swiftmailer": "^5.4",
+        "symfony/console": "^2.7",
+        "symfony/monolog-bridge": "^2.7",
+        "symfony/event-dispatcher": "^2.7"
+    },
+    "authors": [
+        {
+            "name": "Aron Duby",
+            "email": "aron.duby@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "": "classes"
+        }
+    }
+}

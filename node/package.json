@@ -1,0 +1,26 @@
+{
+  "name": "hwp-live-scoring",
+  "version": "1.0.0",
+  "description": "",
+  "main": "live_scoring_server.js",
+  "dependencies": {
+    "fs": "^0.0.0",
+    "http": "^0.0.0",
+    "express": "^3.3.5",
+    "dateformat": "^1.0.6-1.2.3",
+    "console-ten": "^0.0.5",
+    "path": "^0.4.9",
+    "socket.io": "^1.3.6",
+    "mysql": "^2.0.0-alpha8",
+    "q": "^0.9.6",
+    "twilio": "^1.1.4",
+    "xml2js": "^0.1.14",
+    "twit": "^1.1.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

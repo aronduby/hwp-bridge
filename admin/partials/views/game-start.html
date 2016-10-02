@@ -1,0 +1,30 @@
+<ng-include src="'partials/includes/header.html'"></ng-include>
+
+<section class="set-goalie">
+	<header><h2>Set the Goalie</h2></header>
+	<section>
+		<select 
+			ng-model="game.goalie"
+			ng-options="p.name_key as p|capAndName for p in game.stats|toArray|orderBy:'number_sort'"
+			ng-change="game.changeGoalie(game.goalie)"
+		></select>
+	</section>
+</section>
+
+<section class="sprint">
+	<header>
+		<div class="btn-group btn-group-sm pull-right">
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'number_sort'" ng-click="reverse=!reverse">#</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'first_name'" ng-click="reverse=!reverse">Fn</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'last_name'" ng-click="reverse=!reverse">Ln</button>
+		</div>
+		<h2>Spint Taken By</h2>
+	</header>
+	<section>
+		<ul class="players">
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-click="sprintTakenBy(player.name_key)">
+				<strong class="player-name" hwp-player-name player="player"></strong>
+			</li>
+		</ul>
+	</section>
+</section>

@@ -1,0 +1,9 @@
+<strong class="player-name" hwp-player-name player="player"></strong>
+<div class="btn-group">
+	<button class="btn btn-info" ng-click="$parent.game.save()">Saves <span class="badge">{{player.saves}}</span></button>
+	<button class="btn btn-info" ng-click="$parent.goalAllowed()">G-A <span class="badge">{{player.goals_allowed}}</span></button>
+	<button class="btn btn-info" disabled>S/G-A <span class="badge">{{player.saves / player.goals_allowed | number:2}}</span></button>
+	<button class="btn btn-info" disabled>5M-TO <span class="badge">{{player.five_meters_taken_on}}</span></button>
+	<button class="btn btn-info" disabled>5M-B <span class="badge">{{player.five_meters_blocked}}</span></button>
+	<button class="btn btn-info" disabled>5M-A <span class="badge">{{player.five_meters_allowed}}</span></button>
+</div>

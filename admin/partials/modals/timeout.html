@@ -1,0 +1,36 @@
+<div class="modal-container timeout">
+	<header class="modal-header">
+		<button type="button" class="close" aria-hidden="true" ng-click="cancel()">&times;</button>
+		<h4 class="modal-title">{{title}}</h4>
+	</header>
+	<section class="modal-body">
+
+		<label>Time left in quarter:</label>
+		<div class="form-inline">
+			<input 
+				type="tel" 
+				ng-model="minutes" 
+				class="form-control minutes" 
+				max="7" 
+				maxlength="1" 
+				placeholder="minutes"
+				tabindex="1"
+				autofocus
+			 /> : <input 
+			 	type="tel" 
+			 	ng-model="seconds" 
+			 	class="form-control seconds" 
+			 	max="59" 
+			 	maxlength="2" 
+			 	placeholder="seconds" 
+			 	tabindex="2" 
+			 />
+		</div>
+		
+	</section>
+	<footer class="modal-footer">
+		<button class="btn btn-success btn-large" ng-click="submit(minutes, seconds)">Time Out</button>
+		<button class="btn btn-link" ng-click="cancel()">cancel</button>
+	</section>
+	</footer>
+</div>

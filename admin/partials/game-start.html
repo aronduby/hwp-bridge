@@ -1,0 +1,9 @@
+<ng-include src="'partials/includes/header.html'"></ng-include>
+
+<h2>Set the Goalie</h2>
+
+<select 
+    ng-model="game.goalie"
+    ng-options="p.name_key as p|capAndName for p in game.stats|toArray|orderBy:'number'"
+></select>
+
