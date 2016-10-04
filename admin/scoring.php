@@ -17,7 +17,7 @@ if(!isset($_COOKIE['in'])){
   <link href="lib/angular-busy/dist/angular-busy.min.css" rel="stylesheet" />
   <link href="css/app.css" rel="stylesheet" />
 
-  <script src="http://<?php echo BASE_HREF ?>:7656/socket.io/socket.io.js"></script>
+  <script src="<?php echo BASE_HREF ?>:7656/socket.io/socket.io.js"></script>
 </head>
 <body>
 	

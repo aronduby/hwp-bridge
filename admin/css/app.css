@@ -1,491 +1,538 @@
-body{
-  background:#f6f6f6;
+body {
+    background: #f6f6f6;
 }
 
-.socket-error{
-  font-size:.8em;
+.socket-error {
+    font-size: .8em;
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    z-index: 999;
 }
 
 /*
  *  Page Header
 */
-.page-header{
-  padding:.5rem;
-  padding-bottom:0;
-  background:#bc5348;
+.page-header {
+    padding: .5rem;
+    padding-bottom: 0;
+    background: #bc5348;
 }
-  .page-header h1{
-    margin:0;
-    padding:.25em;
-    text-align:center;
-    color:#fffbf5;
-    letter-spacing:-.06em;
-    font-size:2.375em;
-    text-shadow:1px 1px 1px rgba(0,0,0,.5);
-  }
 
-  .page-header nav{
-    clear:right;
-    margin:.75rem -.5rem 0 -.5rem;
-    font-weight:bold;
-    font-size:.875em;
-    letter-spacing:-.04em;
-    text-transform:uppercase;
-  }
-    .page-header nav ul{
-      display:flex;
-    }
-      .page-header nav li{
-        text-align:center;
-        flex:1;
-        line-height:1em;
-        border-right:1px solid rgba(0,0,0,.08);
-        background:rgba(0,0,0,.3);
-        opacity:.6;
-        margin:0;
-      }
-        .page-header nav li a{
-          display:block;
-          padding:.8em;
-          color:#fefefe;
-          text-shadow:1px 1px 1px rgba(0,0,0,.2);
-          text-decoration:none;
-        }
-        .page-header nav li.active,
-        .page-header nav li:hover{ 
-          opacity:1;
-        }
-        .page-header nav li.disabled{  
-          opacity:.4;
-          cursor:not-allowed;
-        }
-          .page-header nav li.disabled a{ 
-            cursor:not-allowed; 
-          }
-        .page-header nav li:last-child{ 
-          border:none; 
-        }
+.page-header h1 {
+    margin: 0;
+    padding: .25em;
+    text-align: center;
+    color: #fffbf5;
+    letter-spacing: -.06em;
+    font-size: 2.375em;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, .5);
+}
 
+.page-header nav {
+    clear: right;
+    margin: .75rem -.5rem 0 -.5rem;
+    font-weight: bold;
+    font-size: .875em;
+    letter-spacing: -.04em;
+    text-transform: uppercase;
+}
+
+.page-header nav ul {
+    display: flex;
+}
+
+.page-header nav li {
+    text-align: center;
+    flex: 1;
+    line-height: 1em;
+    border-right: 1px solid rgba(0, 0, 0, .08);
+    background: rgba(0, 0, 0, .3);
+    opacity: .6;
+    margin: 0;
+}
+
+.page-header nav li a {
+    display: block;
+    padding: .8em;
+    color: #fefefe;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, .2);
+    text-decoration: none;
+}
+
+.page-header nav li.active,
+.page-header nav li:hover {
+    opacity: 1;
+}
+
+.page-header nav li.disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+.page-header nav li.disabled a {
+    cursor: not-allowed;
+}
+
+.page-header nav li:last-child {
+    border: none;
+}
 
 /*
  *  Sections and Headings
 */
-section{
-  position:relative;
+section {
+    position: relative;
 }
-  section header{
-    position:relative;
-    letter-spacing:-.03em;
-  }
-    section header h1,
-    section header h2,
-    section header h3,
-    section header h4{
-      margin:0;
-      padding:.25rem;
-      font-size:1em;
-      color:rgba(254,254,254,.8);
-      text-shadow:1px 1px 1px rgba(0,0,0,.2);
-    }
-      section header h2{
-        padding:.5em;
-        font-size:.95em;
-        background:#8e8e8e;
-        border:1px solid #747474;
-        border-left:none;
-        border-right:none;
-      }
 
-      section header h3{
-        font-size:.85em;
-        background:#b0b1ac;
-        border-bottom:1px solid #82837f;
-      }
-
-    article section header .btn{
-      line-height:1.5rem;
-    }
-      article section header > .btn,
-      article section header > .btn-group{
-        position:absolute;
-        right:0;
-        top:0; bottom:0;
-      }
-        article section header > .btn-group .btn{
-          height:100%;
-        }
-
-  section > section,
-  section > div{
-    padding:.5rem;
-  }
-
-    /* dont pad the initial sections in split, messes with headers */
-    section.split > section,
-    section.split > section > section{
-      padding:0;
-      text-align:center;
-      border-right:1px solid #a8a9a4;
-    }
-    section.split section:last-child{
-      border-right:none;
-    }
-    section section header{ 
-      border-top:none;
-      text-transform:none;
-    }
-
-article header .btn{
-  color:#fff;
-  background-color:rgba(255,255,255,.1);
-  box-shadow:none !important;
+section header {
+    position: relative;
+    letter-spacing: -.03em;
 }
-  article header .btn:active,
-  article header .btn.active,
-  article header .btn:hover{
-    background-color:rgba(255,255,255,.3);
-    border-top:none;
-  }
 
+section header h1,
+section header h2,
+section header h3,
+section header h4 {
+    margin: 0;
+    padding: .25rem;
+    font-size: 1em;
+    color: rgba(254, 254, 254, .8);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, .2);
+}
+
+section header h2 {
+    padding: .5em;
+    font-size: .95em;
+    background: #8e8e8e;
+    border: 1px solid #747474;
+    border-left: none;
+    border-right: none;
+}
+
+section header h3 {
+    font-size: .85em;
+    background: #b0b1ac;
+    border-bottom: 1px solid #82837f;
+}
+
+article section header .btn {
+    line-height: 1.5rem;
+}
+
+article section header > .btn,
+article section header > .btn-group {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+article section header > .btn-group .btn {
+    height: 100%;
+}
+
+section > section,
+section > div {
+    padding: .5rem;
+}
+
+/* dont pad the initial sections in split, messes with headers */
+section.split > section,
+section.split > section > section {
+    padding: 0;
+    text-align: center;
+    border-right: 1px solid #a8a9a4;
+}
+
+section.split section:last-child {
+    border-right: none;
+}
+
+section section header {
+    border-top: none;
+    text-transform: none;
+}
+
+article header .btn {
+    color: #fff;
+    background-color: rgba(255, 255, 255, .1);
+    box-shadow: none !important;
+}
+
+article header .btn:active,
+article header .btn.active,
+article header .btn:hover {
+    background-color: rgba(255, 255, 255, .3);
+    border-top: none;
+}
 
 /*
  *  Flex Grid-esque
 */
 section.split > section,
-.btn-group-block{
-  display:flex;
+.btn-group-block {
+    display: flex;
 }
-  .split > section > section,
-  .split > section > div,
-  .btn-group-block .btn{
-    flex:1;
-  }
+
+.split > section > section,
+.split > section > div,
+.btn-group-block .btn {
+    flex: 1;
+}
 
 /*
  *  General
 */
-li{
-  margin-bottom:5px;
+li {
+    margin-bottom: 5px;
 }
 
 /*
  *  Player Names
 */
-.player-name{
-  display:inline-block;
-  color:#5b5b5b;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:".";
-  vertical-align:middle;
+.player-name {
+    display: inline-block;
+    color: #5b5b5b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ".";
+    vertical-align: middle;
 }
-  /* mobile first use .fi-last*/
-  .player-name .full-name{ display:none; }
 
+/* mobile first use .fi-last*/
+.player-name .full-name {
+    display: none;
+}
 
 /*
  *  Player Lists
 */
-.players{
-  position:relative;
-  margin:-.5rem;
+.players {
+    position: relative;
+    margin: -.5rem;
 }
-  .players li{
-    position:relative;
-    padding:.625em;
-    margin-bottom:0;
-    z-index:1;
-  }
-    .players li[ng-click]{
-      cursor:pointer;
-    }
-    .players li:nth-child(even){
-      background:#dedede;
-    }
 
-    .players li.disabled{
-      opacity:.6;
-    }
-    .players li.success,
-    .players li.success .player-name{
-      color:#38a13a;
-    }
-    .players li.error,
-    .players li.error .player-name{
-      color:#972f2f;
-    }
+.players li {
+    position: relative;
+    padding: .625em;
+    margin-bottom: 0;
+    z-index: 1;
+}
 
-    .players li:hover{
-      background:#ececec;
-    }
-    .players li:nth-child(even):hover{
-      background:#d4d4d4;
-    }
-    .players li:hover .player-name{
-      color:#3b3b3b;
-    }
+.players li[ng-click] {
+    cursor: pointer;
+}
 
-.players .player-name .full-name{ display:inline; }
-.players .player-name .fi-last{ display:none; }
+.players li:nth-child(even) {
+    background: #dedede;
+}
 
+.players li.disabled {
+    opacity: .6;
+}
 
+.players li.success,
+.players li.success .player-name {
+    color: #38a13a;
+}
+
+.players li.error,
+.players li.error .player-name {
+    color: #972f2f;
+}
+
+.players li:hover {
+    background: #ececec;
+}
+
+.players li:nth-child(even):hover {
+    background: #d4d4d4;
+}
+
+.players li:hover .player-name {
+    color: #3b3b3b;
+}
+
+.players .player-name .full-name {
+    display: inline;
+}
+
+.players .player-name .fi-last {
+    display: none;
+}
 
 /*
  *  Scores
 */
-.scores h4{
-  font-size:2.6875em;
-  line-height:1.2em;
-  font-weight:bold;
-  color:#5f5f5f;
-  margin:0;
+.scores h4 {
+    font-size: 2.6875em;
+    line-height: 1.2em;
+    font-weight: bold;
+    color: #5f5f5f;
+    margin: 0;
 }
 
-.box-score{
-  width:100%;
-  table-layout:fixed;
-  text-align:center;
-  line-height:1em;
-  font-size:.8em;
-  color:#808080;
-  background:#eee;
-  border-collapse:collapse;
-  border-top:1px solid #a8a9a4;
+.box-score {
+    width: 100%;
+    table-layout: fixed;
+    text-align: center;
+    line-height: 1em;
+    font-size: .8em;
+    color: #808080;
+    background: #eee;
+    border-collapse: collapse;
+    border-top: 1px solid #a8a9a4;
 }
-  .box-score td{
-    padding:6px 0;
-    border-bottom:1px solid #e3e3e3;
-    border-right:1px solid #e3e3e3;
-  }
 
-  .box-score td.won{
-    font-weight:bold;
-  }
+.box-score td {
+    padding: 6px 0;
+    border-bottom: 1px solid #e3e3e3;
+    border-right: 1px solid #e3e3e3;
+}
 
+.box-score td.won {
+    font-weight: bold;
+}
 
 /*
  *  Start
 */
-.set-goalie select{
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color:#333;
-  padding:.25em;
-  padding-bottom:0;
-  width:100%;  
+.set-goalie select {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #333;
+    padding: .25em;
+    padding-bottom: 0;
+    width: 100%;
 }
-  .set-goalie select option{
-    font-size:.875em;
-    padding:.3em;
-  }
-  .set-goalie select option:nth-child(even){
-    background:#eee;
-  }
 
+.set-goalie select option {
+    font-size: .875em;
+    padding: .3em;
+}
+
+.set-goalie select option:nth-child(even) {
+    background: #eee;
+}
 
 /*
  *  In Play
 */
-.stats li{
-  margin:0;
+.stats li {
+    margin: 0;
 }
 
 .goalie > section,
-.field > section{
-  padding:0;
-  position: relative;
+.field > section {
+    padding: 0;
+    position: relative;
 }
 
-.goalie .player-name{
-  display:none;
-}
-  .goalie header .fi-last{
-    display:none;
-  }
-  .goalie li .btn-group{
-    overflow-x:auto;
-    width:100%;
-  }
-
-
-.field ul{
-  display: inline-block;
-  vertical-align:top;
-}
-  .field ul.names{ width:25%; }
-  .field ul.stats{ 
-    width:75%; 
-    overflow-x:auto;
-    box-shadow: inset 0px 0px 6px 2px rgba(0,0,0,0.9);
-  }
-
-
-.field .names li{
-  height:50px;
-  margin:0;
-  display:flex;
-  align-items:center;
-}
-  .field .names li strong{
-    padding:6px;
-  }
-
-.field .names li:nth-child(even){
-  background:rgba(0,0,0,.1);
-}
-  .field .stats li:nth-child(even) .btn-group{
-    background:rgba(0,0,0,.3);
-  }
-
-.field .player-name{
-  width: 100%;
-  font-size:.875em;
-  letter-spacing:-.04em;
-  padding:0 .25rem;
-  padding-left:.75rem;
+.goalie .player-name {
+    display: none;
 }
 
-
-.stats .btn{
-  box-shadow:none;
-  border:1px solid #62868f;
-  border-top:none;
-  background:rgba(86,174,194,.75);
-  min-width:60px;
-  padding: .5em 1.25em;
+.goalie header .fi-last {
+    display: none;
 }
-  .stats .btn[disabled]{
-    opacity:.75;
-  }
-  .stats .btn-warning{
-    background:rgba(233,171,50,.75);
-  }
-  .stats .btn-danger{
-    background:rgba(185,57,57,.75);
-  }
 
-.stats .btn-group{
-  position:static;
+.goalie li .btn-group {
+    overflow-x: auto;
+    width: 100%;
 }
-  .stats li{
-    position:relative;
-  }
 
+.field ul {
+    display: inline-block;
+    vertical-align: top;
+}
 
+.field ul.names {
+    width: 25%;
+}
 
-.goalie .btn-group:before{
-  left:0;
+.field ul.stats {
+    width: 75%;
+    overflow-x: auto;
+    box-shadow: inset 0px 0px 6px 2px rgba(0, 0, 0, 0.9);
+}
+
+.field .names li {
+    height: 50px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.field .names li strong {
+    padding: 6px;
+}
+
+.field .names li:nth-child(even) {
+    background: rgba(0, 0, 0, .1);
+}
+
+.field .stats li:nth-child(even) .btn-group {
+    background: rgba(0, 0, 0, .3);
+}
+
+.field .player-name {
+    width: 100%;
+    font-size: .875em;
+    letter-spacing: -.04em;
+    padding: 0 .25rem;
+    padding-left: .75rem;
+}
+
+.stats .btn {
+    box-shadow: none;
+    border: 1px solid #62868f;
+    border-top: none;
+    background: rgba(86, 174, 194, .75);
+    min-width: 60px;
+    padding: .5em 1.25em;
+}
+
+.stats .btn[disabled] {
+    opacity: .75;
+}
+
+.stats .btn-warning {
+    background: rgba(233, 171, 50, .75);
+}
+
+.stats .btn-danger {
+    background: rgba(185, 57, 57, .75);
+}
+
+.stats .btn-group {
+    position: static;
+}
+
+.stats li {
+    position: relative;
+}
+
+.goalie .btn-group:before {
+    left: 0;
 }
 
 /*
  *  Kick Outs
 */
-section.kickouts{
-  position:relative;
-  left:0; bottom:0;
-  width:100%;
-  background:#900;
-  box-shadow:0 -1px 4px rgba(0,0,0,.8);
-  color:#fff;
-  padding:.5rem;
-  z-index:1000;
+section.kickouts {
+    position: relative;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: #900;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, .8);
+    color: #fff;
+    padding: .5rem;
+    z-index: 1000;
 }
-  .kickouts h4{
-    margin:-.5rem;
-    margin-bottom:.25rem;
-    padding:.5rem;
-    background:rgba(0,0,0,.3);
-    text-transform:uppercase;
-    font-size:.9em;
-  }
 
-  .kickouts section{
-    padding:0 0 0 .5rem;
-  }
-    .kickouts h5{
-      display:inline-block;
-      margin:0;
-    }
-    .kickouts ul,
-    .kickouts li{
-      display:inline-block;
-    }
-    .kickouts li{
-      cursor:pointer;
-      margin-left:.5rem;
-      margin-bottom:.25rem;
-      padding:.25rem .5rem;
-      background:rgba(0,0,0,.05);
-      border-radius:6px;
-    }
+.kickouts h4 {
+    margin: -.5rem;
+    margin-bottom: .25rem;
+    padding: .5rem;
+    background: rgba(0, 0, 0, .3);
+    text-transform: uppercase;
+    font-size: .9em;
+}
 
-  /* hacking fixed position with padding by having 2 kickouts section */
-  .kickouts{
-    visibility:hidden;
-  }
-  section.kickouts-fixed{
-    position:fixed;
-    visibility:visible;
-  }
+.kickouts section {
+    padding: 0 0 0 .5rem;
+}
+
+.kickouts h5 {
+    display: inline-block;
+    margin: 0;
+}
+
+.kickouts ul,
+.kickouts li {
+    display: inline-block;
+}
+
+.kickouts li {
+    cursor: pointer;
+    margin-left: .5rem;
+    margin-bottom: .25rem;
+    padding: .25rem .5rem;
+    background: rgba(0, 0, 0, .05);
+    border-radius: 6px;
+}
+
+/* hacking fixed position with padding by having 2 kickouts section */
+.kickouts {
+    visibility: hidden;
+}
+
+section.kickouts-fixed {
+    position: fixed;
+    visibility: visible;
+}
 
 /*
  *  Modals
 */
-.modal.fade{
-  top:auto;
-  bottom:-25%;
+.modal.fade {
+    top: auto;
+    bottom: -25%;
 }
-.modal.fade.in{
-  top:auto;
-  bottom:0;
-  -webkit-transition: opacity .3s linear, bottom .3s ease-out;
-  -moz-transition: opacity .3s linear, bottom .3s ease-out;
-  -o-transition: opacity .3s linear, bottom .3s ease-out;
-  transition: opacity .3s linear, bottom .3s ease-out;
+
+.modal.fade.in {
+    top: auto;
+    bottom: 0;
+    -webkit-transition: opacity .3s linear, bottom .3s ease-out;
+    -moz-transition: opacity .3s linear, bottom .3s ease-out;
+    -o-transition: opacity .3s linear, bottom .3s ease-out;
+    transition: opacity .3s linear, bottom .3s ease-out;
 }
-.modal-container{
-  max-width:98%;
-  border-radius:0;
-  border:0;
-  box-shadow:0 0 4px #000;
+
+.modal-container {
+    max-width: 98%;
+    border-radius: 0;
+    border: 0;
+    box-shadow: 0 0 4px #000;
 }
+
 .modal-backdrop,
-.modal-backdrop.fade.in{
-  opacity:.5;
+.modal-backdrop.fade.in {
+    opacity: .5;
 }
 
-.modal .players{
-  margin:0;
+.modal .players {
+    margin: 0;
 }
 
-.modal .shout textarea{
-  width:100%;
-  min-width:100%;
-  max-width:100%;
-  min-height:100px;
-  padding:.25em;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size:.875em;
-  color:#333;
+.modal .shout textarea {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 100px;
+    padding: .25em;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: .875em;
+    color: #333;
 }
-
-
 
 /*
  *  Busy
 */
 .cg-busy-backdrop {
-  background-color:#f6f6f6;
-  position:fixed;
-  top:0; left:0;
-  height:100%;
-  width:100%;
-  z-index:999;
-}
-.cg-busy-default-wrapper{
-  z-index:1000;
+    background-color: #f6f6f6;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 999;
 }
 
-
+.cg-busy-default-wrapper {
+    z-index: 1000;
+}
 
 /*
  *  Ellipsis Overflow
@@ -495,142 +542,159 @@ header h2,
 header h3,
 header h4,
 .btn-block,
-.page-header nav li a{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:'...';
+.page-header nav li a {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: '...';
 }
-
 
 /*
  *  Badges
 */
-.badge{
-  background-color:rgba(0,0,0,.3);
-  display:block;
+.badge {
+    background-color: rgba(0, 0, 0, .3);
+    display: block;
 }
-  .badge:empty{
-    display:block;
-  }
-    .badge:empty:before{
-      content:'0.00';
-    }
+
+.badge:empty {
+    display: block;
+}
+
+.badge:empty:before {
+    content: '0.00';
+}
 
 /*
  *  Goalie Flex @ 390px
 */
-@media screen and (min-width: 24.375rem){
-  .goalie .stats .btn-group{
-    display:flex;
-  }
-    .goalie .stats .btn-group:before,
-    .goalie .stats .btn-group:after{
-      display:none;
+@media screen and (min-width: 24.375rem) {
+    .goalie .stats .btn-group {
+        display: flex;
     }
 
-  .goalie .stats .btn-group > .btn{
-    flex:1;
-    padding:.5em .2857em;
-  }
-    .goalie .stats .btn-group > .btn .badge{
-      margin-top:.5em;
+    .goalie .stats .btn-group:before,
+    .goalie .stats .btn-group:after {
+        display: none;
+    }
+
+    .goalie .stats .btn-group > .btn {
+        flex: 1;
+        padding: .5em .2857em;
+    }
+
+    .goalie .stats .btn-group > .btn .badge {
+        margin-top: .5em;
     }
 }
 
 /*
  *  Field Flex @ 986px
 */
-@media screen and (min-width: 61.625rem){
-  .field .player-name{
-    /* width:20%; */
-  }
-    .field .player-name .fi-last{ display:none; }
-    .field .player-name .full-name{ display:inline; }
-
-  .field .stats .btn-group{
-    /* width:80%; */
-    display:inline-flex;
-  }
-    .field .stats .btn-group:before,
-    .field .stats .btn-group:after{
-      display:none;
-    }  
-    .field .stats .btn-group > .btn{
-      flex:1;
-      padding:.5em .2857em;
+@media screen and (min-width: 61.625rem) {
+    .field .player-name {
+        /* width:20%; */
     }
-    .field .stats .btn-group > .btn .badge{
-      margin-top:.5em;
+
+    .field .player-name .fi-last {
+        display: none;
+    }
+
+    .field .player-name .full-name {
+        display: inline;
+    }
+
+    .field .stats .btn-group {
+        /* width:80%; */
+        display: inline-flex;
+    }
+
+    .field .stats .btn-group:before,
+    .field .stats .btn-group:after {
+        display: none;
+    }
+
+    .field .stats .btn-group > .btn {
+        flex: 1;
+        padding: .5em .2857em;
+    }
+
+    .field .stats .btn-group > .btn .badge {
+        margin-top: .5em;
     }
 }
-
 
 /*
  Timeout
 */
-.modal-container.timeout .form-inline{
-  display:flex;
+.modal-container.timeout .form-inline {
+    display: flex;
 }
 
-.modal-container.timeout input{
-  flex:1;
-  padding:.5em;
-}
-.modal-container.timeout input.seconds{
-  flex:2;
+.modal-container.timeout input {
+    flex: 1;
+    padding: .5em;
 }
 
+.modal-container.timeout input.seconds {
+    flex: 2;
+}
 
 /*
  * History
 */
-ol.history{
-  list-style:decimal inside;
+ol.history {
+    list-style: decimal inside;
 }
-  .history li{
-    position:relative;
-    padding:.625em;
-    margin-bottom:0;
-    font-weight:bold;
-  }
-    .history li[ng-click]{
-      cursor:pointer;
-    }
-    .history li:nth-child(even){
-      background:#dedede;
-    }
-    .history li:hover{
-      background:#ececec;
-    }
-    .history li:nth-child(even):hover{
-      background:#d4d4d4;
-    }
 
-    .history .func,
-    .history .args{
-      font-size:.9em;
-    }
+.history li {
+    position: relative;
+    padding: .625em;
+    margin-bottom: 0;
+    font-weight: bold;
+}
 
-    .history .args{
-      font-weight:normal;
-      font-style:italic;
-    }
+.history li[ng-click] {
+    cursor: pointer;
+}
 
-    .history .args::before{
-      content:'(';
-      margin-right:.1em;
-    }
-    .history .args::after{
-      content:')';
-      margin-left:.1em;
-    }
+.history li:nth-child(even) {
+    background: #dedede;
+}
+
+.history li:hover {
+    background: #ececec;
+}
+
+.history li:nth-child(even):hover {
+    background: #d4d4d4;
+}
+
+.history .func,
+.history .args {
+    font-size: .9em;
+}
+
+.history .args {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.history .args::before {
+    content: '(';
+    margin-right: .1em;
+}
+
+.history .args::after {
+    content: ')';
+    margin-left: .1em;
+}
 
 /* 
  * Number Input Modals
  */
-.number-input input{
-  display:block;
-  padding: .5em;
-  width: 100%;
-  text-align: center;
+.number-input input {
+    display: block;
+    padding: .5em;
+    width: 100%;
+    text-align: center;
 }

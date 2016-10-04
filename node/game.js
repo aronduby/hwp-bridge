@@ -7,6 +7,8 @@ function Game(game_id){
 }
 Game.prototype = {
 	game_id: 0,
+	season_id: 0,
+	site_id: 0,
 	version: '1.1',
 	opponent: null,
 	title: null,
@@ -96,7 +98,7 @@ Game.prototype = {
 	},
 
 	turnover: function(player){
-		this.stats[player].turn_overs++;	
+		this.stats[player].turnovers++;
 		this._push('turnover', arguments);
 	},
 

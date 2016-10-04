@@ -1,12 +1,12 @@
 require('console-ten').init(console);
 var Q = require('q'),
-	extend = require('util')._extend;
+	extend = require('util')._extend,
+	settings = require('./settings');
 
 
 var controller_connected = false,
 	updates = [],
-	test_mode = false,
-	season_id = 6;
+	test_mode = false;
 
 if(process.argv[2] == 'test')
 	test_mode = true;
@@ -20,12 +20,7 @@ if(test_mode == true){
 
 // MYSQL
 var mysql = require('mysql'),
-	db_config = {
-		host     : 'localhost',
-		user     : 'waterpolo',
-		password : 'ac4.socket',
-		database : 'hudsonvillewaterpolo'
-	},
+	db_config = settings.mysql,
 	db_connection = mysql.createConnection(db_config);
 
 db_connection.on('error', function(err) {
@@ -129,11 +124,11 @@ game._addListener('fiveMeterDrawn', function(drawn_by, taken_by, made){
 			drawn_by = this.stats[drawn_by],
 			taken_by = this.stats[taken_by];
 
-		data.msg = 'Hudsonville Goal! -- #'+taken_by.number+' '+taken_by.first_name+' '+taken_by.last_name+' on a 5 meter shot drawn by ';
+		data.msg = 'Hudsonville Goal! -- #'+taken_by.number+' '+taken_by.first_name+' '+taken_by.last_name+' on a 5 meter shot ';
 		if(drawn_by.number == taken_by.number){
-			data.msg += 'himself';
+			data.msg += 'they drew';
 		} else {
-			data.msg += '#'+drawn_by.number+' '+drawn_by.first_name+' '+drawn_by.last_name;
+			data.msg += 'drawn by #'+drawn_by.number+' '+drawn_by.first_name+' '+drawn_by.last_name;
 		}
 
 		broadcast(data);
@@ -363,7 +358,7 @@ io.sockets.on('connection', function(socket){
 			socket.broadcast.emit('update', data);
 		}
 		TwitterController.broadcast(data);
-		TwilioController.broadcast(data);
+		// TwilioController.broadcast(data);
 	};
 
 	// not controller, but we have a controller, send the last update
@@ -402,28 +397,27 @@ io.sockets.on('connection', function(socket){
 			existing_defer = Q.defer();
 
 
-		db_connection.query("SELECT json_dump FROM game WHERE game_id=?", [game_id], function(err, result){
-			if(err || result.length == 0 || result[0].json_dump == null){
+		db_connection.query("SELECT * FROM game_stat_dumps WHERE game_id = ?", [game_id], function(err, result){
+			if(err || result.length == 0 || result[0].json == null){
 				existing_defer.reject(err);
 				return false;
 			}
 
-			var data = JSON.parse(result[0].json_dump);
+			var data = JSON.parse(result[0].json);
 			console.log('taking existing data');
 			game._takeData(data);
 			cb(null, data);
 			existing_defer.resolve();
 		});
-		
-		existing_defer.promise.fail(function(){
 
+		// if there's no existing game stat data, create from scratch
+		existing_defer.promise.fail(function(){
 			var game_defer = Q.defer(),
 				player_defer = Q.defer(),
 				stat_description_defer = Q.defer();
-
 			
 			// game data
-			db_connection.query('SELECT game_id, opponent, team, title_append AS title FROM game WHERE game_id=?', [game_id], function(err, game){
+			db_connection.query('SELECT id AS game_id, site_id, season_id, opponent, team, title_append AS title FROM games WHERE id = ?', [game_id], function(err, game){
 				if(err){
 					game_defer.reject(err);
 					return false;
@@ -433,8 +427,8 @@ io.sockets.on('connection', function(socket){
 				game_defer.resolve(game);
 
 				// player data
-				var sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number FROM player_to_season pts JOIN player p USING(player_id) WHERE	pts.season_id=? AND FIND_IN_SET(?,team)";
-				db_connection.query(sql, [season_id, game.team], function(err, result){
+				var sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET(?, team)";
+				db_connection.query(sql, [game.season_id, game.team], function(err, result){
 					if(err){
 						player_defer.reject(err);
 						return false;
@@ -444,7 +438,7 @@ io.sockets.on('connection', function(socket){
 			});
 
 			// stat describe
-			db_connection.query("DESCRIBE stat", function(err, result){
+			db_connection.query("DESCRIBE stats", function(err, result){
 				if(err){
 					stat_description_defer.reject(err);
 					return false;
@@ -457,6 +451,8 @@ io.sockets.on('connection', function(socket){
 				var data = {};
 
 				data.game_id = game_data.game_id;
+				data.site_id = game_data.site_id;
+				data.season_id = game_data.season_id;
 				data.version = '1.1';
 				data.opponent = game_data.opponent;
 				data.title = game_data.title;
@@ -516,7 +512,7 @@ io.sockets.on('connection', function(socket){
 			var tmp = extend({}, game);
 			delete tmp._listeners;
 			var db_connection = mysql.createConnection(db_config);
-			db_connection.query("UPDATE game SET json_dump=? WHERE game_id=?", [JSON.stringify(tmp), game.game_id], function(err, result){
+			db_connection.query("INSERT INTO game_stat_dumps SET site_id = ?, game_id = ?, json = ? ON DUPLICATE KEY UPDATE json = VALUES(json)", [game.site_id, game.game_id, JSON.stringify(tmp)], function(err, result){
 				if(err){ console.log(err); return false; }
 				console.log('Saved json to db');
 				db_connection.end();
@@ -531,7 +527,7 @@ io.sockets.on('connection', function(socket){
 			game._takeData(data);
 
 			var db_connection = mysql.createConnection(db_config);
-			db_connection.query("UPDATE game SET json_dump=? WHERE game_id=?", [JSON.stringify(data), game.game_id], function(err, result){
+			db_connection.query("UPDATE game_stat_dumps SET json = ? WHERE game_id = ?", [JSON.stringify(data), game.game_id], function(err, result){
 				if(err){ console.log(err); return false; }
 				console.log('Saved json to db');
 				db_connection.end();
@@ -547,7 +543,7 @@ io.sockets.on('connection', function(socket){
 
 			// push the updates to the database
 			var db_connection = mysql.createConnection(db_config);
-			db_connection.query("INSERT INTO live_scoring_dump SET game_id=?, json=?", [game.game_id, JSON.stringify(updates)], function(err, result){
+			db_connection.query("INSERT INTO game_update_dumps SET site_id = ?, game_id = ?, json = ?", [game.site_id, game.game_id, JSON.stringify(updates)], function(err, result){
 				if(err){ console.log(err); return false; }
 				console.log('Saved updates to database', result);
 			});
@@ -555,26 +551,31 @@ io.sockets.on('connection', function(socket){
 			// save the game data
 			var tmp = extend({}, game);
 			delete tmp._listeners;
-			db_connection.query("UPDATE game SET score_us=?, score_them=?, json_dump=?, dump_version=? WHERE game_id=?", [game.score[0], game.score[1], JSON.stringify(tmp), game.version, game.game_id], function(err, result){
+			db_connection.query("UPDATE games SET score_us = ?, score_them = ? WHERE id = ?", [game.score[0], game.score[1], game.game_id], function(err, result){
 				if(err){ console.log(err); return false; }
 				console.log('Saved Score in database', result);
 
-				// save stats from game
-				// instead of doubling up, just spawn the php cli command
-				var log = function(data){
-					console.log('' + data);
-				};
+				db_connection.query("UPDATE game_stat_dumps SET json = ? WHERE game_id = ?", [JSON.stringify(tmp), game.game_id], function (err, result) {
+					if(err){ console.log(err); return false; }
+					console.log('Saved stats dump to database', result);
 
-				var spawn = require('child_process').spawn,
-					child = spawn('php', ['/web/hudsonvillewaterpolo/parsers/app.php', 'parsers:stats', '-v', '--gameid=' + game.game_id]);
+					// save stats from game
+					// instead of doubling up, just spawn the php cli command
+					var log = function(data){
+						console.log('' + data);
+					};
 
-				child.stdout.on('data', log);
-				child.stderr.on('data', log);
+					// TODO - update with settings
+					var spawn = require('child_process').spawn,
+						child = spawn('php', ['/web/hudsonvillewaterpolo/parsers/app.php', 'parsers:stats', '-v', '--gameid=' + game.game_id]);
 
+					child.stdout.on('data', log);
+					child.stderr.on('data', log);
+				});
 			});
 
 			// insert into recent
-			db_connection.query("INSERT INTO recent SET season_id=?, template='game', content=?", [season_id, '['+game.game_id+']'], function(err, result){
+			db_connection.query("INSERT INTO recent SET site_id = ?, season_id = ?, renderer = 'game', content = ?", [game.site_id, game.season_id, '['+game.game_id+']'], function(err, result){
 				if(err){ console.log(err); return false; }
 				console.log('Inserted Recent in database', result);
 			});
@@ -600,6 +601,7 @@ io.sockets.on('connection', function(socket){
 	});
 
 });
+
 // TWITTER
 var Twit = require('twit');
 var TwitterController = {
@@ -615,7 +617,6 @@ var TwitterController = {
 	broadcast: function(data){
 		if(data != undefined){
 			post_msg = (data.team=='JV' ? '(JV) ' : '') + data.msg + ' -- ' + data.score[0] + ' - ' + data.score[1];
-			//console.log((test_mode==true?'NOT ':'')+'sending to twitter:', post_msg);
 			if(test_mode != true){
 				this.twit.post('statuses/update', { status: post_msg }, function(err, reply){
 					if(err) {
