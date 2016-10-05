@@ -11,3 +11,5 @@ composer.phar
 /node/broadcast-log.txt
 /parsers/logs/*
 /node/node_modules/
+/node/mailoutput/
+/node/settings.js

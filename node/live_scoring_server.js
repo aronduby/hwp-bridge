@@ -541,51 +541,85 @@ io.sockets.on('connection', function(socket){
 			console.log("Controller sent final");
 			socket.broadcast.emit('final');
 
+			var db_connection = mysql.createConnection(db_config),
+				updates_defer = Q.defer(),
+				game_defer = Q.defer(),
+				stats_defer = Q.defer(),
+				recent_defer = Q.defer();
+
 			// push the updates to the database
-			var db_connection = mysql.createConnection(db_config);
-			db_connection.query("INSERT INTO game_update_dumps SET site_id = ?, game_id = ?, json = ?", [game.site_id, game.game_id, JSON.stringify(updates)], function(err, result){
-				if(err){ console.log(err); return false; }
+			db_connection.query("INSERT INTO game_update_dumps SET site_id = ?, game_id = ?, json = ? ON DUPLICATE KEY UPDATE json = VALUES(json)", [game.site_id, game.game_id, JSON.stringify(updates)], function(err, result){
+				if(err){
+					console.log(err);
+					updates_defer.reject(err);
+					return false;
+				}
+
 				console.log('Saved updates to database', result);
+				updates_defer.resolve();
 			});
 
 			// save the game data
 			var tmp = extend({}, game);
 			delete tmp._listeners;
 			db_connection.query("UPDATE games SET score_us = ?, score_them = ? WHERE id = ?", [game.score[0], game.score[1], game.game_id], function(err, result){
-				if(err){ console.log(err); return false; }
+				if(err){
+					console.log(err);
+					game_defer.reject(err);
+					return false;
+				}
+
 				console.log('Saved Score in database', result);
+				game_defer.resolve();
+			});
 
-				db_connection.query("UPDATE game_stat_dumps SET json = ? WHERE game_id = ?", [JSON.stringify(tmp), game.game_id], function (err, result) {
-					if(err){ console.log(err); return false; }
-					console.log('Saved stats dump to database', result);
+			// save the stats data
+			db_connection.query("UPDATE game_stat_dumps SET json = ? WHERE game_id = ?", [JSON.stringify(tmp), game.game_id], function (err, result) {
+				if(err){
+					console.log(err);
+					stats_defer.reject(err);
+					return false;
+				}
+				console.log('Saved stats dump to database', result);
 
-					// save stats from game
-					// instead of doubling up, just spawn the php cli command
-					var log = function(data){
-						console.log('' + data);
-					};
+				// save stats from game
+				// instead of doubling up, just spawn the php cli command
+				var log = function(data){
+					console.log('' + data);
+				};
 
-					// TODO - update with settings
-					var spawn = require('child_process').spawn,
-						child = spawn('php', ['/web/hudsonvillewaterpolo/parsers/app.php', 'parsers:stats', '-v', '--gameid=' + game.game_id]);
+				// TODO - update with settings
+				var spawn = require('child_process').spawn,
+					child = spawn('php', [settings.artisanPath, 'scoring:save-stats', game.game_id]);
 
-					child.stdout.on('data', log);
-					child.stderr.on('data', log);
-				});
+				child.stdout.on('data', log);
+				child.stderr.on('data', log);
+
+				stats_defer.resolve();
 			});
 
 			// insert into recent
 			db_connection.query("INSERT INTO recent SET site_id = ?, season_id = ?, renderer = 'game', content = ?", [game.site_id, game.season_id, '['+game.game_id+']'], function(err, result){
-				if(err){ console.log(err); return false; }
+				if(err){
+					console.log(err);
+					recent_defer.reject(err);
+					return false;
+				}
+
 				console.log('Inserted Recent in database', result);
+				recent_defer.resolve();
 			});
 
 			updates = []; // reset the updates after it's been finalized
 
-			cb(null, true);
-			controller_connected = false;
-			socket.disconnect();
-			db_connection.end();
+			Q.all([updates_defer, game_defer, stats_defer, recent_defer])
+				.finally(function() {
+					cb(null, true);
+					controller_connected = false;
+					socket.disconnect();
+					db_connection.end();
+				});
+
 		} else {
 			cb({msg: "Not a controller"});
 		}

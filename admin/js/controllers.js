@@ -286,7 +286,7 @@ angular.module('myApp.controllers', [])
             defered.then(
                 function (data) {
                     history.clear();
-                    $window.location.replace('http://' + window.location.host + '/admin/events.php');
+                    $window.location.replace('http://' + window.location.host + '/events.php');
                 }, function (error) {
                     $window.alert(error);
                     // hide the loader
