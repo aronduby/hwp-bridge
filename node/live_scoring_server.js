@@ -803,17 +803,17 @@ TwilioController.init();
 // we have to setup a http server for twilio
 // this is done here so we can handle live updates when someone calls
 // everything else is handled in site/twilio/ since they won't need live updates
-var express = require('express');
-var app = express();
-app.use(express.bodyParser());
-app.post('/incomingCall', function(req, res){
-	TwilioController.incomingCall(req.body)
-	.then(function(twrsp){
-		res.type('text/xml');
-    	res.send(twrsp.toString());
-	});
-});
-app.listen(2255); // 2255 = call
+// var express = require('express');
+// var app = express();
+// app.use(express.bodyParser());
+// app.post('/incomingCall', function(req, res){
+// 	TwilioController.incomingCall(req.body)
+// 	.then(function(twrsp){
+// 		res.type('text/xml');
+//     	res.send(twrsp.toString());
+// 	});
+// });
+// app.listen(2255); // 2255 = call
 
 
 function getOrdinal(n) {
