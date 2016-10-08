@@ -20,7 +20,8 @@ if($past->valid()){
 
 	$i=0;
 	foreach($past as $next){
-		$next = new $next->type($next->id, PDODB::getInstance());
+		$type = ucwords($next->type);
+		$next = new $type($next->id, PDODB::getInstance());
 		$past_by_team[$next->team][] = $next;
 
 		$i++;

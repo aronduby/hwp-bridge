@@ -18,7 +18,8 @@ if($upcoming->valid()){
 
 	$i=0;
 	foreach($upcoming as $next){
-		$next = new $next->type($next->id, PDODB::getInstance());
+		$type = ucwords($next->type);
+		$next = new $type($next->id, PDODB::getInstance());
 		$upcoming_by_team[$next->team][] = $next;
 
 		$i++;
