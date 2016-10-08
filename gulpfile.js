@@ -3,17 +3,17 @@ var gulp          = require('gulp'),
 
 // cache the angular template files
 gulp.task('scoring-templates', function () {
-	return gulp.src('site/admin/partials/**/*.html')
+	return gulp.src('admin/partials/**/*.html')
 		.pipe(templateCache({
 			root: 'partials/',
 			standalone: true
 		}))
-		.pipe(gulp.dest('site/admin/js'));
+		.pipe(gulp.dest('admin/js'));
 });
 
 // Watch Files For Changes
 gulp.task('watch', function () {
-	gulp.watch('site/admin/partials/**/*.html', ['scoring-templates']);
+	gulp.watch('admin/partials/**/*.html', ['scoring-templates']);
 });
 
 // Default Task

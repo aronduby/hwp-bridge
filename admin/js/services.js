@@ -196,7 +196,7 @@ angular.module('myApp.services', [])
 			},
 
 			turnover: function(player){
-				this.stats[player].turn_overs++;	
+				this.stats[player].turnovers++;
 				this.push('turnover', arguments);
 			},
 
