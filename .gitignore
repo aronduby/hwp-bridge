@@ -14,3 +14,4 @@ composer.phar
 /node/mailoutput/
 /node/settings.js
 /parsers/shutterfly-cookies.txt
+/define.php
