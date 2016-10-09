@@ -599,7 +599,7 @@ io.sockets.on('connection', function(socket){
 			});
 
 			// insert into recent
-			db_connection.query("INSERT INTO recent SET site_id = ?, season_id = ?, renderer = 'game', content = ?", [game.site_id, game.season_id, '['+game.game_id+']'], function(err, result){
+			db_connection.query("INSERT INTO recent SET site_id = ?, season_id = ?, renderer = 'game', content = ?, created_at = NOW(), updated_at = NOW()", [game.site_id, game.season_id, '['+game.game_id+']'], function(err, result){
 				if(err){
 					console.log(err);
 					recent_defer.reject(err);
