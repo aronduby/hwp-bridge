@@ -34,7 +34,7 @@ class PlayerSeason {
 		$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 		$stmt->fetch();
 
-		$s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($this->season_id))->fetch(PDO::FETCH_OBJ);
+		$s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id))->fetch(PDO::FETCH_OBJ);
 		$this->season_title = $s->title;
 		$this->season_short_title = $s->short_title;
 	}
