@@ -127,12 +127,12 @@ if(!empty($_POST)){
 
 				<li data-role="fieldcontain">
 					<label for="g-start">Start:</label>
-		        	<input type="text" name="start" id="g-start" placeholder="start" value="<?php echo $game->start->format('m/d/Y g:ia') ?>" />
+		        	<input type="datetime-local" name="start" id="g-start" placeholder="start" value="<?php echo $game->start->format(INPUT_DATETIME_FORMAT) ?>" />
 				</li>
 
 				<li data-role="fieldcontain">
 					<label for="g-end">End:</label>
-		        	<input type="text" name="end" id="g-end" placeholder="end" value="<?php echo $game->end->format('m/d/Y g:ia') ?>" />
+		        	<input type="datetime-local" name="end" id="g-end" placeholder="end" value="<?php echo $game->end->format(INPUT_DATETIME_FORMAT) ?>" />
 				</li>
 
 				<li data-role="fieldcontain">

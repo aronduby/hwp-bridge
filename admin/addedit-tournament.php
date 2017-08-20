@@ -121,12 +121,12 @@ if(!empty($_POST)){
 
 				<li data-role="fieldcontain">
 					<label for="t-start">Start:</label>
-		        	<input type="text" name="start" id="t-start" placeholder="start" value="<?php echo $tournament->start->format('m/d/Y') ?>" />
+		        	<input type="date" name="start" id="t-start" placeholder="start" value="<?php echo $tournament->start->format(INPUT_DATE_FORMAT) ?>" />
 				</li>
 
 				<li data-role="fieldcontain">
 					<label for="t-end">End:</label>
-		        	<input type="text" name="end" id="t-end" placeholder="end" value="<?php echo $tournament->end->format('m/d/Y') ?>" />
+		        	<input type="date" name="end" id="t-end" placeholder="end" value="<?php echo $tournament->end->format(INPUT_DATE_FORMAT) ?>" />
 				</li>
 
 				<li data-role="fieldcontain">

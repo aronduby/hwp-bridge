@@ -32,6 +32,10 @@ if(!isset($_COOKIE['in'])){
 			<li data-role="list-divider"></li>
 			<li><a href="badges.php" title="badges">Badges</a></li>
 		</ul>
+
+    <ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
+      <li><a href="<?= PUBLIC_HREF ?>" title="public site">Public Site</a></li>
+    </ul>
 	</div><!-- /content -->
 
 </div><!-- /page -->
