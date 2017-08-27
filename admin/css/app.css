@@ -40,6 +40,7 @@ body {
 
 .page-header nav ul {
     display: flex;
+    overflow: hidden;
 }
 
 .page-header nav li {
@@ -178,7 +179,12 @@ section.split > section,
 .split > section > section,
 .split > section > div,
 .btn-group-block .btn {
-    flex: 1;
+    width: 50%;
+}
+
+.btn-group-block > .btn {
+    overflow: hidden;
+    text-overflow: clip;
 }
 
 /*
@@ -196,7 +202,7 @@ li {
     color: #5b5b5b;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ".";
+    text-overflow: clip;
     vertical-align: middle;
 }
 
@@ -542,10 +548,11 @@ header h2,
 header h3,
 header h4,
 .btn-block,
-.page-header nav li a {
+.page-header nav li a,
+.text-overflow {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: '...';
+    text-overflow: ellipsis;
 }
 
 /*
@@ -630,13 +637,17 @@ header h4,
     display: flex;
 }
 
-.modal-container.timeout input {
-    flex: 1;
-    padding: .5em;
+.modal-container.timeout .form-inline > div {
+    flex: 2;
 }
 
-.modal-container.timeout input.seconds {
-    flex: 2;
+.modal-container.timeout .form-inline > div.seconds {
+    flex: 3;
+}
+
+.modal-container.timeout input {
+    padding: .5em;
+    width: 100%;
 }
 
 /*

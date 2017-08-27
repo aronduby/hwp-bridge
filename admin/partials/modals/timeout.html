@@ -7,7 +7,7 @@
 
 		<label>Time left in quarter:</label>
 		<div class="form-inline">
-			<input 
+			<div><input
 				type="tel" 
 				ng-model="minutes" 
 				class="form-control minutes" 
@@ -16,7 +16,7 @@
 				placeholder="minutes"
 				tabindex="1"
 				autofocus
-			 /> : <input 
+			/></div><span>:</span><div class="seconds"><input
 			 	type="tel" 
 			 	ng-model="seconds" 
 			 	class="form-control seconds" 
@@ -24,7 +24,7 @@
 			 	maxlength="2" 
 			 	placeholder="seconds" 
 			 	tabindex="2" 
-			 />
+			 /></div>
 		</div>
 		
 	</section>
