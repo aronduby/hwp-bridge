@@ -185,7 +185,7 @@ angular.module('myApp.services', [])
 				}
 
 				if(made){
-					this.kickouts = [[],[]];
+					this.resetKickouts();
 				}
 				this.push('shot', arguments);
 			},
@@ -231,6 +231,10 @@ angular.module('myApp.services', [])
 				this.push('kickoutOver', arguments);
 			},
 
+      resetKickouts: function() {
+			  this.kickouts = [[], []];
+      },
+
 			save: function(){
 				this.stats[this.goalie].saves++;
 				this.push('save', arguments);
@@ -246,6 +250,8 @@ angular.module('myApp.services', [])
 				if(this.kickouts[0].length > 0){
 					this.advantage_conversion[1].converted++;
 				}
+
+				this.resetKickouts();
 
 				this.push('goalAllowed', arguments);
 			},
@@ -371,7 +377,7 @@ angular.module('myApp.services', [])
 			},
 
 			/*
-			 * 	arent tracking but push the info still
+			 * 	aren't tracking but push the info still
 			*/ 
 			timeout: function(us, time){
 				this.push('timeout', [us, time]);

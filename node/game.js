@@ -88,7 +88,7 @@ Game.prototype = {
 		this._push('shot', arguments);
 
 		if(made){
-			this.kickouts = [[],[]];
+			this.resetKickouts();
 		}
 	},
 
@@ -133,6 +133,10 @@ Game.prototype = {
 		this._push('kickoutOver', arguments);
 	},
 
+  resetKickouts: function() {
+	  this.kickouts = [[], []];
+  },
+
 	save: function(){
 		this.stats[this.goalie].saves++;
 		this._push('save', arguments);
@@ -149,6 +153,8 @@ Game.prototype = {
 		}
 
 		this._push('goalAllowed', arguments);
+
+		this.resetKickouts();
 	},
 
 	sprint: function(player, won){
