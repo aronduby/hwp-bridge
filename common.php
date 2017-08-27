@@ -2,6 +2,10 @@
 set_time_limit(0);
 ini_set('display_errors', '1');
 
+define('MYSQL_DATETIME_FORMAT', 'Y-m-d H:i:s');
+define('INPUT_DATETIME_FORMAT', 'Y-m-d\TH:i');
+define('INPUT_DATE_FORMAT', 'Y-m-d');
+
 require __DIR__ . '/define.php';
 require __DIR__ . '/vendor/autoload.php';
 
