@@ -175,6 +175,7 @@ Game.prototype = {
 
 	fiveMeterCalled: function(player, taken_by, made){
 		this.stats[player].five_meters_called++;
+    this.stats[player].kickouts++;
 		this.stats[this.goalie].five_meters_taken_on++;
 
 		switch(made){

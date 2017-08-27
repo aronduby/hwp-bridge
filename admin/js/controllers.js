@@ -177,7 +177,7 @@ angular.module('myApp.controllers', [])
             resolve: {
               title: function () {
                 return 'Did #' + taken_by + ' make the shot?';
-              },
+              }
             }
           });
 

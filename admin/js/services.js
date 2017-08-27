@@ -274,6 +274,7 @@ angular.module('myApp.services', [])
 
 			fiveMeterCalled: function(called_on, taken_by, made){
 				this.stats[called_on].five_meters_called++;
+				this.stats[called_on].kickouts++;
 				this.stats[this.goalie].five_meters_taken_on++;
 
 				switch(made){
