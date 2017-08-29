@@ -657,6 +657,8 @@ var TwitterController = {
 						console.log(err);
 						return;
 					}
+
+					data.twitter_id = reply.id_str;
 					console.log('Sent tweet successfully');
 				});
 			} else {
