@@ -11,3 +11,10 @@
 .ui-content form > .ui-listview + .ui-footer{
     margin-top:15px;
 }
+
+/* view more on upcoming events */
+.ul-li--view-more .ui-btn-inner {
+    text-align: center;
+    font-weight: normal;
+    font-size: .85em;
+}

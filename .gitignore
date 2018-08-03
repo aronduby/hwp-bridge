@@ -15,3 +15,5 @@ composer.phar
 /node/settings.js
 /parsers/shutterfly-cookies.txt
 /define.php
+/_assets
+*.log
