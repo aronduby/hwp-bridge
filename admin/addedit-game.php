@@ -59,10 +59,16 @@ if(!empty($_POST)){
 
 		if($inserted !== false){
 
-			if(strtotime($end) < time())
-				header("Location: pastevents.php");	
-			else
-				header("Location: events.php");
+		    if (intval($_POST['tournament_id'])) {
+		        header("Location: tournament.php?tournament_id=".$_POST['tournament_id']);
+
+		    } elseif (strtotime($end) < time()) {
+                header("Location: pastevents.php");
+
+		    } else {
+                header("Location: events.php");
+            }
+
 			die();
 
 
