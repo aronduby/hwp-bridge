@@ -88,10 +88,14 @@ try{
 	// grab URL and pass it to the browser
 	$rsp = curl_exec($ch);
 
+    if (!$rsp) {
+        throw new Exception("curl error");
+    }
+
 } catch(Exception $e){
 
 	// UPDATE THE LOG TABLE
-	$log->addCritical('login failed', ['curl_erro'=>curl_erro($ch), 'curl_error'=>curl_error($ch)]);
+	$log->addCritical('login failed', ['curl_errno'=>curl_errno($ch), 'curl_error'=>curl_error($ch)]);
 	curl_close($ch);
 	die();
 }
@@ -161,9 +165,13 @@ foreach($players as $player){
 			curl_setopt_array($ch, $opts);
 			$rsp = curl_exec($ch);
 
+			if (!$rsp) {
+			    throw new Exception("curl error");
+            }
+
 		} catch(Exception $e){
 			// UPDATE THE LOG TABLE
-			$log->addError('Fetching tags failed: '.$url.$tag, ['curl_erro'=>curl_erro($ch), 'curl_error'=>curl_error($ch)]);
+			$log->addError('Fetching tags failed: '.$url.$tag, ['curl_errno'=>curl_errno($ch), 'curl_error'=>curl_error($ch)]);
 			curl_close($ch);
 			die();
 		}
