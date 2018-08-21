@@ -31,7 +31,8 @@ $short_opts = '';
 $long_opts = [
     'skip-check',
     'skip-twitter',
-    'skip-recent'
+    'skip-recent',
+    'dry-run'
 ];
 $cli_opts = getopt($short_opts, $long_opts);
 $log->addNotice('proceeding with options', $cli_opts);
@@ -45,6 +46,17 @@ if (!array_key_exists('skip-check', $cli_opts)) {
         die();
     }
 }
+
+// if dry run also turn off twitter and recent
+$DRY_RUN = array_key_exists('dry-run', $cli_opts);
+if ($DRY_RUN) {
+    $cli_opts['skip-twitter'] = true;
+    $cli_opts['skip-recent'] = true;
+}
+
+$SKIP_TWITTER = array_key_exists('skip-twitter', $cli_opts);
+$SKIP_RECENT = array_key_exists('skip-recent', $cli_opts);
+
 
 $dbh = PDODB::getInstance();
 $season_id = $dbh->query("SELECT id FROM seasons WHERE current=1")->fetch(PDO::FETCH_COLUMN);
@@ -66,7 +78,7 @@ try {
             'av' => 0,
             'cid' => 'SHARE3SSUHL',
             'userName' => "aron.duby@gmail.com",
-            'password' => "rukidding?",
+            'password' => "rukidding?rukidding",
             're' => "http://site.shutterfly.com/commands/dialogresult",
             'rememberUserName' => "on",
             'scid' => "8AZsmblm0Zs2V9",
@@ -194,21 +206,26 @@ try {
                 'updated_at' => date(MYSQL_DATETIME_FORMAT, $album->modified),
                 'cover_shutterfly_id' => $cover_shutterfly_id
             ];
-            try {
-                $album_update_stmt->execute($data);
-                $album_id = $dbh->lastInsertId();
-                $albums_to_update[$album_id] = $album->nodeId;
 
-                // unglue all the photos
+            if ($DRY_RUN) {
+                   $albums_to_update[] = $album->nodeId;
+            } else {
                 try {
-                    $unglue_stmt->execute();
+                    $album_update_stmt->execute($data);
+                    $album_id = $dbh->lastInsertId();
+                    $albums_to_update[$album_id] = $album->nodeId;
+
+                    // unglue all the photos
+                    try {
+                        $unglue_stmt->execute();
+                    } catch (PDOException $e) {
+                        $e->last_stmt = $unglue_stmt;
+                        throw $e;
+                    }
                 } catch (PDOException $e) {
-                    $e->last_stmt = $unglue_stmt;
+                    $e->last_stmt = $album_update_stmt;
                     throw $e;
                 }
-            } catch (PDOException $e) {
-                $e->last_stmt = $album_update_stmt;
-                throw $e;
             }
         }
     }
@@ -258,6 +275,8 @@ try {
         $value = $json->decode($rsp);
         $photo_shutterfly_ids = [];
 
+        $log->addDebug('fetched data for #' . $album_id . ':' . $node_id, [$value]);
+
         foreach ($value->result->section->items as $photo) {
             $photo_shutterfly_id = $photo->shutterflyId;
             // match the big size from photo import
@@ -265,8 +284,11 @@ try {
             $photo_shutterfly_ids[] = $photo_shutterfly_id;
         }
 
-        $in = str_repeat('?,', count($photo_shutterfly_ids) - 1) . '?';
-        $sql = "INSERT INTO album_photo (site_id, album_id, photo_id)
+        if ($DRY_RUN) {
+            $photos_linked += count($photo_shutterfly_ids);
+        } else {
+            $in = str_repeat('?,', count($photo_shutterfly_ids) - 1) . '?';
+            $sql = "INSERT INTO album_photo (site_id, album_id, photo_id)
                 SELECT
                   1 AS site_id,
                   ? AS album_id,
@@ -276,14 +298,15 @@ try {
                 WHERE
                   p.shutterfly_id IN ($in)
             ";
-        $glue_stmt = $dbh->prepare($sql);
+            $glue_stmt = $dbh->prepare($sql);
 
-        try {
-            $glue_stmt->execute(array_merge([$album_id], $photo_shutterfly_ids));
-            $photos_linked += $glue_stmt->rowCount();
-        } catch (PDOException $e) {
-            $e->last_stmt = $glue_stmt;
-            throw $e;
+            try {
+                $glue_stmt->execute(array_merge([$album_id], $photo_shutterfly_ids));
+                $photos_linked += $glue_stmt->rowCount();
+            } catch (PDOException $e) {
+                $e->last_stmt = $glue_stmt;
+                throw $e;
+            }
         }
     }
 
