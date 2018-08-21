@@ -17,3 +17,4 @@ composer.phar
 /define.php
 /_assets
 *.log
+parsers/tmp/*
