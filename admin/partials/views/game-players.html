@@ -1,0 +1,44 @@
+<ng-include src="'partials/includes/header.html'"></ng-include>
+
+<section class="add-player">
+	<header><h2>Add a Player</h2></header>
+	<section>
+		<select
+			ng-model="playerToAdd"
+			ng-options="player | capAndName group by player.team disable when player.inCurrent for player in addablePlayers | orderBy:'number_sort'"
+			ng-change="addPlayer()"
+		></select>
+	</section>
+</section>
+
+<section class="current-players">
+	<header>
+		<div class="btn-group btn-group-sm pull-right">
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'number_sort'" ng-click="reverse=!reverse">#</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'first_name'" ng-click="reverse=!reverse">Fn</button>
+			<button class="btn btn-info" ng-model="order_by" btn-radio="'last_name'" ng-click="reverse=!reverse">Ln</button>
+		</div>
+		<h2>Current Players</h2>
+	</header>
+	<section>
+		<ul class="players">
+			<li ng-repeat="player in currentPlayers | toArray | orderBy:order_by:reverse"
+				ng-class="{
+					'player-status--unchanged': player.status === 0,
+					'player-status--added': player.status === 1,
+					'player-status--deleted': player.status === -1
+				}"
+			>
+				<button class="btn btn-danger pull-right" ng-click="delete(player, $index)"><i class="glyphicon glyphicon-trash"></i></button>
+				<strong class="player-name" hwp-player-name player="player"></strong>
+			</li>
+		</ul>
+	</section>
+</section>
+
+<section class="save">
+	<header><h2>Save Changes</h2></header>
+	<section>
+		<button class="btn btn-block btn-large btn-success" ng-click="save()">Save</button>
+	</section>
+</section>

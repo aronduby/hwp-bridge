@@ -60,6 +60,18 @@ config(['$routeProvider', function($routeProvider) {
 			resolve:{
 				gameData: gameDataDefer
 			}
+		})
+		.when('/game/:game_id/players', {
+			templateUrl: 'partials/views/game-players.html',
+			controller: 'playersCtrl',
+			resolve: {
+				allPlayers: ['$route', '$q', 'game', function($route, $q, game) {
+					return gameDataDefer($route, $q, game)
+						.then(function(gameData) {
+							return loadAllPlayers($q, game)
+						});
+				}]
+			}
 		});
 
 
@@ -67,7 +79,7 @@ config(['$routeProvider', function($routeProvider) {
 
 }])
 .run(['socket', 'history', 'localCopy', 'game', function(socket, history, localCopy, game){
-
+	window.s = socket;
     game.setHistory(history);
     game.setSocket(socket);
 	game.setLocalCopy(localCopy);
@@ -75,11 +87,24 @@ config(['$routeProvider', function($routeProvider) {
 }]);
 
 var gameDataDefer = function($route, $q, game){
-	if(game.loaded == false){
+	if(game.loaded === false){
 		var defered = $q.defer();
 		game.loadData($route.current.params.game_id, defered);
 		return defered.promise;
 	} else {
-		return true;
+		return $q.resolve(game);
 	}
-}
+};
+
+var loadAllPlayers = function($q, game) {
+	var d = $q.defer();
+	socket.emit('getPlayers', game.season_id, function(err, players) {
+		if (err) {
+			d.reject(err.message);
+		} else {
+			d.resolve(players);
+		}
+	});
+
+	return d.promise;
+};

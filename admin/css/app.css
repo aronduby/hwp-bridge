@@ -304,7 +304,8 @@ li {
 /*
  *  Start
 */
-.set-goalie select {
+.set-goalie select,
+.add-player select {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: #333;
     padding: .25em;
@@ -312,12 +313,14 @@ li {
     width: 100%;
 }
 
-.set-goalie select option {
+.set-goalie select option,
+.add-player select option {
     font-size: .875em;
     padding: .3em;
 }
 
-.set-goalie select option:nth-child(even) {
+.set-goalie select option:nth-child(even),
+.add-player select option:nth-child(even) {
     background: #eee;
 }
 
@@ -708,4 +711,24 @@ ol.history {
     padding: .5em;
     width: 100%;
     text-align: center;
+}
+
+
+/*
+ *  Manage Players
+ */
+.btn-edit-players .glyphicon {
+    vertical-align: middle;
+    top: 3px;
+}
+
+.player-status--deleted {
+    opacity: .5;
+}
+.player-status--deleted .player-name {
+    text-decoration: line-through;
+}
+
+.player-status--added .player-name {
+    font-style: italic;
 }

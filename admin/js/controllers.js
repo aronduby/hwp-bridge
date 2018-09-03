@@ -288,7 +288,8 @@ angular.module('myApp.controllers', [])
           history.clear();
           $window.location.replace('http://' + window.location.host + '/events.php');
         }, function (error) {
-          $window.alert(error);
+          $window.alert('Error posting final');
+          console.error(error);
           // hide the loader
         }
       );
@@ -408,7 +409,8 @@ angular.module('myApp.controllers', [])
         // but first make sure the server has grabbed the data from the database in case it has restarted
         socket.emit('getGameData', game.game_id, function (err) {
           if (err != null) {
-            alert(err);
+            alert('Error getting game data');
+            console.error(err);
             return false;
           }
 
@@ -520,6 +522,87 @@ angular.module('myApp.controllers', [])
           socket.emit('undo', data);
         });
     }
+  }])
+
+  .controller('playersCtrl', ['$scope', 'game', 'allPlayers', function($scope, game, allPlayers) {
+    $scope.game = game;
+
+    $scope.order_by = 'number_sort';
+    $scope.reverse = false;
+
+    $scope.currentPlayers = Object.values(game.stats)
+      .map((player) => ({
+        first_name: player.first_name,
+        last_name: player.last_name,
+        name_key: player.name_key,
+        number: player.number,
+        number_sort: player.number_sort,
+        status: 0,
+        orgStatus: 0
+      }))
+      .reduce((acc, p) => {
+        acc[p.name_key] = p;
+        return acc;
+      }, {});
+
+    $scope.addablePlayers = allPlayers.reduce((acc, player) => {
+      acc.push(
+          ...player.team.map((team) => ({
+              first_name: player.first_name,
+              last_name: player.last_name,
+              name_key: player.name_key,
+              number: player.number,
+              number_sort: player.number_sort,
+              team: team,
+              inCurrent: $scope.currentPlayers.hasOwnProperty(player.name_key)
+          }))
+      );
+
+      return acc;
+    }, []);
+
+    $scope.delete = function(player, idx) {
+      if (player.status === -1) {
+        player.status = player.orgStatus;
+      } else {
+        player.status = -1;
+      }
+    };
+
+    $scope.addPlayer = function() {
+      const cloned = {
+        ...$scope.playerToAdd,
+        status: 1,
+        orgStatus: 1
+      };
+
+      $scope.currentPlayers[cloned.name_key] = cloned;
+      $scope.addablePlayers
+          .find(p => p.name_key === cloned.name_key)
+          .inCurrent = true;
+
+      $scope.playerToAdd = null;
+    };
+
+    $scope.save = function() {
+      const toAdd = Object.values($scope.currentPlayers)
+          .filter(p => p.status === 1);
+
+      // filters out players that were added then removed
+      const toRemove = Object.values($scope.currentPlayers)
+          .filter(p => p.status === -1 && p.orgStatus === 0);
+
+      if (toAdd.length || toRemove.length) {
+		  game.updatePlayers(toAdd, toRemove)
+			  .then(() => {
+				  // toast or something, do I have toast?
+				  window.history.back();
+			  });
+      } else {
+        window.history.back();
+      }
+    }
+
   }])
 ;
 

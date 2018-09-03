@@ -133,9 +133,9 @@ Game.prototype = {
 		this._push('kickoutOver', arguments);
 	},
 
-  resetKickouts: function() {
-	  this.kickouts = [[], []];
-  },
+	resetKickouts: function() {
+		this.kickouts = [[], []];
+	},
 
 	save: function(){
 		this.stats[this.goalie].saves++;
@@ -181,7 +181,7 @@ Game.prototype = {
 
 	fiveMeterCalled: function(player, taken_by, made){
 		this.stats[player].five_meters_called++;
-    this.stats[player].kickouts++;
+		this.stats[player].kickouts++;
 		this.stats[this.goalie].five_meters_taken_on++;
 
 		switch(made){
@@ -296,6 +296,21 @@ Game.prototype = {
 
 	shout: function(msg){
 		this._push('shout', arguments);
+	},
+
+	updatePlayers(add, remove) {
+		var keys = Object.keys(this.stats[Object.keys(this.stats)[0]]);
+		add.forEach((player) => {
+			this.stats[player.name_key] = keys.reduce((acc, key) => {
+				acc[key] = 	player[key] || 0;
+				return acc;
+			}, {});
+		});
+
+		// this will orphan some total stats (ie goals)
+		remove.forEach(player => {
+			delete this.stats[player.name_key];
+		});
 	}
 
 

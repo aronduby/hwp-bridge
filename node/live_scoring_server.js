@@ -361,6 +361,50 @@ io.sockets.on('connection', function(socket){
 		// TwilioController.broadcast(data);
 	};
 
+	describeStats = function(db_connection) {
+        var stat_description_defer = Q.defer();
+
+        db_connection.query("DESCRIBE stats", function(err, result){
+            if(err){
+                stat_description_defer.reject(err);
+                return false;
+            }
+            stat_description_defer.resolve(result);
+        });
+
+        return stat_description_defer;
+	};
+
+	loadPlayers = function(db_connection, season_id, team) {
+		var player_defer = Q.defer(),
+			sql, params;
+
+		if (team) {
+			sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET(?, team)";
+			params = [season_id, team];
+		} else {
+			sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
+			params = [season_id];
+		}
+
+        db_connection.query(sql, params, function(err, result){
+            if(err){
+                player_defer.reject(err);
+                return false;
+            }
+
+            for(var i in result) {
+            	var p = result[i];
+            	p.team = p.team.split(',');
+				p.number_sort = parseInt(p.number, 10);
+			}
+
+            player_defer.resolve(result);
+        });
+
+        return player_defer;
+	};
+
 	// not controller, but we have a controller, send the last update
 	if(!socket.is_controller && controller_connected){
 		console.log("Client connected and controller "+(controller_connected===true ? 'is' : 'is not')+" connected");
@@ -396,7 +440,6 @@ io.sockets.on('connection', function(socket){
 		var db_connection = mysql.createConnection(db_config),
 			existing_defer = Q.defer();
 
-
 		db_connection.query("SELECT * FROM game_stat_dumps WHERE game_id = ?", [game_id], function(err, result){
 			if(err || result.length == 0 || result[0].json == null){
 				existing_defer.reject(err);
@@ -414,7 +457,7 @@ io.sockets.on('connection', function(socket){
 		existing_defer.promise.fail(function(){
 			var game_defer = Q.defer(),
 				player_defer = Q.defer(),
-				stat_description_defer = Q.defer();
+				stat_description_defer;
 			
 			// game data
 			db_connection.query('SELECT id AS game_id, site_id, season_id, opponent, team, title_append AS title FROM games WHERE id = ?', [game_id], function(err, game){
@@ -427,24 +470,17 @@ io.sockets.on('connection', function(socket){
 				game_defer.resolve(game);
 
 				// player data
-				var sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET(?, team)";
-				db_connection.query(sql, [game.season_id, game.team], function(err, result){
-					if(err){
+				loadPlayers(db_connection, game.season_id, game.team).promise
+					.then(function(players) {
+						player_defer.resolve(players)
+					})
+					.fail(function(err) {
 						player_defer.reject(err);
-						return false;
-					}
-					player_defer.resolve(result);
-				});
+					});
 			});
 
 			// stat describe
-			db_connection.query("DESCRIBE stats", function(err, result){
-				if(err){
-					stat_description_defer.reject(err);
-					return false;
-				}
-				stat_description_defer.resolve(result);
-			});
+            stat_description_defer = describeStats(db_connection);
 
 			Q.all([ game_defer.promise, player_defer.promise, stat_description_defer.promise])
 			.spread(function(game_data, players, stat_description){
@@ -488,9 +524,26 @@ io.sockets.on('connection', function(socket){
 			}).fail(function(error){
 				cb(error.message);
 				console.log(error.stack);
+			})
+			.finally(function() {
+				db_connection.end();
 			});
 		});
+	});
 
+	socket.on('getPlayers', function(season_id, cb) {
+		var db_connection = mysql.createConnection(db_config);
+		loadPlayers(db_connection, season_id, null)
+			.promise
+			.then(function(players) {
+				cb(null, players);
+			})
+			.fail(function(err) {
+				cb(err.message);
+			})
+			.finally(function() {
+				db_connection.end();
+			});
 	});
 
 	socket.on('update', function(func, args, cb){
