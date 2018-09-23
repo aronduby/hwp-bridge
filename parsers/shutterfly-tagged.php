@@ -1,6 +1,9 @@
 <?php
 require '../common.php';
 
+// bump the memory size up to prevent errors
+ini_set('memory_limit', '500M');
+
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\ErrorLogHandler;
