@@ -1,4 +1,7 @@
 <?php
+/**
+ * @Deprecated see shutterfly-tagged.php for new method
+ */
 require '../common.php';
 
 use Monolog\Logger;

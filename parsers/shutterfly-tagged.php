@@ -1,4 +1,15 @@
 <?php
+/**
+ * Imports the photos from json data in parsers/tmp/tags.json
+ *
+ * On the server, Generate and supply the token as necessary from parsers/shutterfly-token.php *
+ * In the browser, tag the photos on the shutterfly site (use snippets as described to make this way better)
+ * In the browser, run the `tagging--post-tags` snippet to post the data over to write the tags.json file
+ * On the server, run parsers/shutterfly--tagged.php to import the photos
+ * On the server, run parsers/shutterfly-albums.php to import the albums
+ * On the server, delete the token for security
+ * In the browser, hwp admin assign any new albums to a game/tournament
+ */
 require '../common.php';
 
 // bump the memory size up to prevent errors
@@ -28,10 +39,10 @@ Config::setDbh($dbh);
 // grab options from the cli
 $short_opts = '';
 $long_opts = [
-    'skip-check',
-    'skip-twitter',
-    'skip-recent',
-    'dry-run'
+    'skip-check', // don't check the settings to see if we should be running, needed for running manually outside of cron
+    'skip-twitter', // don't post to twitter
+    'skip-recent', // don't post to homepage as recent
+    'dry-run' // just gather information and log it, don't actually import things
 ];
 $cli_opts = getopt($short_opts, $long_opts);
 $log->addNotice('proceeding with options', $cli_opts);
