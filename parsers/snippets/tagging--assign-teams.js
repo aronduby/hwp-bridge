@@ -100,8 +100,8 @@ document.getElementById('hwp-submit').addEventListener('click', () => {
 			return acc;
 		}, {'jv': [], 'v': []});
 
-	console.log(`const jv = ['${teams.jv.join("', '")}']`);
-	console.log(`const v = ['${teams.v.join("', '")}']`);
+	console.log(`const jv = ['${teams.jv.join("', '")}'];`);
+	console.log(`const v = ['${teams.v.join("', '")}'];`);
 
 	// SENIORS
 	const seniors = [...document.querySelectorAll('input[name="hwp-senior"]')]

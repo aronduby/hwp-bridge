@@ -7,7 +7,6 @@
  * In the browser, run the `tagging--post-tags` snippet to post the data over to write the tags.json file
  * On the server, run parsers/shutterfly--tagged.php to import the photos
  * On the server, run parsers/shutterfly-albums.php to import the albums
- * On the server, delete the token for security
  * In the browser, hwp admin assign any new albums to a game/tournament
  */
 require '../common.php';

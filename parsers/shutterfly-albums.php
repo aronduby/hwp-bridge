@@ -1,4 +1,7 @@
 <?php
+/**
+ * Don't forget to update the config db table
+ */
 require '../common.php';
 
 use Monolog\Logger;
@@ -25,6 +28,9 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 
 $dbh = PDODB::getInstance();
 Config::setDbh($dbh);
+
+$shutterfly_site = Config::get('SHUTTERFLY_SITE');
+$log->addNotice('shutterfly site', [$shutterfly_site]);
 
 // grab options from the cli
 $short_opts = '';
@@ -109,7 +115,7 @@ try {
 try {
 
     # GET ALL OF THE ALBUMS
-    $url = 'https://cmd.shutterfly.com/commands/pictures/getitems?site=' . Config::get('SHUTTERFLY_SITE') . '&';
+    $url = 'https://cmd.shutterfly.com/commands/pictures/getitems?site=' . $shutterfly_site . '&';
     $opts = [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
@@ -121,7 +127,7 @@ try {
             // 'h' => "ay2j9w5mRHiiy2N8LcCabtbKba1s=",
             'layout' => "ManagementAlbums",
             'nodeId' => "14",
-            'page' => Config::get('SHUTTERFLY_SITE') . "/pictures",
+            'page' => $shutterfly_site . "/pictures",
             'pageSize' => "-1",
             'size' => "-1",
             'startIndex' => "0",
@@ -232,7 +238,7 @@ try {
 
 
     # GET ALL PHOTOS FOR ANY UPDATED ALBUMS
-    $url = 'https://cmd.shutterfly.com/commands/pictures/getitems?site=' . Config::get('SHUTTERFLY_SITE') . '&';
+    $url = 'https://cmd.shutterfly.com/commands/pictures/getitems?site=' . $shutterfly_site . '&';
     $opts = [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
@@ -244,7 +250,7 @@ try {
             // 'h' => "a7V19MiYbD3Y+vdeROuPec2zlmd8=",
             'layout' => "ManagementAlbumPictures",
             'nodeId' => null,
-            'page' => Config::get('SHUTTERFLY_SITE') . "/pictures",
+            'page' => $shutterfly_site . "/pictures",
             'pageSize' => "-1",
             'size' => "-1",
             'startIndex' => "0",
