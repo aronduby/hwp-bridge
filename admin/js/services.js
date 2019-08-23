@@ -74,6 +74,7 @@ angular.module('myApp.services', [])
 				{drawn: 0, converted: 0}
 			],
 			kickouts: [[], []],
+			kickouts_drawn_by: [],
 			boxscore: [[{}], [{}]],
 			score: [0, 0],
 
@@ -181,6 +182,7 @@ angular.module('myApp.services', [])
 
 					if (this.kickouts[1].length > 0) {
 						this.advantage_conversion[0].converted++;
+						this.stats[player].advantage_goals++;
 					}
 				}
 
@@ -216,6 +218,7 @@ angular.module('myApp.services', [])
 			kickoutDrawn: function (player) {
 				this.stats[player].kickouts_drawn++;
 				this.kickouts[1].push(1);
+				this.kickouts_drawn_by.push(player);
 
 				this.advantage_conversion[0].drawn++;
 				this.push('kickoutDrawn', arguments);
@@ -223,7 +226,8 @@ angular.module('myApp.services', [])
 
 			kickoutOver: function (player) {
 				if (player === false) {
-					this.kickouts[1].pop();
+					this.kickouts[1].shift();
+					this.kickouts_drawn_by.shift();
 				} else {
 					var i = this.kickouts[0].indexOf(player);
 					this.kickouts[0].splice(i, 1);
@@ -233,6 +237,7 @@ angular.module('myApp.services', [])
 
 			resetKickouts: function () {
 				this.kickouts = [[], []];
+				this.kickouts_drawn_by = [];
 			},
 
 			save: function () {
@@ -249,6 +254,7 @@ angular.module('myApp.services', [])
 
 				if (this.kickouts[0].length > 0) {
 					this.advantage_conversion[1].converted++;
+					this.stats[this.goalie].advantage_goals_allowed++;
 				}
 
 				this.resetKickouts();

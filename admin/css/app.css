@@ -622,15 +622,6 @@ header h4,
     .field .stats .btn-group:after {
         display: none;
     }
-
-    .field .stats .btn-group > .btn {
-        flex: 1;
-        padding: .5em .2857em;
-    }
-
-    .field .stats .btn-group > .btn .badge {
-        margin-top: .5em;
-    }
 }
 
 /*

@@ -88,21 +88,31 @@ game._addListener('shot', function(player, made, assist){
 		if(player == false){
 			data.msg = this.opponent + ' Goal';
 		} else {
-			var p = this.stats[player];
+			var shooter = this.stats[player];
+			var assisted = assist ? this.stats[assist] : false;
 
 			data.msg = 'Hudsonville Goal';
 
 			// advantage?
-			if(this.kickouts[0].length != this.kickouts[1].length){
-				data.msg += ' off a '+(6 - this.kickouts[0].length)+' on '+(6 - this.kickouts[1].length);
+			if (this.kickouts[0].length !== this.kickouts[1].length) {
+				data.msg += ` off a ${(6 - this.kickouts[0].length)} on ${(6 - this.kickouts[1].length)}! ${playerNameAndNumber(shooter)} scoring his ${getOrdinal(shooter.goals)}`;
+			} else {
+				data.msg += `! ${playerNameAndNumber(shooter)}, his ${getOrdinal(shooter.goals)}`;
 			}
 
-			data.msg += '! #' + p.number + ' ' + p.first_name + ' ' + p.last_name+', his '+getOrdinal(p.goals);
-
 			// assist?
-			if(assist != false){
-				p = this.stats[assist];
-				data.msg += ', with the Assist by #'+p.number+' '+p.first_name+' '+p.last_name;
+			if (assisted != false) {
+				data.msg += `, with the assist by ${playerNameAndNumber(assisted)}`;
+			}
+
+			if (this.kickouts_drawn_by.length) {
+				var drawnStrings = [];
+				new Set(this.kickouts_drawn_by)
+					.forEach((nameKey) => {
+						drawnStrings.push(playerNameAndNumber(this.stats[nameKey]));
+					});
+
+				data.msg += `. Advantage${this.kickouts_drawn_by.length > 1 ? 's' : ''} drawn by ${oxford(drawnStrings, 'and')}`;
 			}
 		}
 
@@ -353,7 +363,7 @@ io.sockets.on('connection', function(socket){
 
 		// push to other items
 		if(test_mode){
-			fs.appendFile('broadcast-log.txt', 'SOCKETS:('+data.msg.length+') '+data.msg+"\n");
+			fs.appendFile('broadcast-log.txt', 'SOCKETS:('+data.msg.length+') '+data.msg+"\n", null, ()=>{});
 		} else {
 			socket.broadcast.emit('update', data);
 		}
@@ -870,9 +880,27 @@ TwilioController.init();
 // });
 // app.listen(2255); // 2255 = call
 
+function playerNameAndNumber(p) {
+	return `#${p.number} ${p.first_name} ${p.last_name}`;
+}
 
 function getOrdinal(n) {
    var s=["th","st","nd","rd"],
        v=n%100;
    return n+(s[(v-20)%10]||s[v]||s[0]);
+}
+
+// make a list in the Oxford comma style (eg "a, b, c, and d")
+// Examples with conjunction "and":
+// ["a"] -> "a"
+// ["a", "b"] -> "a and b"
+// ["a", "b", "c"] -> "a, b, and c"
+function oxford(arr, conjunction, ifEmpty){
+	var l = arr.length;
+	if (!l) return ifEmpty;
+	if (l<2) return arr[0];
+	if (l<3) return arr.join(` ${conjunction} `);
+	arr = arr.slice();
+	arr[l-1] = `${conjunction} ${arr[l-1]}`;
+	return arr.join(", ");
 }
