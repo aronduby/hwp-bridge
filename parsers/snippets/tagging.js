@@ -33,9 +33,9 @@ function init() {
 	const taggingList = document.querySelector('#tagging-list ul');
 
 	// BEGIN OUTPUT FROM `tagging--assign-teams`
-	const jv = ['Bryce Laning', 'Cooper Randall', 'Declan Edema', 'Ethan Dennis', 'Gabe Karel', 'Henry Booker', 'Jack Roehling', 'Jacob Ellis', 'Joseph Maldonado', 'Liam Kuiper', 'Nathan Porter', 'Ryan VanderVeen', 'Will Schuiteman'];
-	const v = ['Adam Simon', 'Andy Lobbezoo', 'Brandon Vansprange', 'Caden Meines', 'Chandler Jones', 'Colin McDowell', 'Collin Kline', 'Dallas Grandy', 'David Karel', 'Elijah Boonstra', 'Ethan Holwerda', 'Ethan Springer', 'Gabe Boonstra', 'Gabe Ecenbarger', 'Ian Worst', 'John Dirkse', 'Jordan B', 'Josh A', 'Matt Lawrence', 'Micah Bayle', 'Nate Chalmers', 'Nate Tuttle', 'Parker Molewyk', 'Patrick Tutt', 'Sam Myaard', 'Tyler Bayle', 'Wesley Obetts'];
-	const seniors = ['Adam Simon', 'Brandon Vansprange', 'Caden Meines', 'Collin Kline', 'David Karel', 'Ethan Springer', 'Gabe Boonstra', 'Matt Lawrence', 'Nate Tuttle'];
+	const jv = ['Aiden McDowell', 'Ben Harris', 'Brendan LaFrenier', 'Bryce Laning', 'Casey Fields', 'Cooper Randall', 'Declan Edema', 'Dylan VanderJagt', 'Ethan Dennis', 'Gabe Karel', 'Gabe Karel', 'Henry Booker', 'Jack Bradley', 'Jack Roehling', 'Jacob Ellis', 'Joseph Maldonado', 'Matt Karel', 'Matthew Welmerink', 'Nathan Porter', 'Nolan Marx', 'Sam Lobbezoo', 'Tyler Chalmers', 'Will Schuiteman'];
+	const v = ['Andy Lobbezoo', 'Chandler Jones', 'Colin McDowell', 'Dallas Grandy', 'Elijah Boonstra', 'Ethan Holwerda', 'Gabe Ecenbarger', 'Ian Worst', 'John Dirkse', 'Micah Bayle', 'Nate Chalmers', 'Parker Molewyk', 'Patrick Tutt', 'Sam Myaard', 'Tyler Bayle', 'Wesley Obetts'];
+	const seniors = ['Andy Lobbezoo', 'Chandler Jones', 'Dallas Grandy', 'Ian Worst', 'John Dirkse', 'Joseph Maldonado', 'Parker Molewyk', 'Patrick Tutt', 'Sam Myaard', 'Wesley Obetts'];
 	// END OUTPUT FROM `tagging--assign teams`
 
 
@@ -57,6 +57,11 @@ function init() {
 						.forEach(el => {
 							el.click();
 						});
+					break;
+				// alt + z = undo, uncheck checked people
+				case 'z':
+					[...taggingList.querySelectorAll('.tag-checked')]
+						.forEach(el => el.click());
 					break;
 				// alt + j = all jv players
 				case "j":
