@@ -5,8 +5,8 @@ class AlexPhoto extends Photo{
 	public function __construct($photo_id, PDO $dbh){
 		parent::__construct($photo_id, $dbh);
 
-		$this->photo = $this->photo_path . $this->prepend . 'alex' . $this->append;
-		$this->thumb = $this->thumb_path . $this->prepend . 'alex' . $this->append;
+		$this->photo = PHOTO_BASE_HREF . $this->prepend . 'alex' . $this->append;
+		$this->thumb = THUMB_BASE_HREF . $this->prepend . 'alex' . $this->append;
 
 		$this->photo_id = 'alex';
 	}

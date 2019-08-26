@@ -5,5 +5,10 @@ module.exports = {
 		password: 'poiuy098',
 		database: 'hwp'
 	},
-	artisanPath: 'D:/web/hwp/artisan'
+	artisanPath: 'D:/web/hwp/artisan',
+	ssl: {
+		"key": "path/to/ssl.key",
+		"cert": "path/to/ssl.crt",
+		"ca": "path/to/sub.class1.server.ca.pem"
+	}
 };

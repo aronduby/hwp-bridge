@@ -286,7 +286,7 @@ angular.module('myApp.controllers', [])
       defered.then(
         function (data) {
           history.clear();
-          $window.location.replace('http://' + window.location.host + '/events.php');
+          $window.location.replace(window.location.protocol + '://' + window.location.host + '/events.php');
         }, function (error) {
           $window.alert('Error posting final');
           console.error(error);

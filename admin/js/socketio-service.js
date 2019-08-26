@@ -5,7 +5,7 @@ var angularSocketIO = angular.module('socketioModule', ['ng']);
 /*
  *	Set the address we should connect to here
 */
-angularSocketIO.constant('addr', 'http://'+window.location.hostname+':7656');
+angularSocketIO.constant('addr', 'https://'+window.location.hostname+':7656');
 
 /*
  *	The actual factory
@@ -20,7 +20,8 @@ angularSocketIO.service('socketio', [
 		function connect(){
 			if(firstconnect === true){
 				socket = io.connect(addr,{
-					'sync disconnect on unload': false
+					'sync disconnect on unload': false,
+					'secure': true
 				});
 
 				socket.on('connect', function(){

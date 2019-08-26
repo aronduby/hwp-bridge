@@ -333,12 +333,21 @@ game._addListener('final', function(){
 
 
 // SOCKETS
-var io = require('socket.io')(7656,{
+var https = require('https');
+
+var secureServer = https.createServer({
+	key: fs.readFileSync(settings.ssl.key),
+	cert: fs.readFileSync(settings.ssl.cert)
+});
+
+var io = require('socket.io').listen(secureServer,{
 	'close timeout': 3600, // 60 minutes to re-open a closed connection
 	'browser client minification': true,
 	'browser client etag': true,
 	'browser client gzip': true
-}); // 7656 = polo
+});
+// 7656 = polo
+secureServer.listen(7656, "0.0.0.0");
 
 
 io.sockets.on('connection', function(socket){

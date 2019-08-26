@@ -32,19 +32,9 @@ if(!empty($_POST) && array_key_exists('tournament_id', $_POST)){
 else {
 	$tournament = new Tournament($_GET['tournament_id'], PDODB::getInstance());
 }
-?>
 
-<!DOCTYPE html> 
-<html> 
-	<head> 
-	<title>Admin - Hudsonville Water Polo</title> 
-	<meta name="viewport" content="width=device-width, initial-scale=1"> 
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
-	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-	<script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
-	
-</head> 
-<body> 
+require '_pre.php';
+?>
 
 <div data-role="page" data-theme="b">
 
@@ -75,5 +65,4 @@ else {
 
 </div><!-- /page -->
 
-</body>
-</html>
+<?php require '_post.php'; ?>

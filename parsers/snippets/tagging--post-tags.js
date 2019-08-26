@@ -9,7 +9,6 @@
  *
  *  Requirements:
  *  	generate a server token from the bridge server `parsers/shutterfly-token.php`
- *  	running `tagging--post-test` to allow insecure content
  *
  */
 
@@ -53,7 +52,7 @@ tagIDs
 			data.append('tags[]', tagStr);
 		});
 
-		fetch('http://admin.hudsonvillewaterpolo.com/shutterfly-post-tags.php', {
+		fetch('https://admin.hudsonvillewaterpolo.com/shutterfly-post-tags.php', {
 			method: 'POST',
 			body: data
 		})

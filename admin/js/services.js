@@ -1,10 +1,11 @@
 'use strict';
 
 // Setup socket.io as normal
-var addr = 'http://' + window.location.hostname + ':7656';
+var addr = 'https://' + window.location.hostname + ':7656';
 var socket = io(addr, {
-	'sync disconnect on unload': true
-	// 'reconnectionAttempts': 5
+	'sync disconnect on unload': true,
+	// 'reconnectionAttempts': 5,
+	'secure': true
 });
 
 
@@ -497,7 +498,8 @@ angular.module('myApp.services', [])
 			this.events[e].push(wrapped_handler);
 			addListener(e, wrapped_handler);
 			return this;
-		}
+		};
+
 		Scope.prototype.clear = function () {
 			// loop through all of our events and removeListener
 			var keys = Object.keys(this.events);
@@ -509,7 +511,7 @@ angular.module('myApp.services', [])
 					socket.removeListener(e, handlers[j]);
 				}
 			}
-		}
+		};
 
 		/*
 		 *	Since we can remove things now we have to be able to have a reference to the actual function

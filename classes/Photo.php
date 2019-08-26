@@ -11,9 +11,6 @@ class Photo{
 	public $height;
 	public $viewed;
 
-	public $photo_path = 'http://photos.hudsonvillewaterpolo.com/';
-	public $thumb_path = 'http://photos.hudsonvillewaterpolo.com/thumbs/';
-
 	public $players;	
 
 	protected $prepend = '';
@@ -24,8 +21,8 @@ class Photo{
 		$this->photo_id = $photo_id;
 		$this->dbh = $dbh;
 		
-		$this->photo = $this->photo_path . $this->prepend . $this->photo_id . $this->append;
-		$this->thumb = $this->thumb_path . $this->prepend . $this->photo_id . $this->append;
+		$this->photo = PHOTO_BASE_HREF . $this->prepend . $this->photo_id . $this->append;
+		$this->thumb = THUMB_BASE_HREF . $this->prepend . $this->photo_id . $this->append;
 
 		$this->players = $this->getPlayersInPhoto();
 
