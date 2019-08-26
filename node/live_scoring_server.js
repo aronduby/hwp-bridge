@@ -1,7 +1,8 @@
 require('console-ten').init(console);
 var Q = require('q'),
 	extend = require('util')._extend,
-	settings = require('./settings');
+	settings = require('./settings'),
+	fs = require('fs');
 
 
 var controller_connected = false,
@@ -12,10 +13,6 @@ if(process.argv[2] == 'test')
 	test_mode = true;
 
 console.log('Test Mode:', test_mode);
-
-if(test_mode == true){
-	var fs = require('fs');
-}
 
 
 // MYSQL
