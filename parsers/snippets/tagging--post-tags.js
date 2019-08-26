@@ -54,7 +54,8 @@ tagIDs
 
 		fetch('https://admin.hudsonvillewaterpolo.com/shutterfly-post-tags.php', {
 			method: 'POST',
-			body: data
+			body: data,
+			mode: "cors"
 		})
 			.then(rsp => {
 				console.log(rsp);
@@ -73,7 +74,7 @@ function loadTags(tag) {
 	fd.append('startIndex', '0');
 	fd.append('size', '-1');
 	fd.append('pageSize', '-1');
-	fd.append('page', 'eagleswaterpolo2018/_/tags');
+	fd.append('page', `${shutterflySite}/_/tags`);
 	fd.append('nodeId', '3');
 	fd.append('layout', 'ManagementTags');
 	fd.append('version', '0');

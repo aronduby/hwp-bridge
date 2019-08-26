@@ -1,6 +1,12 @@
 <?php
 require '../common.php';
 
+$dbh = PDODB::getInstance();
+Config::setDbh($dbh);
+
+$shutterfly_site = Config::get('SHUTTERFLY_SITE');
+header("Access-Control-Allow-Origin: https://$shutterfly_site.shutterfly.com");
+
 if (
     !empty($_POST)
     && array_key_exists('token', $_POST)
