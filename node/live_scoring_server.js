@@ -711,10 +711,10 @@ var TwitterController = {
 	twit: null,
 	init: function(){
 		this.twit = new Twit({
-			consumer_key: 'GNQo7XCNbQHZy2XW0gCg',
-			consumer_secret: 'Ym4xmm4gkfe74kCK0Z9tyLNhjoHqc4Qho142tH81gY',
-			access_token: '783299587-TGM7b75OktcXRJAUlXLpClTtfqI3UzCSKxlDgfym',
-			access_token_secret: 'Aic90o7VwQGqAMRf2c8OVJ5cafLWx2eLiI5hSs4Phg'
+			consumer_key: settings.twitter.consumer_key,
+			consumer_secret: settings.twitter.consumer_secret,
+			access_token: settings.twitter.access_token,
+			access_token_secret: settings.twitter.access_token_secret
 		});
 	},
 	broadcast: function(data){
