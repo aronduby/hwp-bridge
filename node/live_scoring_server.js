@@ -749,7 +749,7 @@ var TwilioController = {
 	client: null,
 	db: null,
 	init: function(){
-		this.client = new twilio.RestClient('ACc9dc1a5ab1834988a0c86f1a131b2a8f', 'dbb4e4faf563282bbd20427b06613c95');
+		this.client = new twilio.RestClient(settings.twilio.sid, settings.twilio.token);
 		this.db = db_connection;
 	},
 	broadcast: function(data){
