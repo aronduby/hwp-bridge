@@ -2,20 +2,20 @@ require('console-ten').init(console);
 var Q = require('q'),
 	extend = require('util')._extend,
 	settings = require('./settings'),
-	fs = require('fs');
-
+	fs = require('fs'),
+	testModeLogger = require('./broadcasters/test-mode-logger');
 
 var controller_connected = false,
 	updates = [],
 	test_mode = false;
 
-if(process.argv[2] == 'test')
+if(process.argv[2] === 'test')
 	test_mode = true;
 
 console.log('Test Mode:', test_mode);
 
 
-// MYSQL
+// DATABASE
 var mysql = require('mysql'),
 	db_config = settings.mysql,
 	db_connection = mysql.createConnection(db_config);
@@ -35,6 +35,24 @@ db_connection.on('error', function(err) {
 	handleDisconnect(db_connection);
 	db_connection.connect();
 });
+
+
+// BROADCASTERS
+var mids = require('./middleware');
+
+var TwitterBroadcaster = new (require('./broadcasters/twitter'))(settings.twitter, test_mode);
+TwitterBroadcaster
+	.use(mids.isDefined)
+	.use(mids.messageWithScore)
+	.use(mids.prefixJV);
+
+var dbConnector = function() { return mysql.createConnection(db_config); };
+var TwilioBroadcaster = new (require('./broadcasters/twilio'))(settings.twilio, dbConnector, test_mode);
+TwilioBroadcaster
+	.use(mids.isDefined)
+	.use(mids.messageWithScore)
+	.use(mids.prefixJV);
+
 
 // GAME
 var g = require('./game.js'),
@@ -331,12 +349,10 @@ game._addListener('final', function(){
 
 // SOCKETS
 var https = require('https');
-
 var secureServer = https.createServer({
 	key: fs.readFileSync(settings.ssl.key),
 	cert: fs.readFileSync(settings.ssl.cert)
 });
-
 var io = require('socket.io').listen(secureServer,{
 	'close timeout': 3600, // 60 minutes to re-open a closed connection
 	'browser client minification': true,
@@ -349,7 +365,6 @@ secureServer.listen(7656, "0.0.0.0");
 
 io.sockets.on('connection', function(socket){
 	console.log("Connection " + socket.id + " accepted.");
-
 
 	broadcast = function(data){
 		data.ts = Math.round(+new Date()/1000);
@@ -365,16 +380,15 @@ io.sockets.on('connection', function(socket){
 
 		updates.push(data);
 
-		// console.log(updates);
-
 		// push to other items
 		if(test_mode){
-			fs.appendFile('broadcast-log.txt', 'SOCKETS:('+data.msg.length+') '+data.msg+"\n", null, ()=>{});
+			testModeLogger('SOCKETS', data.msg);
 		} else {
 			socket.broadcast.emit('update', data);
 		}
-		TwitterController.broadcast(data);
-		// TwilioController.broadcast(data);
+
+		TwitterBroadcaster.broadcast(data);
+		TwilioBroadcaster.broadcast(data);
 	};
 
 	describeStats = function(db_connection) {
@@ -704,187 +718,6 @@ io.sockets.on('connection', function(socket){
 	});
 
 });
-
-// TWITTER
-var Twit = require('twit');
-var TwitterController = {
-	twit: null,
-	init: function(){
-		this.twit = new Twit({
-			consumer_key: settings.twitter.consumer_key,
-			consumer_secret: settings.twitter.consumer_secret,
-			access_token: settings.twitter.access_token,
-			access_token_secret: settings.twitter.access_token_secret
-		});
-	},
-	broadcast: function(data){
-		if(data != undefined){
-			post_msg = (data.team=='JV' ? '(JV) ' : '') + data.msg + ' -- ' + data.score[0] + ' - ' + data.score[1];
-			if(test_mode != true){
-				this.twit.post('statuses/update', { status: post_msg }, function(err, reply){
-					if(err) {
-						console.log(err);
-						return;
-					}
-
-					data.twitter_id = reply.id_str;
-					console.log('Sent tweet successfully');
-				});
-			} else {
-				fs.appendFile('broadcast-log.txt', 'TWITTER:('+post_msg.length+') '+post_msg+"\n", function (err) {
-					if (err) throw err;
-				});
-			}
-		}
-	}
-};
-TwitterController.init();
-
-
-// TWILIO
-var dateFormat = require('dateformat'),
-	twilio = require('twilio');
-
-var TwilioController = {
-	client: null,
-	db: null,
-	init: function(){
-		this.client = new twilio.RestClient(settings.twilio.sid, settings.twilio.token);
-		this.db = db_connection;
-	},
-	broadcast: function(data){
-		if(data != undefined){
-			var post_msg = (data.team=='JV' ? '(JV) ' : '') + data.msg + ' -- ' + data.score[0] + ' - ' + data.score[1],
-				t = this;
-
-			//console.log((test_mode==true?'NOT ':'')+'sending to twilio:', post_msg);
-
-			if(test_mode != true){
-				this.db = mysql.createConnection(db_config);
-				this.db.connect();
-				sql = 'SELECT phone FROM subscription WHERE game_id=? OR tournament_id IN (SELECT tournament_id FROM game WHERE game_id=?)';
-				var query = this.db.query(sql, [data.game_id, data.game_id]);
-				query
-					.on('error', function(err){
-						console.log(err);
-					})
-					.on('result', function(row){
-						console.log(row, post_msg);
-						//Send an SMS text message
-						t.client.sendSms({
-							to: row.phone, // Any number Twilio can deliver to
-							from: '+16169657991', // A number you bought from Twilio and can use for outbound communication
-							body: post_msg // body of the SMS message
-						}, function(err, responseData) { //this function is executed when a response is received from Twilio
-							if (!err) {
-								console.log("Sent text to " + responseData.to);
-							}
-						});
-					});
-				this.db.end();
-			} else {
-				fs.appendFile('broadcast-log.txt', 'TWILIO:('+post_msg.length+') '+post_msg+"\n", function (err) {
-					if (err) throw err;
-				});
-			}
-		}
-	},
-	incomingCall: function(data){
-		var d = Q.defer();
-
-		this.getContent()
-		.then(function(data){
-			var rsp = new twilio.TwimlResponse();
-			rsp.say('Welcome to Hudsonville Water Polo')
-				.say(data.msg)
-				.gather({
-					action: 'http://www.hudsonvillewaterpolo.com/norewrite/twilio-subscribeOrList.php?subscribe_id='+data.subscribe_id,
-					finishOnKey:'*',
-					numDigits: 1
-				}, function() {
-					if(data.subscribe_id !== null)
-						this.say('Press 1 to get text alerts during that game');
-					this.say('Press 2 to hear outcome of the past 5 games');
-				});
-			d.resolve(rsp);
-		}).fail(function(err){
-			console.log(err);
-		}).done();
-
-		return d.promise;
-	},
-
-	getContent: function(){
-		var msg = '',
-			subscribe_id = null,
-			def = Q.defer();
-
-		if(updates.length > 0){
-			var latest = updates[updates.length - 1],
-				status = '';
-
-			if(latest.score[0] > latest.score[1]){
-				status = 'leads';
-			} else if( latest.score[0] < latest.score[1]){
-				status = 'trails';
-			} else {
-				status = 'tied with';
-			}
-
-			def.resolve({
-				msg: 'The current '+latest.title+' Hudsonville '+status+' '+latest.opponent+' '+latest.score[0]+' to '+latest.score[1],
-				subscribe_id: latest.game_id
-			});
-		
-		} else {
-			this.db = mysql.createConnection(db_config);
-			this.db.connect();
-			sql = 'SELECT g.game_id, g.title_append, g.start, g.opponent, l.title AS location FROM game g LEFT JOIN location l USING(location_id) WHERE start > NOW() ORDER BY start ASC LIMIT 1';
-			var query = this.db.query(sql, function(err, row){
-				if(err){
-					console.log(query.sql);
-					console.log(err);
-					def.resolve({
-						msg: 'Sorry but we could not get game information from the database at this time, please try again later.',
-						subscribe_id: null
-					});
-				} else {
-					if(row.length == 1){
-						row = row[0];
-						var resolve_with = {
-							msg: 'Our next game is '+dateFormat(row.start, 'dddd "the" dS')+' '+row.title_append+' versus '+row.opponent+' at '+row.location+' at '+dateFormat(row.start, 'h:MMtt'),
-							subscribe_id: row.game_id
-						};
-						def.resolve(resolve_with);							
-					} else {
-						def.resolve({
-							msg: 'There are currently no upcoming games in the system',
-							subscribe_id: null
-						});
-					}
-				}
-			});
-			this.db.end();
-		}
-		return def.promise;
-	}
-};
-TwilioController.init();
-
-// we have to setup a http server for twilio
-// this is done here so we can handle live updates when someone calls
-// everything else is handled in site/twilio/ since they won't need live updates
-// var express = require('express');
-// var app = express();
-// app.use(express.bodyParser());
-// app.post('/incomingCall', function(req, res){
-// 	TwilioController.incomingCall(req.body)
-// 	.then(function(twrsp){
-// 		res.type('text/xml');
-//     	res.send(twrsp.toString());
-// 	});
-// });
-// app.listen(2255); // 2255 = call
 
 function playerNameAndNumber(p) {
 	return `#${p.number} ${p.first_name} ${p.last_name}`;

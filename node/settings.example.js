@@ -13,7 +13,8 @@ module.exports = {
 	},
 	twilio: {
 		'sid': 'TWILIO_SID_HERE',
-		'token': 'TWILIO_TOKEN_HERE'
+		'token': 'TWILIO_TOKEN_HERE',
+		'from': '+TWILIO_OUTBOUND_NUMBER'
 	},
 	twitter: {
 		consumer_key: 'TWITTER-CONSUMER-KEY',
