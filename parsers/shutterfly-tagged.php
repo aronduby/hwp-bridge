@@ -397,7 +397,7 @@ if (count($new_photos) > 0) {
             $twitter->statuses_update(['status' => 'We just imported '.count($new_photos).' new photos, check them out at http://HudsonvilleWaterPolo.com' ]);
         } catch(Exception $e){
             $debugger = $twitter->getDebugger();
-            $log->addError('Shutterfly tweet fail', $debugger);
+            $log->addError('Shutterfly tweet fail', [$debugger]);
         }
     } else {
         $log->addNotice('skipping tweet');

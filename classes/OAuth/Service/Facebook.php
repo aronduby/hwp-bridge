@@ -4,8 +4,8 @@ namespace OAuth\Service;
 
 class Facebook extends \OAuth\v2\Service{
 	
-	protected $consumer_key = '382486448483591';
-	protected $consumer_secret = '61d14d47db996be704b2edc6ecbac95e';
+	protected $consumer_key = FACEBOOK_CONSUMER_KEY;
+	protected $consumer_secret = FACEBOOK_CONSUMER_SECRET;
 
 	protected $api_url = 'https://graph.facebook.com/';
 	protected $authorize_url = 'https://www.facebook.com/dialog/oauth';
