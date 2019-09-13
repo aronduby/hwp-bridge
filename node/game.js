@@ -10,6 +10,7 @@ Game.prototype = {
 	season_id: 0,
 	site_id: 0,
 	version: '1.1',
+	us: 'Hudsonville', // TODO -- not hardcoded at some point
 	opponent: null,
 	title: null,
 	team: null,
