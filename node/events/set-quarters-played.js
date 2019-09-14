@@ -1,6 +1,6 @@
 const ordinal = require('../utils/ordinal');
 
-module.exports = function setQuartersPlayed(game, quarters) {
+function setQuartersPlayed(game, quarters) {
     const data = {};
     let period, result,
         post = '.';
@@ -36,4 +36,10 @@ module.exports = function setQuartersPlayed(game, quarters) {
 
 
     return data;
+}
+
+
+module.exports = {
+    event: setQuartersPlayed,
+    symbol: Symbol('setQuartersPlayed')
 };

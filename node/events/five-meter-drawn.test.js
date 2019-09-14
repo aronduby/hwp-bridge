@@ -1,4 +1,4 @@
-const fiveMeterDrawn = require('./five-meter-drawn');
+const fiveMeterDrawn = require('./five-meter-drawn').event;
 
 const game = {
     us: "Hudsonville",

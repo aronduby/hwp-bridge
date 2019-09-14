@@ -1,4 +1,4 @@
-const shot = require('./shot');
+const shot = require('./shot').event;
 
 const game = {
     us: 'Hudsonville',

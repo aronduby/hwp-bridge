@@ -1,4 +1,4 @@
-const goalAllowed = require('./goal-allowed');
+const goalAllowed = require('./goal-allowed').event;
 
 const game = {
     us: "Hudsonville",

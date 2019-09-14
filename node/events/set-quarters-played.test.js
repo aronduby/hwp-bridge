@@ -1,4 +1,4 @@
-const setQuartersPlayed = require('./set-quarters-played');
+const setQuartersPlayed = require('./set-quarters-played').event;
 
 const game = {
     us: 'Hudsonville',

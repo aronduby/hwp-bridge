@@ -1,4 +1,4 @@
-const carded = require('./carded');
+const carded = require('./carded').event;
 
 test('it formats correctly', () => {
     const data = carded({}, "Josh", "yellow");

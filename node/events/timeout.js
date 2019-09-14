@@ -1,22 +1,22 @@
 const ordinal = require('../utils/ordinal');
 
-module.exports = function timeout(game, team, time){
+function timeout(game, team, time) {
     let timeLeft, period;
 
-    if(time.minutes === undefined && time.seconds !== undefined){
+    if (time.minutes === undefined && time.seconds !== undefined) {
         timeLeft = `${time.seconds} second${(time.seconds > 1 ? `s` : ``)}`;
-    } else if (time.minutes !== undefined){
+    } else if (time.minutes !== undefined) {
         timeLeft = time.minutes;
 
-        if(time.seconds !== undefined){
+        if (time.seconds !== undefined) {
             timeLeft = `${timeLeft}:${time.seconds}`;
         } else {
             timeLeft = `${timeLeft} minute${(time.minutes > 1 ? `s` : ``)}`;
         }
     }
 
-    if(time.minutes !== undefined || time.seconds !== undefined){
-        switch(game.quarters_played){
+    if (time.minutes !== undefined || time.seconds !== undefined) {
+        switch (game.quarters_played) {
             case 0:
                 period = 'the 1st quarter';
                 break;
@@ -40,4 +40,10 @@ module.exports = function timeout(game, team, time){
     return {
         msg: `${team} Time Out, ${timeLeft} left in ${period}`
     };
+}
+
+
+module.exports = {
+    event: timeout,
+    symbol: Symbol('timeout')
 };

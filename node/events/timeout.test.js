@@ -1,4 +1,4 @@
-const timeout = require('./timeout');
+const timeout = require('./timeout').event;
 
 const game = {
     us: 'Hudsonville',
