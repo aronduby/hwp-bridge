@@ -1,6 +1,6 @@
 const nameAndNumber = require('../utils/player-name-and-number');
 
-function shootOutThem(game, number, made) {
+module.exports = function shootOutThem(game, number, made) {
     const data = {};
 
     switch (made) {
@@ -21,10 +21,4 @@ function shootOutThem(game, number, made) {
     }
 
     return data;
-}
-
-
-module.exports = {
-    event: shootOutThem,
-    symbol: Symbol('shootOutThem')
 };

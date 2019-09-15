@@ -1,7 +1,7 @@
 const nameAndNumber = require('../utils/player-name-and-number');
 const ordinal = require('../utils/ordinal');
 
-function sprint(game, player, won) {
+module.exports = function sprint(game, player, won) {
     const data = {};
 
     data.msg = 'Start of ';
@@ -33,10 +33,4 @@ function sprint(game, player, won) {
     }
 
     return data;
-}
-
-
-module.exports = {
-    event: sprint,
-    symbol: Symbol('sprint')
 };

@@ -1,4 +1,4 @@
-const kickout = require('./kickout').event;
+const kickout = require('./kickout');
 
 const game = {
     us: 'Hudsonville',

@@ -2,7 +2,7 @@ const ordinal = require('../utils/ordinal');
 const oxford = require('../utils/oxford');
 const nameAndNumber = require('../utils/player-name-and-number');
 
-function shot(game, player, made, assist) {
+module.exports = function shot(game, player, made, assist) {
     if (made === true) {
         const data = {};
 
@@ -37,10 +37,4 @@ function shot(game, player, made, assist) {
     }
 
     return false;
-}
-
-
-module.exports = {
-    event: shot,
-    symbol: Symbol('shot')
 };

@@ -1,6 +1,6 @@
 const nameAndNumber = require('../utils/player-name-and-number');
 
-function fiveMeterDrawn(game, drawn_by_key, taken_by_key, made) {
+module.exports = function fiveMeterDrawn(game, drawn_by_key, taken_by_key, made) {
     if (made === true || made === 'made') {
         const data = {},
             drawnBy = game.stats[drawn_by_key],
@@ -18,10 +18,4 @@ function fiveMeterDrawn(game, drawn_by_key, taken_by_key, made) {
 
     // todo - maybe add a miss? that would suck for the player but is important overall...
     return false;
-}
-
-
-module.exports = {
-    event: fiveMeterDrawn,
-    symbol: Symbol('fiveMeterDrawn')
 };

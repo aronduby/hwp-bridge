@@ -1,4 +1,4 @@
-const shout = require('./shout').event;
+const shout = require('./shout');
 
 test('it shouts', function() {
     const was = 'Hello world!';

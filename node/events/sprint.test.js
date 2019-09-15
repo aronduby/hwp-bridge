@@ -1,4 +1,4 @@
-const sprint = require('./sprint').event;
+const sprint = require('./sprint');
 
 const game = {
     us: 'Hudsonville',

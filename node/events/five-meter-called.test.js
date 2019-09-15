@@ -1,4 +1,4 @@
-const fiveMeterCalled = require('./five-meter-called').event;
+const fiveMeterCalled = require('./five-meter-called');
 
 const game = {
     us: "Hudsonville",

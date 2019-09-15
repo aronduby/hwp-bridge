@@ -1,4 +1,4 @@
-function final(game) {
+module.exports = function final(game) {
     let result;
 
     if (game.score[0] > game.score[1]) {
@@ -12,10 +12,4 @@ function final(game) {
     return {
         msg: `Final Result - ${game.us} ${result} ${game.opponent}`
     };
-}
-
-
-module.exports = {
-    event: final,
-    symbol: Symbol('final')
 };

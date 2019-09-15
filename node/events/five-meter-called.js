@@ -1,6 +1,6 @@
 const nameAndNumber = require('../utils/player-name-and-number');
 
-function fiveMeterCalled(game, called_on, taken_by, made) {
+module.exports = function fiveMeterCalled(game, called_on, taken_by, made) {
     const data = {};
 
     if (made === true || made === 'made') {
@@ -13,10 +13,4 @@ function fiveMeterCalled(game, called_on, taken_by, made) {
     }
 
     return data;
-}
-
-
-module.exports = {
-    event: fiveMeterCalled,
-    symbol: Symbol('fiveMeterCalled')
 };

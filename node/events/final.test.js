@@ -1,4 +1,4 @@
-const final = require('./final').event;
+const final = require('./final');
 
 const game = {
     us: "Hudsonville",
