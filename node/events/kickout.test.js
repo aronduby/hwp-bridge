@@ -1,6 +1,6 @@
 const kickout = require('./kickout');
 
-const game = {
+const game = Object.freeze({
     us: 'Hudsonville',
     stats: {
         'PatrickTutt': {
@@ -10,7 +10,7 @@ const game = {
             kickouts: 1
         }
     }
-};
+});
 
 test('formatting', () => {
     let {msg} = kickout(game, 'PatrickTutt');

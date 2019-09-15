@@ -139,9 +139,8 @@ test('add to box score', () => {
 test('final just emits', () => {
     game.final();
 
-    expect(mockEmit.mock.calls.length).toBe(1);
-    expect(mockEmit.mock.calls[0][0]).toBe('final');
-    expect(mockEmit.mock.calls[0][1].length).toBe(0);
+    expect(mockEmit).toBeCalledTimes(1);
+    expect(mockEmit).toBeCalledWith(game.data, 'final', []);
 });
 
 describe('shot', () => {
@@ -181,7 +180,7 @@ describe('shot', () => {
         });
         it('calls emit', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('shot', [nameKeys.Ian, true]);
+            expect(mockEmit).toBeCalledWith(game.data, 'shot', [nameKeys.Ian, true]);
         });
     });
 
@@ -201,7 +200,7 @@ describe('shot', () => {
         });
         it('calls emit', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('shot', [nameKeys.Ian, false]);
+            expect(mockEmit).toBeCalledWith(game.data, 'shot', [nameKeys.Ian, false]);
         });
     });
 
@@ -230,7 +229,7 @@ describe('shot', () => {
         });
         it('calls emit', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('shot', [nameKeys.Ian, true, nameKeys.Chandler]);
+            expect(mockEmit).toBeCalledWith(game.data, 'shot', [nameKeys.Ian, true, nameKeys.Chandler]);
         });
     });
 
@@ -265,7 +264,7 @@ describe('shot', () => {
         });
         it('calls emit', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('shot', [nameKeys.Ian, true]);
+            expect(mockEmit).toBeCalledWith(game.data, 'shot', [nameKeys.Ian, true]);
         });
     });
 
@@ -276,7 +275,7 @@ test('steal', () => {
     game.steal(nameKeys.Chandler);
     expect(game.stats[nameKeys.Chandler].steals).toBe(2);
     expect(mockEmit).toBeCalledTimes(2);
-    expect(mockEmit).toBeCalledWith('steal', [nameKeys.Chandler]);
+    expect(mockEmit).toBeCalledWith(game.data, 'steal', [nameKeys.Chandler]);
 });
 
 test('turnover', () => {
@@ -284,7 +283,7 @@ test('turnover', () => {
     game.turnover(nameKeys.Chandler);
     expect(game.stats[nameKeys.Chandler].turnovers).toBe(2);
     expect(mockEmit).toBeCalledTimes(2);
-    expect(mockEmit).toBeCalledWith('turnover', [nameKeys.Chandler]);
+    expect(mockEmit).toBeCalledWith(game.data, 'turnover', [nameKeys.Chandler]);
 });
 
 test('block', () => {
@@ -292,7 +291,7 @@ test('block', () => {
     game.block(nameKeys.Chandler);
     expect(game.stats[nameKeys.Chandler].blocks).toBe(2);
     expect(mockEmit).toBeCalledTimes(2);
-    expect(mockEmit).toBeCalledWith('block', [nameKeys.Chandler]);
+    expect(mockEmit).toBeCalledWith(game.data, 'block', [nameKeys.Chandler]);
 });
 
 describe('kickout', () => {
@@ -312,7 +311,7 @@ describe('kickout', () => {
     });
     it('calls emit', () => {
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('kickout', [nameKeys.Chandler]);
+        expect(mockEmit).toBeCalledWith(game.data, 'kickout', [nameKeys.Chandler]);
     });
 });
 
@@ -337,7 +336,7 @@ describe('kickoutDrawn', () => {
     });
     it('calls emit', () => {
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('kickoutDrawn', [nameKeys.Ian]);
+        expect(mockEmit).toBeCalledWith(game.data, 'kickoutDrawn', [nameKeys.Ian]);
     });
 });
 
@@ -349,7 +348,7 @@ describe('kickoutOver', () => {
         expect(game.kickouts[0].length).toBe(1);
         expect(game.kickouts[0][0]).toBe(nameKeys.Chandler);
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('kickoutOver', [nameKeys.Ian]);
+        expect(mockEmit).toBeCalledWith(game.data, 'kickoutOver', [nameKeys.Ian]);
     });
 
     test('over for them', () => {
@@ -359,7 +358,7 @@ describe('kickoutOver', () => {
         expect(game.kickouts[1].length).toBe(1);
         expect(game.kickouts[1][0]).toBe(2);
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('kickoutOver', [false]);
+        expect(mockEmit).toBeCalledWith(game.data, 'kickoutOver', [false]);
     });
 });
 
@@ -378,7 +377,7 @@ test('save', () => {
 
     expect(game.stats[nameKeys.Eli].saves).toBe(1);
     expect(mockEmit).toBeCalledTimes(1);
-    expect(mockEmit).toBeCalledWith('save', []);
+    expect(mockEmit).toBeCalledWith(game.data, 'save', []);
 });
 
 describe('goalAllowed', () => {
@@ -395,7 +394,7 @@ describe('goalAllowed', () => {
         });
         it('emits', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('goalAllowed', ['5']);
+            expect(mockEmit).toBeCalledWith(game.data, 'goalAllowed', ['5']);
         })
     });
 
@@ -422,7 +421,7 @@ describe('sprint', () => {
         expect(game.stats[nameKeys.Eli].sprints_taken).toBe(1);
         expect(game.stats[nameKeys.Eli].sprints_won).toBe(1);
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('sprint', [nameKeys.Eli, true]);
+        expect(mockEmit).toBeCalledWith(game.data, 'sprint', [nameKeys.Eli, true]);
     });
 
     test('lost', () => {
@@ -431,7 +430,7 @@ describe('sprint', () => {
         expect(game.stats[nameKeys.Eli].sprints_taken).toBe(1);
         expect(game.stats[nameKeys.Eli].sprints_won).toBe(0);
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('sprint', [nameKeys.Eli, false]);
+        expect(mockEmit).toBeCalledWith(game.data, 'sprint', [nameKeys.Eli, false]);
     });
 });
 
@@ -467,7 +466,7 @@ describe('fiveMeterDrawn', () => {
 
         it('emits', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('fiveMeterDrawn', [drawnBy, takenBy, made]);
+            expect(mockEmit).toBeCalledWith(game.data, 'fiveMeterDrawn', [drawnBy, takenBy, made]);
         });
     });
 });
@@ -520,7 +519,7 @@ describe('fiveMeterCalled', () => {
 
         it('emits', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('fiveMeterCalled', [player, takenBy, made]);
+            expect(mockEmit).toBeCalledWith(game.data, 'fiveMeterCalled', [player, takenBy, made]);
         });
     });
 });
@@ -558,7 +557,7 @@ describe('shootOutUs', () => {
 
         it('emits', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('shootOutUs', [takenBy, made]);
+            expect(mockEmit).toBeCalledWith(game.data, 'shootOutUs', [takenBy, made]);
         });
     });
 });
@@ -600,7 +599,7 @@ describe('shootOutThem', () => {
 
         it('emits', () => {
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('shootOutThem', [takenBy, made]);
+            expect(mockEmit).toBeCalledWith(game.data, 'shootOutThem', [takenBy, made]);
         });
     });
 });
@@ -610,7 +609,7 @@ test('changeGoalie', () => {
 
     expect(game.goalie).toBe(nameKeys.Ian);
     expect(mockEmit).toBeCalledTimes(1);
-    expect(mockEmit).toBeCalledWith('changeGoalie', [nameKeys.Ian]);
+    expect(mockEmit).toBeCalledWith(game.data, 'changeGoalie', [nameKeys.Ian]);
 });
 
 test('setStatus', () => {
@@ -619,7 +618,7 @@ test('setStatus', () => {
 
     expect(game.status).toBe(status);
     expect(mockEmit).toBeCalledTimes(1);
-    expect(mockEmit).toBeCalledWith('setStatus', [status]);
+    expect(mockEmit).toBeCalledWith(game.data, 'setStatus', [status]);
 });
 
 describe('setQuarterPlayed', () => {
@@ -638,7 +637,7 @@ describe('setQuarterPlayed', () => {
 
     it('emits', () => {
         expect(mockEmit).toBeCalledTimes(1);
-        expect(mockEmit).toBeCalledWith('setQuartersPlayed', [4]);
+        expect(mockEmit).toBeCalledWith(game.data, 'setQuartersPlayed', [4]);
     })
 
 });
@@ -653,7 +652,7 @@ describe('timeout', () => {
 
             let team = us ? game.us : game.opponent;
             expect(mockEmit).toBeCalledTimes(1);
-            expect(mockEmit).toBeCalledWith('timeout', [team, time]);
+            expect(mockEmit).toBeCalledWith(game.data, 'timeout', [team, time]);
         });
     });
 });
@@ -664,7 +663,7 @@ test('carded', () => {
 
     game.carded(recipient, color);
     expect(mockEmit).toBeCalledTimes(1);
-    expect(mockEmit).toBeCalledWith('carded', [recipient, color]);
+    expect(mockEmit).toBeCalledWith(game.data, 'carded', [recipient, color]);
 });
 
 test('shout', () => {
@@ -672,7 +671,7 @@ test('shout', () => {
 
     game.shout(msg);
     expect(mockEmit).toBeCalledTimes(1);
-    expect(mockEmit).toBeCalledWith('shout', [msg]);
+    expect(mockEmit).toBeCalledWith(game.data, 'shout', [msg]);
 });
 
 describe('updatePlayers', () => {

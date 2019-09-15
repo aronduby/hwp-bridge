@@ -29,7 +29,7 @@ const game = {
 };
 
 beforeEach(() => {
-    game.kickouts_drawn_by = []
+    game.kickouts_drawn_by = [];
 });
 
 test('not made returns false', () => {

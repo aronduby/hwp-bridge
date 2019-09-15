@@ -304,11 +304,12 @@ io.sockets.on('connection', function(socket){
 			});
 	});
 
+	// this is our main function between the app and here
 	socket.on('update', function(func, args, cb){
 		if(socket.is_controller){
 			try{
 				console.log("Controller sent update", func, args);
-				if(func in game && func[0]!='_') {
+				if(func in game && func[0] !== '_') {
 					game[func].apply(game, args);
 				}
 			} catch(e){
@@ -317,7 +318,6 @@ io.sockets.on('connection', function(socket){
 				console.log('>>> end of error stack');
 				cb(e.message);
 			}
-
 
 			// json encode and save the game to the database
 			var tmp = extend({}, game);

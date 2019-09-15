@@ -1,6 +1,6 @@
 const shootOutThem = require('./shoot-out-them');
 
-const game = {
+const game = Object.freeze({
     us: "Hudsonville",
     opponent: "Rockford",
     goalie: 'ElijahBoonstra',
@@ -11,7 +11,7 @@ const game = {
             last_name: 'Boonstra'
         }
     }
-};
+});
 
 test('true', function() {
    const {msg} = shootOutThem(game, '5', true);

@@ -1,9 +1,9 @@
 const goalAllowed = require('./goal-allowed');
 
-const game = {
+const game = Object.freeze({
     us: "Hudsonville",
     opponent: "Rockford"
-};
+});
 
 test('no number formats correctly', () => {
     let {msg} = goalAllowed(game);

@@ -1,11 +1,15 @@
-module.exports = require('require-dir')('.', {
-    // skip test files
-    filter: function (fullPath) {
-        return !fullPath.match(/\.test\.js$/);
-    },
-
-    // keys are camelCased
-    mapKey: function(val, baseName) {
-        return baseName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); })
-    }
-});
+module.exports = {
+    carded: require('./carded'),
+    final: require('./final'),
+    fiveMeterCalled: require('./five-meter-called'),
+    fiveMeterDrawn: require('./five-meter-drawn'),
+    goalAllowed: require('./goal-allowed'),
+    kickout: require('./kickout'),
+    setQuartersPlayed: require('./set-quarters-played'),
+    shootOutThem: require('./shoot-out-them'),
+    shootOutUs: require('./shoot-out-us'),
+    shot: require('./shot'),
+    shout: require('./shout'),
+    sprint: require('./sprint'),
+    timeout: require('./timeout'),
+};

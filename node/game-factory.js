@@ -1,37 +1,3 @@
-let emitter = function emitter(method, args) {
-    console.log('EMIT', method, args);
-};
-
-// proxies calls to game.data so its easier to work with
-const gameDataHandler = {
-    get: function (target, prop, receiver) {
-        if (target.data.hasOwnProperty(prop)) {
-            return target.data[prop];
-        } else {
-            return Reflect.get(...arguments);
-        }
-    },
-    set: function (target, prop, val, receiver) {
-        if (target.data.hasOwnProperty(prop)) {
-            target.data[prop] = val;
-        } else {
-            return Reflect.set(...arguments);
-        }
-    }
-};
-
-// Export the factory methods
-module.exports = {
-    setEmitter: function (fnc) {
-        emitter = fnc;
-    },
-
-    get: function (gameId) {
-        const g = new Game(gameId, emitter);
-        return new Proxy(g, gameDataHandler);
-    }
-};
-
 /**
  * An object containing player stats
  * @typedef {object} PlayerStats
@@ -75,6 +41,70 @@ module.exports = {
  * @property {int} goals -
  */
 
+/**
+ * @typedef {object} AdvantageConversion
+ * @property {int} drawn - 0, number of advantages drawn
+ * @property {int} converted - 0, number of advantages converted
+ */
+
+/**
+ * Game data structure
+ * @typedef {object} GameData
+ * @property {int} game_id - the id field for the game
+ * @property {int} season_id - id field for the season
+ * @property {int} site_id - id field for the site
+ * @property {?string} version - @deprecated - '1.1', string that describes the version of the format, not used anymore
+ * @property {string} us - 'Hudsonville', the name of our team
+ * @property {?string} opponent - the name of the opposing team
+ * @property {?string} title - title of the game, if null will default to `Game against ${opponent}`
+ * @property {?'V','JV'} team - string of which team is playing
+ * @property {?'start'|'quarter'|'final'|'shootout'} status - status of the game, used in menus and the like
+ * @property {int} quarters_played - 0, how many quarters have been played? basically 0-based index of quarter
+ * @property {object<string, PlayerStats>} stats - dictionary of player stats with key of name_key
+ * @property {?string} goalie - name_key of who's in goal
+ * @property {array<{AdvantageConversion}>} advantage_conversion - 0 is us, 1 is opponent
+ * @property {array<array<string>>} kickouts - array of strings of people kicked out, 0 is us, 1 is opponent
+ * @property {array<string>} kickouts_drawn_by - array of our players who have a kickout currently drawn
+ * @property {array<array<object.<string, int>>>} boxscore - array representing box scores, 0 is us, 1 is opponent, next level is quarters which contain nameKeys string and goal count val
+ * @property {array<int>}score - current score, 0 is us, 1 is opponent
+ */
+
+
+
+// Export the factory methods
+module.exports = {
+    setEmitter: function (fnc) {
+        emitter = fnc;
+    },
+
+    get: function (gameId) {
+        const g = new Game(gameId, emitter);
+        return new Proxy(g, gameDataHandler);
+    }
+};
+
+let emitter = function emitter(method, args) {
+    console.log('EMIT', method, args);
+};
+
+// proxies calls to game.data so its easier to work with
+const gameDataHandler = {
+    get: function (target, prop, receiver) {
+        if (target.data.hasOwnProperty(prop)) {
+            return target.data[prop];
+        } else {
+            return Reflect.get(...arguments);
+        }
+    },
+    set: function (target, prop, val, receiver) {
+        if (target.data.hasOwnProperty(prop)) {
+            target.data[prop] = val;
+        } else {
+            return Reflect.set(...arguments);
+        }
+    }
+};
+
 function Game(game_id, emitter) {
     this.game_id = this.data.game_id = game_id;
     this.loaded = false;
@@ -82,6 +112,7 @@ function Game(game_id, emitter) {
 }
 
 Game.prototype = {
+    /** @type GameData */
     data: {
         game_id: 0,
         season_id: 0,
@@ -93,7 +124,6 @@ Game.prototype = {
         team: null,
         status: null,
         quarters_played: 0,
-        /** @var {Object.<string, PlayerStats>} stats */
 		stats: {},
         goalie: null,
         advantage_conversion: [
@@ -109,7 +139,7 @@ Game.prototype = {
     updates: [],
 
     emit: function (method, ...args) {
-        this.emitter(method, args);
+        this.emitter(Object.freeze(this.data), method, args);
     },
 
 	/**
@@ -310,15 +340,15 @@ Game.prototype = {
 
 	/**
 	 * Our player was called for a 5 meter
-	 * @param {string} player - name key of the player that it was called on
+	 * @param {string} called_on - name key of the player that it was called on
 	 * @param {string} taken_by - opponent's player that took the shot
 	 * @param {boolean|'made'|'blocked'|'missed'} made - true or 'made' if they scored; false or 'blocked' if the goalie stopped it, 'missed' if they missed
 	 */
-	fiveMeterCalled: function (player, taken_by, made) {
+	fiveMeterCalled: function (called_on, taken_by, made) {
 		const data = this.data;
 
-        data.stats[player].five_meters_called++;
-        data.stats[player].kickouts++;
+        data.stats[called_on].five_meters_called++;
+        data.stats[called_on].kickouts++;
         data.stats[data.goalie].five_meters_taken_on++;
 
         switch (made) {

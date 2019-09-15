@@ -1,6 +1,6 @@
 const fiveMeterDrawn = require('./five-meter-drawn');
 
-const game = {
+const game = Object.freeze({
     us: "Hudsonville",
     opponent: "Rockford",
     stats: {
@@ -15,7 +15,7 @@ const game = {
             last_name: 'Jones'
         }
     }
-};
+});
 
 test('missed returns false', () => {
     expect(fiveMeterDrawn(game, 'JohnDirkse', 'ChandlerJones', false));

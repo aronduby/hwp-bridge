@@ -1,6 +1,6 @@
 const fiveMeterCalled = require('./five-meter-called');
 
-const game = {
+const game = Object.freeze({
     us: "Hudsonville",
     opponent: "Rockford",
     goalie: 'ElijahBoonstra',
@@ -11,7 +11,7 @@ const game = {
             last_name: 'Boonstra'
         }
     }
-};
+});
 
 test('formats made correctly', () => {
     const calledOn = null;

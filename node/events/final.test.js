@@ -1,9 +1,9 @@
 const final = require('./final');
 
-const game = {
+const game = Object.freeze({
     us: "Hudsonville",
     opponent: "Rockford"
-};
+});
 
 test('formats wins', function() {
     const data = final({
