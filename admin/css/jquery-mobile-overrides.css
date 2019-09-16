@@ -18,3 +18,14 @@
     font-weight: normal;
     font-size: .85em;
 }
+
+/* list form helpers, include .ui-li-desc */
+li.ui-field-contain .helper-text {
+    width: 60%;
+    margin-left: 22%;
+    margin-top: 5px;
+    margin-bottom: 0;
+    overflow: unset;
+    text-shadow: none;
+    color: #666;
+}

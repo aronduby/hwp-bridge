@@ -26,6 +26,7 @@ if(!empty($_POST)){
 				start = ".$dbh->quote($start).",
 				end = ".$dbh->quote($end).",
 				result = ".$dbh->quote($_POST['result']).",
+				album_id = ".$dbh->quote($_POST['album_id']).",
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
 				id = VALUES(id),
@@ -37,6 +38,7 @@ if(!empty($_POST)){
 				start = VALUES(start),
 				end = VALUES(end),
 				result = VALUES(result),
+				album_id = VALUES(album_id),
 				updated_at = NOW(),
 				id=LAST_INSERT_ID(id)";
 
@@ -123,6 +125,20 @@ require '_pre.php';
 					<label for="t-result">Result:</label>
 		        	<input type="text" name="result" id="t-result" placeholder="result" value="<?php echo $tournament->result ?>" />
 				</li>
+
+                <li data-role="fieldcontain">
+                    <label for="g-album_id">Photo Album:</label>
+                    <select name="album_id" id="g-album_id" data-theme="d">
+                        <option value=""></option>
+                        <?php
+                        $dbh = PDODB::getInstance();
+                        $albums = $dbh->query("SELECT id, title FROM albums WHERE season_id=".intval($season->id)." ORDER BY title")->fetchAll(PDO::FETCH_KEY_PAIR);
+                        foreach($albums as $id=>$title){
+                            print '<option value="'.$id.'" '.($id==$tournament->album_id?'selected="selected"':'').'>'.$title.'</option>';
+                        }
+                        ?>
+                    </select>
+                </li>
 
 
 				<li data-role="fieldcontain">

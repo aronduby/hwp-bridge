@@ -89,7 +89,11 @@ if(!empty($_POST)){
         $game->tournament_id = $_GET['tournament_id'];
         $tournament = new Tournament($_GET['tournament_id'], PDODB::getInstance());
     } else {
-        $tournament = false;
+	    if ($game->tournament_id) {
+            $tournament = new Tournament($game->tournament_id, PDODB::getInstance());
+        } else {
+            $tournament = false;
+        }
     }
 }
 
@@ -206,6 +210,12 @@ require '_pre.php';
 			        	}
 			        	?>
 		        	</select>
+                    <?php
+                    if ($tournament && $tournament->album_id) {
+                        $album = $albums[$tournament->album_id];
+                        print '<p class="helper-text ui-li-desc">tournament album: <strong>'.$album.'</strong></p>';
+                    }
+                    ?>
 				</li>
 
 

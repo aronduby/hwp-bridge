@@ -13,6 +13,7 @@ class Tournament {
 	public $end;
 	public $result;
 	public $note;
+	public $album_id;
 
 	public $location;
 	public $games;
@@ -62,6 +63,12 @@ class Tournament {
 		return (bool)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
 	}
 
+    public function getPhotoAlbum(){
+        if(isset($this->album_id))
+            return new PhotoAlbum($this->album_id, $this->dbh);
+        else
+            return false;
+    }
 }
 
 ?>
