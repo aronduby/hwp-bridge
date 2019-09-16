@@ -164,6 +164,7 @@ describe('events are emitted', () => {
         it('should called broadcaster based on the return value', () => {
             if (mockEvents[e].mock.results[0].value !== false) {
                 expect(mockBroadcaster).toBeCalledTimes(1);
+                expect(mockBroadcaster.mock.calls[0][0]).toBe(game.data);
             } else {
                 expect(mockBroadcaster).not.toBeCalled();
             }

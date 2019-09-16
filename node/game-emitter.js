@@ -50,7 +50,7 @@ class GameEmitter {
             const rsp = this.listeners[key].apply(null, send);
 
             if (rsp && this.broadcaster) {
-                this.broadcaster(rsp);
+                this.broadcaster(gameData, rsp);
             }
         }
     }
@@ -59,6 +59,7 @@ class GameEmitter {
 /**
  * Broadcaster callback
  * @callback GameEmitter~broadcaster
+ * @param {GameData} gameData - the data for the emitting game
  * @param {object} data
  * @param {string} data.msg - message from the event function
  */
