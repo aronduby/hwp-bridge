@@ -1,10 +1,14 @@
-const EventEmitter = require('events');
 const eventListeners = require('./events');
 
-class GameEmitter extends EventEmitter {
+/**
+ * @class
+ */
+class GameEmitter {
 
     constructor() {
-        super();
+
+        this.listeners = {};
+        this.broadcaster = null;
 
         this.bindEventListeners(eventListeners);
     }
@@ -15,11 +19,23 @@ class GameEmitter extends EventEmitter {
      * @param {object<string, function>} listeners - object where keys are string events names with listeners for value
      */
     bindEventListeners(listeners) {
-        Object.keys(listeners).forEach(key => {
-            this.on(key, listeners[key]);
-        });
+        this.listeners = listeners;
     }
 
+    /**
+     * Removes all of the currently bound listeners
+     */
+    removeAllListeners() {
+        this.listeners = {};
+    }
+
+    /**
+     * Sets the broadcaster function that is called after an event is processed
+     * @param {GameEmitter~broadcaster} fn - the broadcaster for the events
+     */
+    setBroadcaster(fn) {
+        this.broadcaster = fn;
+    }
 
     /**
      * Gets passed to the game as the emitter
@@ -28,10 +44,23 @@ class GameEmitter extends EventEmitter {
      * @param {string} key - the event that was triggers
      * @param {array} args - array of arguments passed through
      */
-    trigger(gameData, key, args) {
-        const send = [gameData, ...args];
-        this.emit(key, ...send);
+    emit(gameData, key, args) {
+        if (this.listeners.hasOwnProperty(key)) {
+            const send = [gameData, ...args];
+            const rsp = this.listeners[key].apply(null, send);
+
+            if (rsp && this.broadcaster) {
+                this.broadcaster(rsp);
+            }
+        }
     }
 }
+
+/**
+ * Broadcaster callback
+ * @callback GameEmitter~broadcaster
+ * @param {object} data
+ * @param {string} data.msg - message from the event function
+ */
 
 module.exports = GameEmitter;

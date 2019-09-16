@@ -75,21 +75,12 @@ const baseData = {
     "id": 0,
 };
 
-let game, gameEmitter, mockEvents;
+let game, gameEmitter, mockEvents, mockBroadcaster;
 
 // create a new game at the beginning
 beforeAll(() => {
     gameEmitter = new GameEmitter();
-    // it auto-binds the actual events, so undo that here
-    // then add mocks for all of them
-    gameEmitter.removeAllListeners();
-    mockEvents = Object.keys(events).reduce((acc, key) => {
-        acc[key] = jest.fn();
-        return acc;
-    }, {});
-    gameEmitter.bindEventListeners(mockEvents);
-    gameFactory.setEmitter(gameEmitter.trigger.bind(gameEmitter));
-
+    gameFactory.setEmitter(gameEmitter.emit.bind(gameEmitter));
 
     game = gameFactory.get(1);
     game.data = {
@@ -125,28 +116,57 @@ beforeAll(() => {
     game.data.goalie = nameKeys.Eli;
 });
 
+const cases = [
+    ['carded', ['Josh', 'yellow'], null, true],
+    ['final', [], null, true],
+    ['fiveMeterCalled', [nameKeys.Chandler, '5', true], null, true],
+    ['fiveMeterDrawn', [nameKeys.Ian, nameKeys.Chandler, true], null, true],
+    ['goalAllowed', ['5'], null, true],
+    ['kickout', [nameKeys.Chandler], null, true],
+    ['setQuartersPlayed', [1], null, true],
+    ['shootOutThem', ['5', false], null, true],
+    ['shootOutUs', [nameKeys.Chandler, true], null, true],
+    ['shot', [nameKeys.Ian, true, nameKeys.Chandler], null, true],
+    ['shot', [nameKeys.Ian, false], null, false],
+    ['shout', ['Hello World!'], null, true],
+    ['sprint', [nameKeys.Eli, true], null, true],
+    ['timeout', [true, {seconds: 3}], ['Hudsonville', {seconds: 3}], true],
+];
+
 describe('events are emitted', () => {
-    test.each([
-        ['carded', ['Josh', 'yellow'], null],
-        ['final', [], null],
-        ['fiveMeterCalled', [nameKeys.Chandler, '5', true], null],
-        ['fiveMeterDrawn', [nameKeys.Ian, nameKeys.Chandler, true], null],
-        ['goalAllowed', ['5'], null],
-        ['kickout', [nameKeys.Chandler], null],
-        ['setQuartersPlayed', [1], null],
-        ['shootOutThem', ['5', false], null],
-        ['shootOutUs', [nameKeys.Chandler, true], null],
-        ['shot', [nameKeys.Ian, true, nameKeys.Chandler], null],
-        ['shout', ['Hello World!'], null],
-        ['sprint', [nameKeys.Eli, true], null],
-        ['timeout', [true, {seconds: 3}], ['Hudsonville', {seconds: 3}]],
-    ])('%s', (e, args, rsp) => {
-        rsp = rsp || args;
+    describe.each(cases)('%s', (e, args, rsp, mockedReturn) => {
 
-        game[e].apply(game, args);
-        rsp = [game.data, ...rsp];
+        beforeEach(() => {
+            // it auto-binds the actual events, so undo that here
+            // then add mocks for all of them
+            mockEvents = Object.keys(events).reduce((acc, key) => {
+                acc[key] = jest.fn();
+                return acc;
+            }, {});
+            gameEmitter.removeAllListeners();
+            gameEmitter.bindEventListeners(mockEvents);
 
-        expect(mockEvents[e]).toBeCalledTimes(1);
-        expect(mockEvents[e]).toBeCalledWith(...rsp);
+            mockBroadcaster = jest.fn();
+            gameEmitter.setBroadcaster(mockBroadcaster);
+
+            mockEvents[e].mockReturnValue(mockedReturn);
+
+            rsp = rsp || args;
+            game[e].apply(game, args);
+            rsp = [game.data, ...rsp];
+        });
+
+        it('should emit the events', () => {
+            expect(mockEvents[e]).toBeCalledTimes(1);
+            expect(mockEvents[e]).toBeCalledWith(...rsp);
+        });
+
+        it('should called broadcaster based on the return value', () => {
+            if (mockEvents[e].mock.results[0].value !== false) {
+                expect(mockBroadcaster).toBeCalledTimes(1);
+            } else {
+                expect(mockBroadcaster).not.toBeCalled();
+            }
+        });
     });
 });
