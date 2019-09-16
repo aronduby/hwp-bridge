@@ -15,39 +15,19 @@ if(process.argv[2] === 'test')
 console.log('Test Mode:', test_mode);
 
 
-// DATABASE
-var mysql = require('mysql'),
-	db_config = settings.mysql,
-	db_connection = mysql.createConnection(db_config);
-
-db_connection.on('error', function(err) {
-	if (!err.fatal) {
-		return;
-	}
-
-	if (err.code !== 'PROTOCOL_CONNECTION_LOST') {
-		throw err;
-	}
-
-	console.log('Re-connecting lost connection to mysql server: ' + err.stack);
-
-	db_connection = mysql.createConnection(db_connection.config);
-	handleDisconnect(db_connection);
-	db_connection.connect();
-});
-
+// DATABASE CONNECTION POOL
+const db = require('./db')(settings.mysql);
 
 // BROADCASTERS
-var mids = require('./middleware');
+const mids = require('./middleware');
 
-var TwitterBroadcaster = new (require('./broadcasters/twitter'))(settings.twitter, test_mode);
+const TwitterBroadcaster = new (require('./broadcasters/twitter'))(settings.twitter, test_mode);
 TwitterBroadcaster
 	.use(mids.isDefined)
 	.use(mids.messageWithScore)
 	.use(mids.prefixJV);
 
-var dbConnector = function() { return mysql.createConnection(db_config); };
-var TwilioBroadcaster = new (require('./broadcasters/twilio'))(settings.twilio, dbConnector, test_mode);
+const TwilioBroadcaster = new (require('./broadcasters/twilio'))(settings.twilio, db, test_mode);
 TwilioBroadcaster
 	.use(mids.isDefined)
 	.use(mids.messageWithScore)
@@ -446,28 +426,3 @@ io.sockets.on('connection', function(socket){
 	});
 
 });
-
-function playerNameAndNumber(p) {
-	return `#${p.number} ${p.first_name} ${p.last_name}`;
-}
-
-function getOrdinal(n) {
-   var s=["th","st","nd","rd"],
-       v=n%100;
-   return n+(s[(v-20)%10]||s[v]||s[0]);
-}
-
-// make a list in the Oxford comma style (eg "a, b, c, and d")
-// Examples with conjunction "and":
-// ["a"] -> "a"
-// ["a", "b"] -> "a and b"
-// ["a", "b", "c"] -> "a, b, and c"
-function oxford(arr, conjunction, ifEmpty){
-	var l = arr.length;
-	if (!l) return ifEmpty;
-	if (l<2) return arr[0];
-	if (l<3) return arr.join(` ${conjunction} `);
-	arr = arr.slice();
-	arr[l-1] = `${conjunction} ${arr[l-1]}`;
-	return arr.join(", ");
-}

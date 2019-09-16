@@ -3,7 +3,8 @@ module.exports = {
 		host: 'localhost',
 		user: 'hwp',
 		password: 'poiuy098',
-		database: 'hwp'
+		database: 'hwp',
+		connectionLimit: 10
 	},
 	artisanPath: 'D:/web/hwp/artisan',
 	ssl: {

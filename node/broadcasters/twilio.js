@@ -1,63 +1,63 @@
-var Middleware = require('./middleware');
-var testLogger = require('./test-mode-logger');
-var twilio = require('twilio');
+const Middleware = require('./middleware');
+const testLogger = require('./test-mode-logger');
+const twilio = require('twilio');
 
 /**
  * Broadcasts messages over Twilio
- *
- * @extends Middleware
- *
- * @param {object} settings - twilio related settings
- * @param {string} settings.sid - the twilio accounts sid
- * @param {string} settings.token - the twilio account access token
- * @param {string} settings.from - the phone number twilio sends from, needs the + prefix
- * @param {function} dbConnector - function that returns a db connection
- * @param {boolean} testMode - are we in test mode, currently forced to true
- * @constructor
  */
-var TwilioBroadcaster = function(settings, dbConnector, testMode) {
-    Middleware.call(this);
+class TwilioBroadcaster extends Middleware {
 
-    this._dbConnector = dbConnector;
+    /**
+     *
+     * @param {object} settings - twilio related settings
+     * @param {string} settings.sid - the twilio accounts sid
+     * @param {string} settings.token - the twilio account access token
+     * @param {string} settings.from - the phone number twilio sends from, needs the + prefix
+     * @param {Pool} db - mysql pool connection
+     * @param {boolean} testMode - are we in test mode, currently forced to true
+     */
+    constructor(settings, db, testMode) {
+        super();
 
-    // always test mode for now
-    this._testMode = true;
+        this._db = db;
 
-    this._settings = settings;
-    this._twilioClient = new twilio.RestClient(settings.sid, settings.token);
-};
+        // always test mode for now
+        this._testMode = true;
 
-// Derive from Middleware
-TwilioBroadcaster.prototype = Object.create(Middleware.prototype);
-TwilioBroadcaster.prototype.constructor = TwilioBroadcaster;
+        this._settings = settings;
+        this._twilioClient = new twilio.RestClient(settings.sid, settings.token, {});
+    }
 
-TwilioBroadcaster.prototype.broadcast = function(data) {
-    this.go(data, {body: ""}, function(input, output) {
-        if (this._testMode !== true) {
-            var self = this;
-            var db = this._dbConnector();
-            var sql = 'SELECT phone FROM subscriptions WHERE game_id=? OR tournament_id IN (SELECT tournament_id FROM game WHERE game_id=?)';
+    /**
+     * Broadcast the given data, routing through our middleware
+     * @param {object} data - data to use for broadcasting
+     * @param {?object} initialOut - used to supply an initial output with empty body
+     */
+    broadcast(data, initialOut = {body: ""}) {
+        this.go(data, initialOut, function(input, output) {
+            if (this._testMode !== true) {
+                const self = this;
+                const sql = 'SELECT phone FROM subscriptions WHERE game_id=? OR tournament_id IN (SELECT tournament_id FROM game WHERE game_id=?)';
 
-            db.connect();
-            var query = db.query(sql, [input.game_id, input.game_id]);
-            query.on('error', function(err) { console.log(err); })
-                .on('result', function(row) {
-                    self._twilioClient.sendSms({
-                        to: row.phone, // Any number Twilio can deliver to
-                        from: self._settings.from, // A number you bought from Twilio and can use for outbound communication
-                        body: output.body // body of the SMS message
-                    }, function(err, responseData) { //this function is executed when a response is received from Twilio
-                        if (!err) {
-                            console.log("Sent text to " + responseData.to);
-                        }
+                const query = this._db.query(sql, [input.game_id, input.game_id]);
+                query.on('error', function(err) { console.log(err); })
+                    .on('result', function(row) {
+                        self._twilioClient.sendSms({
+                            to: row.phone, // Any number Twilio can deliver to
+                            from: self._settings.from, // A number you bought from Twilio and can use for outbound communication
+                            body: output.body // body of the SMS message
+                        }, function(err, responseData) { //this function is executed when a response is received from Twilio
+                            if (!err) {
+                                console.log("Sent text to " + responseData.to);
+                            }
+                        });
                     });
-                });
-            db.end();
-        } else {
-            testLogger('TWILIO', output.body);
-        }
-    }.bind(this));
-};
+            } else {
+                testLogger('TWILIO', output.body);
+            }
+        }.bind(this));
+    };
+}
 
 module.exports = TwilioBroadcaster;
 

@@ -1,22 +1,24 @@
-var Middleware = function () {};
+class Middleware {
 
-Middleware.prototype.use = function (fn) {
-    this.go = function (stack) {
-        return function (input, output, next) {
-            stack.call(null, input, output, function () {
-                fn.call(null, input, output, function() {
-                    next(input, output);
+    use(fn) {
+        this.go = function (stack) {
+            return function (input, output, next) {
+                stack.call(null, input, output, function () {
+                    fn.call(null, input, output, function() {
+                        next(input, output);
+                    });
                 });
-            });
-        }
-    }(this.go);
+            }
+        }(this.go);
 
-    return this;
-};
+        return this;
+    }
 
-Middleware.prototype.go = function (input, output, next) {
-    next(input, output);
-};
+    go(input, output, next) {
+        next(input, output);
+    }
+
+}
 
 module.exports = Middleware;
 
