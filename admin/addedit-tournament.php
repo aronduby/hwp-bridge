@@ -26,7 +26,7 @@ if(!empty($_POST)){
 				start = ".$dbh->quote($start).",
 				end = ".$dbh->quote($end).",
 				result = ".$dbh->quote($_POST['result']).",
-				album_id = ".$dbh->quote($_POST['album_id']).",
+				album_id = ".(intval($_POST['album_id']) ? $dbh->quote($_POST['album_id']) : "NULL").",
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
 				id = VALUES(id),
