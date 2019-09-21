@@ -5,16 +5,15 @@ const loadPlayers = require('./load-players');
  * Get existing or new data for the given game
  * @param {Pool} pool
  * @param {int} gameId
- * @returns {Promise<GameData, Error>}
+ * @returns {Promise} <GameData, Error>
  */
 function getGameData(pool, gameId) {
     return new Promise((resolve, reject) => {
         // need to (potentially) do multiple queries so get the connection
         pool.getConnection((err, connection) => {
             if (err) {
-                reject(err);
                 connection.release();
-                return;
+                throw err;
             }
 
             getExistingDump(connection, gameId)
@@ -41,7 +40,7 @@ function getGameData(pool, gameId) {
  * Resovles with existing dump data, or rejects
  * @param connection
  * @param gameId
- * @returns {Promise<GameData>}
+ * @returns {Promise} <GameData>
  */
 function getExistingDump(connection, gameId) {
     return new Promise((resolve, reject) => {
@@ -65,7 +64,7 @@ function getExistingDump(connection, gameId) {
  * Queries all of the data to create new GameData
  * @param connection
  * @param gameId
- * @returns {Promise<GameData, Error>}
+ * @returns {Promise} <GameData, Error>
  */
 function createNew(connection, gameId) {
     return Promise.all([
@@ -114,6 +113,11 @@ function createNew(connection, gameId) {
         });
 }
 
+/**
+ * @param connection
+ * @param gameId
+ * @returns {Promise} <{game, players}, Error>
+ */
 function gameAndPlayerData(connection, gameId) {
     return new Promise((resolve, reject) => {
         const sql = "SELECT id AS game_id, site_id, season_id, opponent, team, title_append AS title FROM games WHERE id = ?";
@@ -121,8 +125,7 @@ function gameAndPlayerData(connection, gameId) {
 
         connection.query(sql, params, (err, results) => {
             if (err) {
-                reject(err);
-                return;
+                throw err;
             }
 
             const game = results[0];

@@ -7,18 +7,17 @@ const saveGameState = require('./save-game-state');
  * @param {Pool} pool
  * @param {GameData} gameData
  * @param {array<object>} updates
- * @returns {Promise<true, error>}
+ * @returns {Promise} - boolean, Error
  */
 function finalizeGameData(pool, gameData, updates) {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
            if (err) {
-               reject(err);
                connection.release();
-               return;
+               throw err;
            }
 
-           return Promise.all([
+           Promise.all([
                saveUpdates(connection, gameData, updates),
                saveGameData(connection, gameData),
                saveStatsDump(connection, gameData),
@@ -43,7 +42,7 @@ function finalizeGameData(pool, gameData, updates) {
  * @param {PoolConnection} connection
  * @param {GameData} gameData
  * @param {array<object>} updates
- * @returns {Promise<boolean, Error>}
+ * @returns {Promise} <boolean, Error>
  */
 function saveUpdates(connection, gameData, updates) {
     return new Promise((resolve, reject) => {
@@ -53,8 +52,7 @@ function saveUpdates(connection, gameData, updates) {
         connection.query(sql, params, function(err, result){
             if(err){
                 console.log(err);
-                reject(err);
-                return;
+                throw err;
             }
 
             console.log('Saved updates to database', result);
@@ -67,7 +65,7 @@ function saveUpdates(connection, gameData, updates) {
  * Updates the game fields
  * @param {PoolConnection} connection
  * @param {GameData} gameData
- * @returns {Promise<boolean, Error>}
+ * @returns {Promise} <boolean, Error>
  */
 function saveGameData(connection, gameData) {
     return new Promise((resolve, reject) => {
@@ -77,8 +75,7 @@ function saveGameData(connection, gameData) {
         connection.query(sql, params, (err, result) => {
             if(err){
                 console.log(err);
-                reject(err);
-                return;
+                throw err;
             }
 
             console.log('Saved Score in database', result);
@@ -91,7 +88,7 @@ function saveGameData(connection, gameData) {
  * Saves the data dump and spawns the artisan command to parse it into stats
  * @param {PoolConnection} connection
  * @param {GameData} gameData
- * @returns {Promise<boolean, Error>}
+ * @returns {Promise} <boolean, Error>
  */
 function saveStatsDump(connection, gameData) {
     return saveGameState(connection._pool, gameData)
@@ -107,7 +104,6 @@ function saveStatsDump(connection, gameData) {
                 return true;
             },
             (err) => {
-                console.error(err);
                 throw err;
             }
         );
@@ -117,7 +113,7 @@ function saveStatsDump(connection, gameData) {
  * Inserts an entry into the recent feed
  * @param {PoolConnection} connection
  * @param {GameData} gameData
- * @returns {Promise<boolean, Error>}
+ * @returns {Promise} <boolean, Error>
  */
 function insertRecent(connection, gameData) {
     return new Promise((resolve, reject) => {
@@ -126,9 +122,7 @@ function insertRecent(connection, gameData) {
 
         connection.query(sql, params, (err, result) => {
             if(err){
-                console.error(err);
-                reject(err);
-                return;
+                throw err;
             }
 
             console.log('Inserted Recent in database', result);

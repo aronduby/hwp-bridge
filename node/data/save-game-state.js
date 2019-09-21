@@ -2,6 +2,7 @@
  * Inserts (or updates) the JSON serialized data to the db
  * @param {Pool} pool
  * @param {GameData} gameData
+ * @returns {Promise} <boolean, Error>
  */
 function saveGameState(pool, gameData) {
     return new Promise((resolve, reject) => {
@@ -11,8 +12,7 @@ function saveGameState(pool, gameData) {
 
         pool.query(sql, params, (err, result, fields) => {
            if (err) {
-               reject(err);
-               return;
+               throw err;
            }
 
            resolve(true);

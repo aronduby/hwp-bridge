@@ -14,7 +14,7 @@
  * @param {Pool} pool - mysql pool connection
  * @param {int} seasonId - the season id to lookup
  * @param {'V','JV'} team - optional, the team to use
- * @returns {Promise<array<PlayerData>, Error>}
+ * @returns {Promise} <array<PlayerData>, Error>
  */
 function loadPlayers(pool, seasonId, team) {
     return new Promise((resolve, reject) => {
@@ -30,8 +30,7 @@ function loadPlayers(pool, seasonId, team) {
 
         pool.query(sql, params, (err, result) => {
             if (err) {
-                reject(err);
-                return;
+                throw err;
             }
 
             const playerList = result.map((r) => {
