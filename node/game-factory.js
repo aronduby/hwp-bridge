@@ -1,5 +1,4 @@
 /**
- * An object containing player stats
  * @typedef {object} PlayerStats
  * @property {string} name_key - player's name key, usually FirstnameLastname
  * @property {string} first_name -player's first name
@@ -48,7 +47,6 @@
  */
 
 /**
- * Game data structure
  * @typedef {object} GameData
  * @property {int} game_id - the id field for the game
  * @property {int} season_id - id field for the season

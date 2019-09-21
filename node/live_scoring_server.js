@@ -228,6 +228,7 @@ io.sockets.on('connection', function(socket){
 				data.site_id = game_data.site_id;
 				data.season_id = game_data.season_id;
 				data.version = '1.1';
+				data.us = 'Hudsonville';
 				data.opponent = game_data.opponent;
 				data.title = game_data.title;
 				data.team = game_data.team;
