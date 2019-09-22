@@ -90,6 +90,8 @@ const io = require('socket.io').listen(secureServer,{
 // 7656 = polo
 secureServer.listen(7656, "0.0.0.0");
 
+SocketBroadcaster.setSocketServer(io);
+
 // <editor-fold desc="Socket Dynamic Namespace">
 io.of((name, query, next) => {
 	// make our namespace the name it was given from client (location.hostname) without www or admin
