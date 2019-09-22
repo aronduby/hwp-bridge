@@ -25,6 +25,10 @@ console.log('Test Mode:', testMode);
 const db = require('./db')(settings.mysql);
 const dataHandler = require('./data')(db);
 
+// UPDATE MANAGER
+const UpdateManager = require('./update-manager');
+const updateManager = new UpdateManager();
+
 // BROADCASTERS
 const mids = require('./middleware');
 
@@ -64,6 +68,8 @@ function sendToBroadcasters(gameData, data) {
 	data.opponent = gameData.opponent;
 	data.team = gameData.team;
 
+	updateManager.add(data);
+
 	TwitterBroadcaster.broadcast(data);
 	TwilioBroadcaster.broadcast(data);
 	SocketBroadcaster.broadcast(data);
@@ -73,7 +79,7 @@ function sendToBroadcasters(gameData, data) {
 const GameEmitter = require('./game-emitter');
 let gameEmitter = new GameEmitter();
 gameEmitter.setBroadcaster(sendToBroadcasters);
-const gameFactory = require('./game-factory')(dataHandler, gameEmitter);
+const gameFactory = require('./game-factory')(dataHandler, gameEmitter, updateManager);
 
 // SOCKETS
 const https = require('https');

@@ -81,7 +81,7 @@ const UnopenedError = require('./errors/unopenedError');
 
 
 // Export the factory methods
-module.exports = function(dataHandler, emitter) {
+module.exports = function(dataHandler, emitter, updateManager) {
     return {
         /**
          * @property {object.<string|int, ActiveGameData>}
@@ -127,11 +127,12 @@ module.exports = function(dataHandler, emitter) {
                 throw new LockedError('Trying to finalize a locked game', this.activeGames[gameId].owner);
             }
 
-            // TODO -- figure out where updates are
             const game = this.activeGames[gameId].game;
-            const saved = await dataHandler.finalizeGameData(game.data, []);
+            const updates = updateManager.get(gameId);
+            const saved = await dataHandler.finalizeGameData(game.data, updates);
 
             delete this.activeGames[gameId];
+            updateManager.clear(gameId);
             return true;
         },
 
@@ -205,8 +206,6 @@ Game.prototype = {
         boxscore: [[{}], [{}]],
         score: [0, 0]
     },
-
-    updates: [],
 
     emit: function (method, ...args) {
         this.emitter.emit(Object.freeze(this.data), method, args);

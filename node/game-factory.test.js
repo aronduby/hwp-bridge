@@ -5,7 +5,7 @@ const nameKeys = dataHandler.nameKeys;
 const players = dataHandler.players;
 const baseData = dataHandler.baseData;
 
-let gameFactory, game, mockEmit;
+let gameFactory, game, mockEmit, mockUpdateManager;
 
 // create a new game for each test
 beforeEach(async (done) => {
@@ -13,7 +13,13 @@ beforeEach(async (done) => {
     const mockEmitter = {
         emit: mockEmit
     };
-    gameFactory = require('./game-factory')(dataHandler, mockEmitter);
+
+    mockUpdateManager = {
+        get: jest.fn().mockReturnValue([]),
+        clear: jest.fn()
+    };
+
+    gameFactory = require('./game-factory')(dataHandler, mockEmitter, mockUpdateManager);
     game = await gameFactory.open(1, 1);
     done();
 });
@@ -65,12 +71,19 @@ describe('factory methods', () => {
         it('calls the finalizeGameData handler', async () => {
             // temporarily mock the finalizeGameData method
             const orgMethod = dataHandler.finalizeGameData;
-            const mocked = jest.fn();
-            mocked.mockReturnValue(Promise.resolve(true));
-            dataHandler.finalizeGameData = mocked;
+            const mockedSaver = jest.fn();
+            mockedSaver.mockReturnValue(Promise.resolve(true));
+            dataHandler.finalizeGameData = mockedSaver;
 
             await gameFactory.finalize(1, 1);
-            expect(mocked).toBeCalledTimes(1);
+
+            expect(mockUpdateManager.get).toBeCalledTimes(1);
+            expect(mockUpdateManager.get).toBeCalledWith(1);
+            expect(mockUpdateManager.clear).toBeCalledTimes(1);
+            expect(mockUpdateManager.clear).toBeCalledWith(1);
+
+            expect(mockedSaver).toBeCalledTimes(1);
+            expect(mockedSaver.mock.calls[0][1]).toEqual([]);
 
             // reset the finalizeGameData method
             dataHandler.finalizeGameData = orgMethod;
