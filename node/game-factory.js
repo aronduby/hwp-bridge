@@ -76,15 +76,8 @@
  * @param {Game} game - technically the game proxy
  */
 
-class LockedError extends Error {
-    constructor(msg, owner) {
-        super(msg);
-
-        this.owner = owner;
-    }
-}
-
-class UnopenedError extends Error {}
+const LockedError = require('./errors/lockedError');
+const UnopenedError = require('./errors/unopenedError');
 
 
 // Export the factory methods
@@ -93,26 +86,26 @@ module.exports = function(dataHandler, emitter) {
         /**
          * @property {object.<string|int, ActiveGameData>}
          */
-        _activeGames: {},
+        activeGames: {},
 
         open: async function (gameId, ownerId, stealLock) {
-            if (!this._activeGames[gameId]) {
+            if (!this.activeGames[gameId]) {
                 const g = new Game(gameId, emitter);
                 const proxy = new Proxy(g, gameDataHandler);
 
                 const data = await dataHandler.getGameData(gameId);
                 g.data = {...g.data, ...data};
 
-                this._activeGames[gameId] = {
+                this.activeGames[gameId] = {
                     gameId: gameId,
-                    siteId: game.site_id,
+                    siteId: data.site_id,
                     owner: ownerId,
                     game: proxy
                 };
 
                 return proxy;
             } else {
-                const activeData = this._activeGames[gameId];
+                const activeData = this.activeGames[gameId];
                 if (ownerId !== activeData.owner) {
                     if (stealLock) {
                         activeData.owner = ownerId;
@@ -121,45 +114,45 @@ module.exports = function(dataHandler, emitter) {
                     }
                 }
 
-                return this._activeGames[gameId].game;
+                return this.activeGames[gameId].game;
             }
         },
 
         finalize: async function(gameId, userId) {
-            if (!this._activeGames[gameId]) {
+            if (!this.activeGames[gameId]) {
                 throw new UnopenedError();
             }
 
-            if (this._activeGames[gameId].owner !== userId) {
-                throw new LockedError(this._activeGames[gameId].owner);
+            if (this.activeGames[gameId].owner !== userId) {
+                throw new LockedError('Trying to finalize a locked game', this.activeGames[gameId].owner);
             }
 
             // TODO -- figure out where updates are
-            const game = this._activeGames[gameId].game;
+            const game = this.activeGames[gameId].game;
             const saved = await dataHandler.finalizeGameData(game.data, []);
 
-            delete this._activeGames[gameId];
+            delete this.activeGames[gameId];
             return true;
         },
 
         get: function(gameId, userId) {
-            if (!this._activeGames[gameId]) {
+            if (!this.activeGames[gameId]) {
                 throw new UnopenedError();
             }
 
-            if (this._activeGames[gameId].owner !== userId) {
-                throw new LockedError(this._activeGames[gameId].owner);
+            if (this.activeGames[gameId].owner !== userId) {
+                throw new LockedError(this.activeGames[gameId].owner);
             }
 
-            return this._activeGames[gameId].game;
+            return this.activeGames[gameId].game;
         },
 
         getReadOnly: function(gameId) {
-            if (!this._activeGames[gameId]) {
+            if (!this.activeGames[gameId]) {
                 throw new UnopenedError();
             }
 
-            return Object.freeze(this._activeGames[gameId].game.data);
+            return Object.freeze(this.activeGames[gameId].game.data);
         }
     };
 };
@@ -216,7 +209,7 @@ Game.prototype = {
     updates: [],
 
     emit: function (method, ...args) {
-        this.emitter(Object.freeze(this.data), method, args);
+        this.emitter.emit(Object.freeze(this.data), method, args);
     },
 
 	/**
