@@ -22,5 +22,9 @@ module.exports = {
 		consumer_secret: 'TWITTER-CONSUMER-SECRET',
 		access_token: 'TWITTER-ACCESS-TOKEN',
 		access_token_secret: 'TWITTER-ACCESS-TOKEN-SECRET'
+	},
+	jwtAuth: {
+		secret: 'JWT_AUTH_SECRET',
+		algorithm: 'HS256'
 	}
 };

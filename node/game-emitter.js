@@ -1,8 +1,13 @@
 const eventListeners = require('./events');
 
 /**
- * @class
+ * Broadcaster callback
+ * @callback GameEmitter~broadcaster
+ * @param {GameData} gameData - the data for the emitting game
+ * @param {object} data
+ * @param {string} data.msg - message from the event function
  */
+
 class GameEmitter {
 
     constructor() {
@@ -55,13 +60,5 @@ class GameEmitter {
         }
     }
 }
-
-/**
- * Broadcaster callback
- * @callback GameEmitter~broadcaster
- * @param {GameData} gameData - the data for the emitting game
- * @param {object} data
- * @param {string} data.msg - message from the event function
- */
 
 module.exports = GameEmitter;

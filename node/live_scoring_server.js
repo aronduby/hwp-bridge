@@ -1,67 +1,87 @@
+/**
+ * @typedef BroadcastData
+ * @type {object}
+ * @property {string} body - the body of the message
+ * @property {int} ts - current timestamp in seconds (not js milliseconds)
+ * @property {array<int>} score - the score of the game
+ * @property {int} game_id
+ * @property {int} site_id
+ * @property {string} title
+ * @property {string} opponent
+ * @property {string} us
+ * @property {'V','JV'} team
+ */
+
 require('console-ten').init(console);
-var Q = require('q'),
-	extend = require('util')._extend,
-	settings = require('./settings'),
-	fs = require('fs'),
-	testModeLogger = require('./broadcasters/test-mode-logger');
 
-var controller_connected = false,
-	updates = [],
-	test_mode = false;
+const fs = require('fs');
+const settings = require('./settings');
+const jwtAuth = require('socketio-jwt-auth');
 
-if(process.argv[2] === 'test')
-	test_mode = true;
-
-console.log('Test Mode:', test_mode);
-
+const testMode = process.argv[2] === 'test';
+console.log('Test Mode:', testMode);
 
 // DATABASE CONNECTION POOL
 const db = require('./db')(settings.mysql);
+const dataHandler = require('./data')(db);
 
 // BROADCASTERS
 const mids = require('./middleware');
 
-const TwitterBroadcaster = new (require('./broadcasters/twitter'))(settings.twitter, test_mode);
+const TwitterBroadcaster = new (require('./broadcasters/twitter'))(settings.twitter, testMode);
 TwitterBroadcaster
 	.use(mids.isDefined)
 	.use(mids.messageWithScore)
 	.use(mids.prefixJV);
 
-const TwilioBroadcaster = new (require('./broadcasters/twilio'))(settings.twilio, db, test_mode);
+const TwilioBroadcaster = new (require('./broadcasters/twilio'))(settings.twilio, db, testMode);
 TwilioBroadcaster
 	.use(mids.isDefined)
 	.use(mids.messageWithScore)
 	.use(mids.prefixJV);
 
-// todo - make socket broadcaster at some point
+const SocketBroadcaster = new (require('./broadcasters/socket'))(testMode);
+SocketBroadcaster
+	.use(mids.isDefined)
+	.use(mids.messageWithScore)
+	.use(mids.prefixJV);
+
+/**
+ * Glue the emitter to the broadcasters
+ * @param {GameData} gameData
+ * @param {BroadcastData} data
+ */
+function sendToBroadcasters(gameData, data) {
+	data.ts = Math.round(+new Date()/1000);
+
+	// don't just set it the games score because of prototypical inheritance
+	// every update will end up having the final score
+	data.score = [ gameData.score[0], gameData.score[1] ];
+
+	data.game_id = gameData.game_id;
+	data.site_id = gameData.site_id;
+	data.title = gameData.title;
+	data.opponent = gameData.opponent;
+	data.team = gameData.team;
+
+	TwitterBroadcaster.broadcast(data);
+	TwilioBroadcaster.broadcast(data);
+	SocketBroadcaster.broadcast(data);
+}
 
 // GAME
-var g = require('./game.js'),
-	game = new g.Game(),
-	broadcast;
-
-// TODO -- setup event emitters for the game using the ./events folder
-// game._addListener('sprint', );
-// game._addListener('shot', );
-// game._addListener('goalAllowed', );
-// game._addListener('fiveMeterDrawn', );
-// game._addListener('fiveMeterCalled', );
-// game._addListener('kickout', );
-// game._addListener('shootOutUs', );
-// game._addListener('shootOutThem', );
-// game._addListener('setQuartersPlayed', );
-// game._addListener('timeout', );
-// game._addListener('carded', );
-// game._addListener('shout', );
-// game._addListener('final', );
+const GameEmitter = require('./game-emitter');
+let gameEmitter = new GameEmitter();
+gameEmitter.setBroadcaster(sendToBroadcasters);
+const gameFactory = require('./game-factory')(dataHandler, gameEmitter);
 
 // SOCKETS
-var https = require('https');
-var secureServer = https.createServer({
+const https = require('https');
+const secureServer = https.createServer({
 	key: fs.readFileSync(settings.ssl.key),
 	cert: fs.readFileSync(settings.ssl.cert)
 });
-var io = require('socket.io').listen(secureServer,{
+const io = require('socket.io').listen(secureServer,{
 	'close timeout': 3600, // 60 minutes to re-open a closed connection
 	'browser client minification': true,
 	'browser client etag': true,
@@ -70,79 +90,159 @@ var io = require('socket.io').listen(secureServer,{
 // 7656 = polo
 secureServer.listen(7656, "0.0.0.0");
 
+// <editor-fold desc="Socket Dynamic Namespace">
+io.of((name, query, next) => {
+	// make our namespace the name it was given from client (location.hostname) without www or admin
+	// apparently that doesn't matter here, so do it on the client ...
+	// https://github.com/socketio/socket.io/issues/3489
+	// const ns = name.replace(/^\/((www|admin)\.)?/, '');
+	// next(null, `/${ns}`);
+	next(null, name);
+})
+// </editor-fold>
+// <editor-fold desc="JWT Authentication">
+.use(jwtAuth.authenticate(
+	{
+		secret: settings.jwtAuth.secret,		// required, used to verify the token's signature
+		algorithm: settings.jwtAuth.algorithm,  // optional, default to be HS256
+		succeedWithoutToken: true				// allow anonymous connections
+	}, function(payload, done) {
 
-io.sockets.on('connection', function(socket){
-	console.log("Connection " + socket.id + " accepted.");
-
-	broadcast = function(data){
-		data.ts = Math.round(+new Date()/1000);
-		// don't just set it the games score because of prototypical inheritence
-		// every update will end up having the final score
-		data.score = [ game.score[0], game.score[1] ];
-		
-		// add these in from the current game
-		data.game_id = game.game_id;
-		data.title = game.title;
-		data.opponent = game.opponent;
-		data.team = game.team;
-
-		updates.push(data);
-
-		// push to other items
-		if(test_mode){
-			testModeLogger('SOCKETS', data.msg);
-		} else {
-			socket.broadcast.emit('update', data);
+		// if we have token payload set the user as whatever data it contains
+		if (payload && payload.sub) {
+			return done(null, payload);
 		}
 
-		TwitterBroadcaster.broadcast(data);
-		TwilioBroadcaster.broadcast(data);
-	};
+		return done();
+	}
+))
+// </editor-fold>
+.on('connect', function(socket) {
 
-	describeStats = function(db_connection) {
-        var stat_description_defer = Q.defer();
+	/**
+	 * @var socket.request.user
+	 * @property {boolean} logged_in - is the user logged in (set by jwtAuth)
+	 * @property {boolean} admin - is the user an admin (set from the token)
+	 * @property {int} sub - the user id (set from the token)
+	 * @propert {int} site_id - the id of the site (set from the token)
+	 */
 
-        db_connection.query("DESCRIBE stats", function(err, result){
-            if(err){
-                stat_description_defer.reject(err);
-                return false;
-            }
-            stat_description_defer.resolve(result);
-        });
+	if (socket.request.user.logged_in && socket.request.user.admin) {
+		SocketBroadcaster.addNamespace(socket.request.user.site_id, socket.nsp.name);
+		socket.join('admin');
 
-        return stat_description_defer;
-	};
-
-	loadPlayers = function(db_connection, season_id, team) {
-		var player_defer = Q.defer(),
-			sql, params;
-
-		if (team) {
-			sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET(?, team)";
-			params = [season_id, team];
-		} else {
-			sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
-			params = [season_id];
-		}
-
-        db_connection.query(sql, params, function(err, result){
-            if(err){
-                player_defer.reject(err);
-                return false;
-            }
-
-            for(var i in result) {
-            	var p = result[i];
-            	p.team = p.team.split(',');
-				p.number_sort = parseInt(p.number, 10);
+		/**
+		 * Opening a game for scoring
+		 * @param {int|string} gameId - the game we're opening
+		 * @param {function} cb - the callback to send the game data through
+		 */
+		socket.on('openGame', async (gameId, cb) => {
+			try {
+				const game = await gameFactory.open(gameId, socket.request.user.sub);
+				socket.openGameId = game.game_id;
+				socket.broadcast.emit('open', game.data);
+				cb(null, game.data);
+			} catch(err) {
+				console.error(err);
+				cb(err);
 			}
+		});
 
-            player_defer.resolve(result);
-        });
+		/**
+		 * Open a game, stealing ownership from the current owner
+		 * @param {int|string} gameId - the game we're stealing control of
+		 * @param {function} cb - the callback to send the game data through
+		 */
+		socket.on('stealGame', async (gameId, cb) => {
+			try {
+				const game = await gameFactory.open(gameId, socket.request.user.sub, true);
+				socket.openGameId = game.game_id;
 
-        return player_defer;
-	};
+				// TODO -- need a way to map from user sub to socket
+				[].forEach((socketId) => {
+					io.to(`${socketId}`).emit('gameStolen');
+				});
 
+				cb(null, game.data);
+			} catch(err) {
+				console.error(err);
+				cb(err);
+			}
+		});
+
+		/**
+		 * Used to edit the games current players
+		 * @param {int} seasonId - the season id we're getting the players for
+		 * @param {function} cb - the callback to send the players array through
+		 */
+		socket.on('getPlayers', async (seasonId, cb) => {
+			try {
+				const players = await dataHandler.loadPlayers(seasonId);
+				cb(null, players);
+			} catch (err) {
+				cb(err);
+			}
+		});
+
+		/**
+		 * This is our main function between the app and here
+		 * @param {string} func - the function on game to call
+		 * @param {array} args - array of data to use as arguments for the func call
+		 * @param {function} cb - the callback to send confirmation back through
+		 */
+		socket.on('update', async (func, args, cb) => {
+			console.log('Controller sent update', func, args);
+			try {
+				gameFactory.get(socket.openGameId);
+				game[func].apply(game, args);
+				await dataHandler.saveGameState(game.data);
+				cb(null, true);
+			} catch (err) {
+				console.error(err);
+				cb(err);
+			}
+		});
+
+
+		/**
+		 * "Undo" back to the given state
+		 * @param {GameData} data
+		 * @param {function} cb
+		 */
+		socket.on('undo', async (data, cb) => {
+			try {
+				const game = gameFactory.get(socket.openGameId);
+				game.data = data;
+				await dataHandler.saveGameState(game.data);
+				cb(null, true);
+			} catch (err) {
+				cb(err);
+			}
+		});
+
+		/**
+		 * Finalize and close the game
+		 * @param {function} cb
+		 */
+		socket.on('final', async (cb) => {
+			console.log('FINAL');
+			try {
+				const saved = await gameFactory.finalize(socket.openGameId);
+				socket.broadcast.emit('final', socket.openGameId);
+				delete socket.openGameId;
+
+				cb(null, true);
+			} catch (err) {
+				cb(err);
+			}
+		});
+	}
+
+	// bind anonymous allowed events here
+
+	// check for an open game for this namespace... somehow...
+	// might need to have everyone use a jwt to send along site id for everyone
+	/* previous code here
 	// not controller, but we have a controller, send the last update
 	if(!socket.is_controller && controller_connected){
 		console.log("Client connected and controller "+(controller_connected===true ? 'is' : 'is not')+" connected");
@@ -150,280 +250,14 @@ io.sockets.on('connection', function(socket){
 		// socket.emit('update', updates[updates.length - 1]);
 		socket.emit('update', updates);
 	}
+	*/
 
-	socket.on('disconnect', function(){
-		if(socket.is_controller){
-			console.log("Controller disconnected");
-			socket.broadcast.emit('controller_disconnected');
-			controller_connected = false;
-		}
-	});
-
-	// CUSTOM EVENTS
-	socket.on('IAmController', function(cb){
-		socket.is_controller = true;
-		console.log('Controller Connected');
-		socket.broadcast.emit('controller_connected');
-		controller_connected = true;
-		cb()
-	});
-
-	socket.on('amIController', function(fn){
-		fn(socket.is_controller);
-	});
-
-	socket.on('getGameData', function(game_id, cb){
-		console.log('getGameData', game_id);
-
-		var db_connection = mysql.createConnection(db_config),
-			existing_defer = Q.defer();
-
-		db_connection.query("SELECT * FROM game_stat_dumps WHERE game_id = ?", [game_id], function(err, result){
-			if(err || result.length == 0 || result[0].json == null){
-				existing_defer.reject(err);
-				return false;
-			}
-
-			var data = JSON.parse(result[0].json);
-			console.log('taking existing data');
-			game._takeData(data);
-			cb(null, data);
-			existing_defer.resolve();
-		});
-
-		// if there's no existing game stat data, create from scratch
-		existing_defer.promise.fail(function(){
-			var game_defer = Q.defer(),
-				player_defer = Q.defer(),
-				stat_description_defer;
-			
-			// game data
-			db_connection.query('SELECT id AS game_id, site_id, season_id, opponent, team, title_append AS title FROM games WHERE id = ?', [game_id], function(err, game){
-				if(err){
-					game_defer.reject(err);
-					return false;
-				}
-
-				game = game[0];
-				game_defer.resolve(game);
-
-				// player data
-				loadPlayers(db_connection, game.season_id, game.team).promise
-					.then(function(players) {
-						player_defer.resolve(players)
-					})
-					.fail(function(err) {
-						player_defer.reject(err);
-					});
-			});
-
-			// stat describe
-            stat_description_defer = describeStats(db_connection);
-
-			Q.all([ game_defer.promise, player_defer.promise, stat_description_defer.promise])
-			.spread(function(game_data, players, stat_description){
-				var data = {};
-
-				data.game_id = game_data.game_id;
-				data.site_id = game_data.site_id;
-				data.season_id = game_data.season_id;
-				data.version = '1.1';
-				data.us = 'Hudsonville';
-				data.opponent = game_data.opponent;
-				data.title = game_data.title;
-				data.team = game_data.team;
-				data.status = 'start';
-				data.quarters_played = 0;
-				data.stats = {};
-				data.goalie = '';
-				data.advantage_conversion = [
-					{ drawn: 0, converted: 0 },
-					{ drawn: 0, converted: 0 }
-				];
-				data.kickouts = [[],[]];
-				data.boxscore = [[{}], [{}]];
-				data.score = [0,0];
-
-				var stats = {};
-				for(var i in stat_description){
-					stats[stat_description[i].Field] = 0;
-				}
-
-				for(var i in players){
-					var p = players[i];
-
-					p.number_sort = parseInt(p.number, 10);
-					data.stats[p.name_key] = extend(p, stats);
-				}
-
-				console.log('creating new data');
-				game._takeData(data);
-				cb(null, data);
-
-			}).fail(function(error){
-				cb(error.message);
-				console.log(error.stack);
-			})
-			.finally(function() {
-				db_connection.end();
-			});
-		});
-	});
-
-	socket.on('getPlayers', function(season_id, cb) {
-		var db_connection = mysql.createConnection(db_config);
-		loadPlayers(db_connection, season_id, null)
-			.promise
-			.then(function(players) {
-				cb(null, players);
-			})
-			.fail(function(err) {
-				cb(err.message);
-			})
-			.finally(function() {
-				db_connection.end();
-			});
-	});
-
-	// this is our main function between the app and here
-	socket.on('update', function(func, args, cb){
-		if(socket.is_controller){
-			try{
-				console.log("Controller sent update", func, args);
-				if(func in game && func[0] !== '_') {
-					game[func].apply(game, args);
-				}
-			} catch(e){
-				console.log('>>> caught error, beginning stack:');
-				console.log('   ' + e.stack);
-				console.log('>>> end of error stack');
-				cb(e.message);
-			}
-
-			// json encode and save the game to the database
-			var tmp = extend({}, game);
-			delete tmp._listeners;
-			var db_connection = mysql.createConnection(db_config);
-			db_connection.query("INSERT INTO game_stat_dumps SET site_id = ?, game_id = ?, json = ? ON DUPLICATE KEY UPDATE json = VALUES(json)", [game.site_id, game.game_id, JSON.stringify(tmp)], function(err, result){
-				if(err){ console.log(err); return false; }
-				console.log('Saved json to db');
-				db_connection.end();
-				cb(null, true);
-			});
-		}
-	});
-
-	socket.on('undo', function(data){
-		if(socket.is_controller){
-			console.log("Controller sent undo");
-			game._takeData(data);
-
-			var db_connection = mysql.createConnection(db_config);
-			db_connection.query("UPDATE game_stat_dumps SET json = ? WHERE game_id = ?", [JSON.stringify(data), game.game_id], function(err, result){
-				if(err){ console.log(err); return false; }
-				console.log('Saved json to db');
-				db_connection.end();
-			});
-		}
-	});
-
-	socket.on('final', function(data, cb){
-		console.log('FINAL');
-		if(socket.is_controller){
-			console.log("Controller sent final");
-			socket.broadcast.emit('final');
-
-			var db_connection = mysql.createConnection(db_config),
-				updates_defer = Q.defer(),
-				game_defer = Q.defer(),
-				stats_defer = Q.defer(),
-				recent_defer = Q.defer();
-
-			// push the updates to the database
-			db_connection.query("INSERT INTO game_update_dumps SET site_id = ?, game_id = ?, json = ? ON DUPLICATE KEY UPDATE json = VALUES(json)", [game.site_id, game.game_id, JSON.stringify(updates)], function(err, result){
-				if(err){
-					console.log(err);
-					updates_defer.reject(err);
-					return false;
-				}
-
-				console.log('Saved updates to database', result);
-				updates_defer.resolve();
-			});
-
-			// save the game data
-			var tmp = extend({}, game);
-			delete tmp._listeners;
-			db_connection.query("UPDATE games SET score_us = ?, score_them = ? WHERE id = ?", [game.score[0], game.score[1], game.game_id], function(err, result){
-				if(err){
-					console.log(err);
-					game_defer.reject(err);
-					return false;
-				}
-
-				console.log('Saved Score in database', result);
-				game_defer.resolve();
-			});
-
-			// save the stats data
-			db_connection.query("UPDATE game_stat_dumps SET json = ? WHERE game_id = ?", [JSON.stringify(tmp), game.game_id], function (err, result) {
-				if(err){
-					console.log(err);
-					stats_defer.reject(err);
-					return false;
-				}
-				console.log('Saved stats dump to database', result);
-
-				// save stats from game
-				// instead of doubling up, just spawn the php cli command
-				var log = function(data){
-					console.log('' + data);
-				};
-
-				// TODO - update with settings
-				var spawn = require('child_process').spawn,
-					child = spawn('php', [settings.artisanPath, 'scoring:save-stats', game.game_id]);
-
-				child.stdout.on('data', log);
-				child.stderr.on('data', log);
-
-				stats_defer.resolve();
-			});
-
-			// insert into recent
-			db_connection.query("INSERT INTO recent SET site_id = ?, season_id = ?, renderer = 'game', content = ?, created_at = NOW(), updated_at = NOW()", [game.site_id, game.season_id, '['+game.game_id+']'], function(err, result){
-				if(err){
-					console.log(err);
-					recent_defer.reject(err);
-					return false;
-				}
-
-				console.log('Inserted Recent in database', result);
-				recent_defer.resolve();
-			});
-
-			updates = []; // reset the updates after it's been finalized
-
-			Q.all([updates_defer, game_defer, stats_defer, recent_defer])
-				.finally(function() {
-					cb(null, true);
-					controller_connected = false;
-					socket.disconnect();
-					db_connection.end();
-				});
-
-		} else {
-			cb({msg: "Not a controller"});
-		}
-	});
-
-	socket.on('echo', function(data){
+	socket.on('echo', function(data) {
 		console.log(data);
 	});
 
-	socket.on('error', function(e){
-		socket.emit('handleerror', e);
+	socket.on('error', function(e) {
 		console.log(e);
+		socket.emit('handleError', e);
 	});
-
 });

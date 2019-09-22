@@ -64,25 +64,104 @@
  * @property {array<array<string>>} kickouts - array of strings of people kicked out, 0 is us, 1 is opponent
  * @property {array<string>} kickouts_drawn_by - array of our players who have a kickout currently drawn
  * @property {array<array<object.<string, int>>>} boxscore - array representing box scores, 0 is us, 1 is opponent, next level is quarters which contain nameKeys string and goal count val
- * @property {array<int>}score - current score, 0 is us, 1 is opponent
+ * @property {array<int>} score - current score, 0 is us, 1 is opponent
  */
 
+/**
+ * @typedef ActiveGameData
+ * @type {object}
+ * @param {string|int} gameId - the id for the game
+ * @param {string|int} siteId - the id for the site the game belongs to
+ * @param {string} owner - the owning user, (who opened the game)
+ * @param {Game} game - technically the game proxy
+ */
+
+class LockedError extends Error {
+    constructor(msg, owner) {
+        super(msg);
+
+        this.owner = owner;
+    }
+}
+
+class UnopenedError extends Error {}
 
 
 // Export the factory methods
-module.exports = {
-    setEmitter: function (fnc) {
-        emitter = fnc;
-    },
+module.exports = function(dataHandler, emitter) {
+    return {
+        /**
+         * @property {object.<string|int, ActiveGameData>}
+         */
+        _activeGames: {},
 
-    get: function (gameId) {
-        const g = new Game(gameId, emitter);
-        return new Proxy(g, gameDataHandler);
-    }
-};
+        open: async function (gameId, ownerId, stealLock) {
+            if (!this._activeGames[gameId]) {
+                const g = new Game(gameId, emitter);
+                const proxy = new Proxy(g, gameDataHandler);
 
-let emitter = function emitter(method, args) {
-    console.log('EMIT', method, args);
+                const data = await dataHandler.getGameData(gameId);
+                g.data = {...g.data, ...data};
+
+                this._activeGames[gameId] = {
+                    gameId: gameId,
+                    siteId: game.site_id,
+                    owner: ownerId,
+                    game: proxy
+                };
+
+                return proxy;
+            } else {
+                const activeData = this._activeGames[gameId];
+                if (ownerId !== activeData.owner) {
+                    if (stealLock) {
+                        activeData.owner = ownerId;
+                    } else {
+                        throw new LockedError('Game opened by other user', activeData.owner);
+                    }
+                }
+
+                return this._activeGames[gameId].game;
+            }
+        },
+
+        finalize: async function(gameId, userId) {
+            if (!this._activeGames[gameId]) {
+                throw new UnopenedError();
+            }
+
+            if (this._activeGames[gameId].owner !== userId) {
+                throw new LockedError(this._activeGames[gameId].owner);
+            }
+
+            // TODO -- figure out where updates are
+            const game = this._activeGames[gameId].game;
+            const saved = await dataHandler.finalizeGameData(game.data, []);
+
+            delete this._activeGames[gameId];
+            return true;
+        },
+
+        get: function(gameId, userId) {
+            if (!this._activeGames[gameId]) {
+                throw new UnopenedError();
+            }
+
+            if (this._activeGames[gameId].owner !== userId) {
+                throw new LockedError(this._activeGames[gameId].owner);
+            }
+
+            return this._activeGames[gameId].game;
+        },
+
+        getReadOnly: function(gameId) {
+            if (!this._activeGames[gameId]) {
+                throw new UnopenedError();
+            }
+
+            return Object.freeze(this._activeGames[gameId].game.data);
+        }
+    };
 };
 
 // proxies calls to game.data so its easier to work with
