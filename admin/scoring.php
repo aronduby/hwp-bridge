@@ -1,9 +1,5 @@
 <?php
 require '../common.php';
-if(!isset($_COOKIE['in'])){
-	header("Location: login.php");;
-	die();
-}
 ?>
 <!doctype html>
 <html lang="en" ng-app="myApp">

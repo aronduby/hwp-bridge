@@ -1,9 +1,5 @@
 <?php
 require '../common.php';
-if(!isset($_COOKIE['in'])){
-	header("Location: login.php");;
-	die();
-}
 
 $tournament = new Tournament($_GET['tournament_id'], PDODB::getInstance());
 if($tournament != false){

@@ -1,9 +1,5 @@
 <?php
 require '../common.php';
-if(!isset($_COOKIE['in'])){
-	header("Location: login.php");;
-	die();
-}
 
 require '_pre.php';
 ?>
@@ -12,6 +8,7 @@ require '_pre.php';
 
 	<div data-role="header" data-theme="b">
 		<h1>Index</h1>
+        <a href="logout.php" data-icon="alert" data-ajax="false" class="ui-btn-right">Logout</a>
 	</div><!-- /header -->
 
 	<div data-role="content">
@@ -24,9 +21,9 @@ require '_pre.php';
 			<li><a href="badges.php" title="badges">Badges</a></li>
 		</ul>
 
-    <ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
-      <li><a href="<?= PUBLIC_HREF ?>" title="public site">Public Site</a></li>
-    </ul>
+        <ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
+          <li><a href="<?= PUBLIC_HREF ?>" title="public site">Public Site</a></li>
+        </ul>
 	</div><!-- /content -->
 
 </div><!-- /page -->

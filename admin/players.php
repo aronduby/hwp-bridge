@@ -1,9 +1,5 @@
 <?php
 require '../common.php';
-if(!isset($_COOKIE['in'])){
-	header("Location: login.php");;
-	die();
-}
 
 $player_list = $season->getPlayersByTeam();
 

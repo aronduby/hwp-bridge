@@ -1,9 +1,5 @@
 <?php
 require '../common.php';
-if(!isset($_COOKIE['in'])){
-	header("Location: login.php");;
-	die();
-}
 
 if(!empty($_POST) && array_key_exists('tournament_id', $_POST)){
 

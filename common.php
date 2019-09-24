@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 set_time_limit(0);
 ini_set('display_errors', '1');
 
@@ -9,21 +9,20 @@ define('INPUT_DATE_FORMAT', 'Y-m-d');
 require __DIR__ . '/define.php';
 require __DIR__ . '/vendor/autoload.php';
 
-
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 
 function uncaughtExceptionHandler(Exception $exception){
-	/*
-	$handlers = ob_list_handlers();
-	while(!empty($handlers)){
-		ob_end_clean();
-		$handlers = ob_list_handlers();
-	}
-	*/
-	
-    $msg = "Uncaught Exception Handler:  Uncaught exception '%s' with message '%s' in %s:%s\nStack trace:\n%s\n  thrown in %s on line %s"; 
+    /*
+    $handlers = ob_list_handlers();
+    while(!empty($handlers)){
+        ob_end_clean();
+        $handlers = ob_list_handlers();
+    }
+    */
+
+    $msg = "Uncaught Exception Handler:  Uncaught exception '%s' with message '%s' in %s:%s\nStack trace:\n%s\n  thrown in %s on line %s";
     $msg = sprintf(
         $msg,
         get_class($exception),
@@ -35,41 +34,43 @@ function uncaughtExceptionHandler(Exception $exception){
         $exception->getLine()
     );
 
-	//include 'hdr.php';
-	//print '<article id="error_screen"><h1>Sorry...</h1><p>Looks like something crashed. Our developers have been notified. Please try another page.</p>';
-		print '<pre>'.$msg.'</pre>';
-	//else
-	//	mail(DEV_EMAIL, 'HistoryGR Uncaught Exception', $msg);
-	//print '</article>';
-	//include 'ftr.php';
+    //include 'hdr.php';
+    //print '<article id="error_screen"><h1>Sorry...</h1><p>Looks like something crashed. Our developers have been notified. Please try another page.</p>';
+    print '<pre>'.$msg.'</pre>';
+    //else
+    //	mail(DEV_EMAIL, 'HistoryGR Uncaught Exception', $msg);
+    //print '</article>';
+    //include 'ftr.php';
 }
-
 
 set_error_handler('exception_error_handler');
 set_exception_handler('uncaughtExceptionHandler');
 
-session_start();
 
-$facebook = new Facebook(array(
-  'appId'  => '286321628055151',
-  'secret' => 'a8e9a0c5d1cc9a17a4e9dde0d776bd0f',
-  'cookie' => TRUE,
-  'domain' => BASE_HREF
-));
+use Auth0\SDK\Auth0;
 
-try {
-  $me = $facebook->api('/me');
-} catch (FacebookApiException $e) {
-  $me = NULL;
+$auth0 = new Auth0([
+    'domain' => AUTH0_DOMAIN,
+    'client_id' => AUTH0_CLIENT_ID,
+    'client_secret' => AUTH0_CLIENT_SECRET,
+    'redirect_uri' => AUTH0_REDIRECT_URI,
+    'persist_id_token' => true,
+    'persist_access_token' => true,
+    'persist_refresh_token' => true,
+    'scope' => 'openid profile email',
+]);
+
+$userInfo = $auth0->getUser();
+if (!$userInfo) {
+    $auth0->login();
+} else {
+    print_p($auth0->getIdToken());
+    print_p($userInfo, true);
 }
 
-// print_p($_COOKIE);
 
 $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, PDODB::getInstance());
 Config::setDbh(PDODB::getInstance());
-
-
-
 
 
 function print_p($value, $exit = false) {
