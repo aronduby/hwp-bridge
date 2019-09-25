@@ -46,7 +46,7 @@ class SocketBroadcaster extends Middleware {
      * @param {int} data.site_id - the siteId to use for the nsp lookup
      * @param {?object} initialOut - used to supply an initial output with empty body
      */
-    broadcast = function(data, initialOut = {body: ""}) {
+    broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, function(input, output) {
             const nsp = this._namespaceMap.get(data.site_id);
             if (typeof nsp === 'undefined') {

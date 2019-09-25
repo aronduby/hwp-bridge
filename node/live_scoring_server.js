@@ -81,6 +81,9 @@ let gameEmitter = new GameEmitter();
 gameEmitter.setBroadcaster(sendToBroadcasters);
 const gameFactory = require('./game-factory')(dataHandler, gameEmitter, updateManager);
 
+// AUTH
+const tokenToUser = require('./token-to-user')(settings.jwtAuth.customClaimNamespace);
+
 // SOCKETS
 const https = require('https');
 const secureServer = https.createServer({
@@ -118,7 +121,7 @@ io.of((name, query, next) => {
 
 		// if we have token payload set the user as whatever data it contains
 		if (payload && payload.sub) {
-			return done(null, payload);
+			return done(null, tokenToUser(payload));
 		}
 
 		return done();

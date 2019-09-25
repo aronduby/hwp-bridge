@@ -34,7 +34,7 @@ class TwitterBroadcaster extends Middleware {
      * @param {object} data - data to use for broadcasting
      * @param {?object} initialOut - used to supply an initial output with empty body
      */
-    broadcast = function(data, initialOut = {body: ""}) {
+    broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, function(input, output) {
             if (this._testMode !== true) {
                 this._twit.post(

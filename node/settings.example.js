@@ -24,6 +24,7 @@ module.exports = {
 		access_token_secret: 'TWITTER-ACCESS-TOKEN-SECRET'
 	},
 	jwtAuth: {
+		customClaimNamespace: 'https://hudsonvillewaterpolo.com/',
 		secret: 'JWT_AUTH_SECRET',
 		algorithm: 'HS256'
 	}
