@@ -1,11 +1,13 @@
 'use strict';
 
 // Setup socket.io as normal
-var addr = 'https://' + window.location.hostname + ':7656';
+var ns = location.hostname.replace(/^((www|admin)\.)?/, '');
+var addr = 'https://' + window.location.hostname + ':7656/'+ns;
 var socket = io(addr, {
 	'sync disconnect on unload': true,
-	// 'reconnectionAttempts': 5,
-	'secure': true
+	'secure': true,
+	'query': 'auth_token=' + token,
+	'timeout': window.location.hostname.endsWith('.local') ? 60000 : 2000
 });
 
 
@@ -64,7 +66,9 @@ angular.module('myApp.services', [])
 		return {
 			game_id: 0,
 			season_id: 0,
+			site_id: 0,
 			version: '1.1',
+			us: 'Hudsonville', // TODO -- not hardcoded at some point
 			opponent: null,
 			status: null,
 			quarters_played: 0,
@@ -98,7 +102,8 @@ angular.module('myApp.services', [])
 
 			loadData: function (game_id, q) {
 				var self = this;
-				this._socket.emit('getGameData', game_id, function (err, data) {
+				this._socket.emit('openGame', game_id, function (err, data) {
+					// TODO -- could error if someone else has it open
 					//console.log(data);
 					self.takeData(data);
 					self.loaded = true;
@@ -109,8 +114,8 @@ angular.module('myApp.services', [])
 			takeData: function (data) {
 				// loop through and set the data
 				for (var i in data) {
-					if (i in this) {
-						if (i[0] != '_')
+					if (this.hasOwnProperty(i)) {
+						if (i[0] !== '_')
 							this[i] = data[i];
 					}
 				}
@@ -118,7 +123,23 @@ angular.module('myApp.services', [])
 
 			export: function () {
 				var d = {},
-					flds = ['game_id', 'season_id', 'opponent', 'status', 'quarters_played', 'stats', 'goalie', 'advantage_conversion', 'kickouts', 'score', 'boxscore'];
+					flds = [
+						'game_id',
+						'site_id',
+						'season_id',
+						'version',
+						'us',
+						'opponent',
+						'status',
+						'quarters_played',
+						'stats',
+						'goalie',
+						'advantage_conversion',
+						'kickouts',
+						'kickouts_drawn_by',
+						'boxscore',
+						'score'
+					];
 				for (var i in flds) {
 					d[flds[i]] = this[flds[i]];
 				}

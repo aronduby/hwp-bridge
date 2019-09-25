@@ -91,7 +91,6 @@ module.exports = function(dataHandler, emitter, updateManager) {
         open: async function (gameId, ownerId, stealLock) {
             if (!this.activeGames[gameId]) {
                 const g = new Game(gameId, emitter);
-                const proxy = new Proxy(g, gameDataHandler);
 
                 const data = await dataHandler.getGameData(gameId);
                 g.data = {...g.data, ...data};
@@ -100,10 +99,10 @@ module.exports = function(dataHandler, emitter, updateManager) {
                     gameId: gameId,
                     siteId: data.site_id,
                     owner: ownerId,
-                    game: proxy
+                    game: g
                 };
 
-                return proxy;
+                return g;
             } else {
                 const activeData = this.activeGames[gameId];
                 if (ownerId !== activeData.owner) {
@@ -153,27 +152,9 @@ module.exports = function(dataHandler, emitter, updateManager) {
                 throw new UnopenedError();
             }
 
-            return Object.freeze(this.activeGames[gameId].game.data);
+            return Object.freeze({...this.activeGames[gameId].game.data});
         }
     };
-};
-
-// proxies calls to game.data so its easier to work with
-const gameDataHandler = {
-    get: function (target, prop, receiver) {
-        if (target.data.hasOwnProperty(prop)) {
-            return target.data[prop];
-        } else {
-            return Reflect.get(...arguments);
-        }
-    },
-    set: function (target, prop, val, receiver) {
-        if (target.data.hasOwnProperty(prop)) {
-            target.data[prop] = val;
-        } else {
-            return Reflect.set(...arguments);
-        }
-    }
 };
 
 function Game(game_id, emitter) {
@@ -208,7 +189,7 @@ Game.prototype = {
     },
 
     emit: function (method, ...args) {
-        this.emitter.emit(Object.freeze(this.data), method, args);
+        this.emitter.emit(Object.freeze({...this.data}), method, args);
     },
 
 	/**

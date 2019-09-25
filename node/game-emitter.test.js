@@ -49,19 +49,20 @@ describe('events are emitted', () => {
             mockEvents[e].mockReturnValue(mockedReturn);
 
             rsp = rsp || args;
+            game.resetKickouts();
             game[e].apply(game, args);
-            rsp = [game.data, ...rsp];
+            // rsp = [game.data, ...rsp];
         });
 
         it('should emit the events', () => {
             expect(mockEvents[e]).toBeCalledTimes(1);
-            expect(mockEvents[e]).toBeCalledWith(...rsp);
+            expect(mockEvents[e]).toBeCalledWith(game.data, ...(rsp||args));
         });
 
         it('should called broadcaster based on the return value', () => {
             if (mockEvents[e].mock.results[0].value !== false) {
                 expect(mockBroadcaster).toBeCalledTimes(1);
-                expect(mockBroadcaster.mock.calls[0][0]).toBe(game.data);
+                expect(mockBroadcaster.mock.calls[0][0]).toEqual(game.data);
             } else {
                 expect(mockBroadcaster).not.toBeCalled();
             }

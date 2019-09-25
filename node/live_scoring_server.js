@@ -169,10 +169,11 @@ io.of((name, query, next) => {
 				const game = await gameFactory.open(gameId, socket.request.user.sub, true);
 				socket.openGameId = game.game_id;
 
-				// TODO -- need a way to map from user sub to socket
-				[].forEach((socketId) => {
-					io.to(`${socketId}`).emit('gameStolen');
-				});
+				// TODO -- need a way to map from user sub to socket, but for now just send it to everyone in the admin room
+				// [].forEach((socketId) => {
+				// 	io.to(`${socketId}`).emit('gameStolen');
+				// });
+				socket.to('admin').emit('gameStolen', gameId);
 
 				cb(null, game.data);
 			} catch(err) {
@@ -204,7 +205,7 @@ io.of((name, query, next) => {
 		socket.on('update', async (func, args, cb) => {
 			console.log('Controller sent update', func, args);
 			try {
-				gameFactory.get(socket.openGameId);
+				let game = gameFactory.get(socket.openGameId, socket.request.user.sub);
 				game[func].apply(game, args);
 				await dataHandler.saveGameState(game.data);
 				cb(null, true);
@@ -222,7 +223,7 @@ io.of((name, query, next) => {
 		 */
 		socket.on('undo', async (data, cb) => {
 			try {
-				const game = gameFactory.get(socket.openGameId);
+				const game = gameFactory.get(socket.openGameId, socket.request.user.sub);
 				game.data = data;
 				await dataHandler.saveGameState(game.data);
 				cb(null, true);

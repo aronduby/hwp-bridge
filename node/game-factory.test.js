@@ -103,16 +103,16 @@ describe('game methods', () => {
         game.addToBoxScore(true, nameKeys.Ian);
         game.addToBoxScore(false, '1');
 
-        expect(game.boxscore[0][0][nameKeys.Ian]).toBe(1);
-        expect(game.boxscore[1][0]['1']).toBe(1);
+        expect(game.data.boxscore[0][0][nameKeys.Ian]).toBe(1);
+        expect(game.data.boxscore[1][0]['1']).toBe(1);
 
-        game.quarters_played = 1;
-        game.boxscore[0][1] = {};
-        game.boxscore[1][1] = {};
+        game.data.quarters_played = 1;
+        game.data.boxscore[0][1] = {};
+        game.data.boxscore[1][1] = {};
 
         game.addToBoxScore(true, nameKeys.Ian);
         game.addToBoxScore(true, nameKeys.Ian);
-        expect(game.boxscore[0][1][nameKeys.Ian]).toBe(2);
+        expect(game.data.boxscore[0][1][nameKeys.Ian]).toBe(2);
     });
 
     test('final just emits', () => {
@@ -143,16 +143,16 @@ describe('game methods', () => {
             });
 
             it('increments player shots', () => {
-                expect(game.stats[nameKeys.Ian].shots).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].shots).toBe(1);
             });
             it('increments player goals', () => {
-                expect(game.stats[nameKeys.Ian].goals).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].goals).toBe(1);
             });
             it('increments the box score', () => {
-                expect(game.boxscore[0][0][nameKeys.Ian]).toBe(1);
+                expect(game.data.boxscore[0][0][nameKeys.Ian]).toBe(1);
             });
             it('increments the score', () => {
-                expect(game.score[0]).toBe(1);
+                expect(game.data.score[0]).toBe(1);
             });
             it('resets kickouts', () => {
                 expect(game.resetKickouts).toBeCalledTimes(1);
@@ -169,10 +169,10 @@ describe('game methods', () => {
             });
 
             it('increments player shots', () => {
-                expect(game.stats[nameKeys.Ian].shots).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].shots).toBe(1);
             });
             it('doesnt increment player goals', () => {
-                expect(game.stats[nameKeys.Ian].goals).toBe(0);
+                expect(game.data.stats[nameKeys.Ian].goals).toBe(0);
             });
             it('doesnt reset kickouts', () => {
                 expect(game.resetKickouts.mock.calls.length).toBe(0);
@@ -189,22 +189,22 @@ describe('game methods', () => {
             });
 
             it('increments player shots', () => {
-                expect(game.stats[nameKeys.Ian].shots).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].shots).toBe(1);
             });
             it('increments player goals', () => {
-                expect(game.stats[nameKeys.Ian].goals).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].goals).toBe(1);
             });
             it('increments the box score', () => {
-                expect(game.boxscore[0][0][nameKeys.Ian]).toBe(1);
+                expect(game.data.boxscore[0][0][nameKeys.Ian]).toBe(1);
             });
             it('increments the score', () => {
-                expect(game.score[0]).toBe(1);
+                expect(game.data.score[0]).toBe(1);
             });
             it('resets kickouts', () => {
                 expect(game.resetKickouts).toBeCalledTimes(1);
             });
             it('increments assists', () => {
-                expect(game.stats[nameKeys.Chandler].assists).toBe(1);
+                expect(game.data.stats[nameKeys.Chandler].assists).toBe(1);
             });
             it('calls emit', () => {
                 expect(mockEmit).toBeCalledTimes(1);
@@ -214,29 +214,29 @@ describe('game methods', () => {
 
         describe('advantage', () => {
             beforeEach(() => {
-                game.kickouts[1] = ['1'];
-                game.kickouts_drawn_by = [nameKeys.Ian];
-                game.advantage_conversion[0].drawn = 1;
+                game.data.kickouts[1] = ['1'];
+                game.data.kickouts_drawn_by = [nameKeys.Ian];
+                game.data.advantage_conversion[0].drawn = 1;
                 game.shot(nameKeys.Ian, true);
             });
 
             it('increments advantage goals', () => {
-                expect(game.stats[nameKeys.Ian].advantage_goals).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].advantage_goals).toBe(1);
             });
             it('increments player shots', () => {
-                expect(game.stats[nameKeys.Ian].shots).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].shots).toBe(1);
             });
             it('increments player goals', () => {
-                expect(game.stats[nameKeys.Ian].goals).toBe(1);
+                expect(game.data.stats[nameKeys.Ian].goals).toBe(1);
             });
             it('increments the box score', () => {
-                expect(game.boxscore[0][0][nameKeys.Ian]).toBe(1);
+                expect(game.data.boxscore[0][0][nameKeys.Ian]).toBe(1);
             });
             it('increments the score', () => {
-                expect(game.score[0]).toBe(1);
+                expect(game.data.score[0]).toBe(1);
             });
             it('increments the advantage converted', () => {
-                expect(game.advantage_conversion[0].converted).toBe(1);
+                expect(game.data.advantage_conversion[0].converted).toBe(1);
             });
             it('resets kickouts', () => {
                 expect(game.resetKickouts).toBeCalledTimes(1);
@@ -252,7 +252,7 @@ describe('game methods', () => {
     test('steal', () => {
         game.steal(nameKeys.Chandler);
         game.steal(nameKeys.Chandler);
-        expect(game.stats[nameKeys.Chandler].steals).toBe(2);
+        expect(game.data.stats[nameKeys.Chandler].steals).toBe(2);
         expect(mockEmit).toBeCalledTimes(2);
         expect(mockEmit).toBeCalledWith(game.data, 'steal', [nameKeys.Chandler]);
     });
@@ -260,7 +260,7 @@ describe('game methods', () => {
     test('turnover', () => {
         game.turnover(nameKeys.Chandler);
         game.turnover(nameKeys.Chandler);
-        expect(game.stats[nameKeys.Chandler].turnovers).toBe(2);
+        expect(game.data.stats[nameKeys.Chandler].turnovers).toBe(2);
         expect(mockEmit).toBeCalledTimes(2);
         expect(mockEmit).toBeCalledWith(game.data, 'turnover', [nameKeys.Chandler]);
     });
@@ -268,7 +268,7 @@ describe('game methods', () => {
     test('block', () => {
         game.block(nameKeys.Chandler);
         game.block(nameKeys.Chandler);
-        expect(game.stats[nameKeys.Chandler].blocks).toBe(2);
+        expect(game.data.stats[nameKeys.Chandler].blocks).toBe(2);
         expect(mockEmit).toBeCalledTimes(2);
         expect(mockEmit).toBeCalledWith(game.data, 'block', [nameKeys.Chandler]);
     });
@@ -279,14 +279,14 @@ describe('game methods', () => {
         });
 
         it('increments player kickouts', () => {
-            expect(game.stats[nameKeys.Chandler].kickouts).toBe(1);
+            expect(game.data.stats[nameKeys.Chandler].kickouts).toBe(1);
         });
         it('adds to out kickouts', () => {
-            expect(game.kickouts[0].length).toBe(1);
-            expect(game.kickouts[0][0]).toBe(nameKeys.Chandler);
+            expect(game.data.kickouts[0].length).toBe(1);
+            expect(game.data.kickouts[0][0]).toBe(nameKeys.Chandler);
         });
         it('adds to the opponents advantages drawn', () => {
-            expect(game.advantage_conversion[1].drawn).toBe(1);
+            expect(game.data.advantage_conversion[1].drawn).toBe(1);
         });
         it('calls emit', () => {
             expect(mockEmit).toBeCalledTimes(1);
@@ -300,18 +300,18 @@ describe('game methods', () => {
         });
 
         it('increments player kickouts drawn', () => {
-            expect(game.stats[nameKeys.Ian].kickouts_drawn).toBe(1);
+            expect(game.data.stats[nameKeys.Ian].kickouts_drawn).toBe(1);
         });
         it('adds to the game kickouts', () => {
-            expect(game.kickouts[1].length).toBe(1);
-            expect(game.kickouts[1][0]).toBe(1);
+            expect(game.data.kickouts[1].length).toBe(1);
+            expect(game.data.kickouts[1][0]).toBe(1);
         });
         it('adds to the kickouts drawn by', () => {
-            expect(game.kickouts_drawn_by.length).toBe(1);
-            expect(game.kickouts_drawn_by[0]).toBe(nameKeys.Ian);
+            expect(game.data.kickouts_drawn_by.length).toBe(1);
+            expect(game.data.kickouts_drawn_by[0]).toBe(nameKeys.Ian);
         });
         it('increments the games advantages drawn', () => {
-            expect(game.advantage_conversion[0].drawn).toBe(1);
+            expect(game.data.advantage_conversion[0].drawn).toBe(1);
         });
         it('calls emit', () => {
             expect(mockEmit).toBeCalledTimes(1);
@@ -321,40 +321,40 @@ describe('game methods', () => {
 
     describe('kickoutOver', () => {
         test('over for us', () => {
-            game.kickouts[0] = [nameKeys.Ian, nameKeys.Chandler];
+            game.data.kickouts[0] = [nameKeys.Ian, nameKeys.Chandler];
             game.kickoutOver(nameKeys.Ian);
 
-            expect(game.kickouts[0].length).toBe(1);
-            expect(game.kickouts[0][0]).toBe(nameKeys.Chandler);
+            expect(game.data.kickouts[0].length).toBe(1);
+            expect(game.data.kickouts[0][0]).toBe(nameKeys.Chandler);
             expect(mockEmit).toBeCalledTimes(1);
             expect(mockEmit).toBeCalledWith(game.data, 'kickoutOver', [nameKeys.Ian]);
         });
 
         test('over for them', () => {
-            game.kickouts[1] = [1, 2];
+            game.data.kickouts[1] = [1, 2];
             game.kickoutOver(false);
 
-            expect(game.kickouts[1].length).toBe(1);
-            expect(game.kickouts[1][0]).toBe(2);
+            expect(game.data.kickouts[1].length).toBe(1);
+            expect(game.data.kickouts[1][0]).toBe(2);
             expect(mockEmit).toBeCalledTimes(1);
             expect(mockEmit).toBeCalledWith(game.data, 'kickoutOver', [false]);
         });
     });
 
     test('resetKickouts', () => {
-        game.kickouts = [[nameKeys.Ian, nameKeys.Chandler], [1, 2]];
-        game.kickouts_drawn_by = [nameKeys.Eli];
+        game.data.kickouts = [[nameKeys.Ian, nameKeys.Chandler], [1, 2]];
+        game.data.kickouts_drawn_by = [nameKeys.Eli];
         game.resetKickouts();
 
-        expect(game.kickouts[0].length).toBe(0);
-        expect(game.kickouts[1].length).toBe(0);
-        expect(game.kickouts_drawn_by.length).toBe(0);
+        expect(game.data.kickouts[0].length).toBe(0);
+        expect(game.data.kickouts[1].length).toBe(0);
+        expect(game.data.kickouts_drawn_by.length).toBe(0);
     });
 
     test('save', () => {
         game.save();
 
-        expect(game.stats[nameKeys.Eli].saves).toBe(1);
+        expect(game.data.stats[nameKeys.Eli].saves).toBe(1);
         expect(mockEmit).toBeCalledTimes(1);
         expect(mockEmit).toBeCalledWith(game.data, 'save', []);
     });
@@ -366,10 +366,10 @@ describe('game methods', () => {
             });
 
             it('increments the goalies stat', () => {
-                expect(game.stats[nameKeys.Eli].goals_allowed).toBe(1);
+                expect(game.data.stats[nameKeys.Eli].goals_allowed).toBe(1);
             });
             it('increments the score', () => {
-                expect(game.score[1]).toBe(1);
+                expect(game.data.score[1]).toBe(1);
             });
             it('emits', () => {
                 expect(mockEmit).toBeCalledTimes(1);
@@ -379,16 +379,16 @@ describe('game methods', () => {
 
         describe('advantage goal', () => {
             beforeEach(() => {
-                game.kickouts[0] = [nameKeys.Chandler];
-                game.advantage_conversion[0].drawn = 1;
+                game.data.kickouts[0] = [nameKeys.Chandler];
+                game.data.advantage_conversion[0].drawn = 1;
                 game.goalAllowed('5');
             });
 
             it('increments the goalies stat', () => {
-                expect(game.stats[nameKeys.Eli].advantage_goals_allowed).toBe(1);
+                expect(game.data.stats[nameKeys.Eli].advantage_goals_allowed).toBe(1);
             });
             it('increments their advantage conversion', () => {
-                expect(game.advantage_conversion[1].converted).toBe(1);
+                expect(game.data.advantage_conversion[1].converted).toBe(1);
             });
         });
     });
@@ -397,8 +397,8 @@ describe('game methods', () => {
         test('won', () => {
             game.sprint(nameKeys.Eli, true);
 
-            expect(game.stats[nameKeys.Eli].sprints_taken).toBe(1);
-            expect(game.stats[nameKeys.Eli].sprints_won).toBe(1);
+            expect(game.data.stats[nameKeys.Eli].sprints_taken).toBe(1);
+            expect(game.data.stats[nameKeys.Eli].sprints_won).toBe(1);
             expect(mockEmit).toBeCalledTimes(1);
             expect(mockEmit).toBeCalledWith(game.data, 'sprint', [nameKeys.Eli, true]);
         });
@@ -406,8 +406,8 @@ describe('game methods', () => {
         test('lost', () => {
             game.sprint(nameKeys.Eli, false);
 
-            expect(game.stats[nameKeys.Eli].sprints_taken).toBe(1);
-            expect(game.stats[nameKeys.Eli].sprints_won).toBe(0);
+            expect(game.data.stats[nameKeys.Eli].sprints_taken).toBe(1);
+            expect(game.data.stats[nameKeys.Eli].sprints_won).toBe(0);
             expect(mockEmit).toBeCalledTimes(1);
             expect(mockEmit).toBeCalledWith(game.data, 'sprint', [nameKeys.Eli, false]);
         });
@@ -426,20 +426,20 @@ describe('game methods', () => {
             });
 
             it('increments drawn', () => {
-                expect(game.stats[drawnBy].five_meters_drawn).toBe(1);
+                expect(game.data.stats[drawnBy].five_meters_drawn).toBe(1);
             });
             it('increments taken', () => {
-                expect(game.stats[takenBy].five_meters_taken).toBe(1);
-                expect(game.stats[takenBy].shots).toBe(1);
+                expect(game.data.stats[takenBy].five_meters_taken).toBe(1);
+                expect(game.data.stats[takenBy].shots).toBe(1);
             });
 
             if (made === true || made === 'made') {
                 it('increments made', () => {
-                    expect(game.stats[takenBy].five_meters_made).toBe(1);
-                    expect(game.stats[takenBy].goals).toBe(1);
+                    expect(game.data.stats[takenBy].five_meters_made).toBe(1);
+                    expect(game.data.stats[takenBy].goals).toBe(1);
                 });
                 it('increments score', () => {
-                    expect(game.score[0]).toBe(1);
+                    expect(game.data.score[0]).toBe(1);
                 })
             }
 
@@ -463,36 +463,36 @@ describe('game methods', () => {
             });
 
             it('increments called', () => {
-                expect(game.stats[player].five_meters_called).toBe(1);
+                expect(game.data.stats[player].five_meters_called).toBe(1);
             });
             it('increments player kickouts', () => {
-                expect(game.stats[player].kickouts).toBe(1);
+                expect(game.data.stats[player].kickouts).toBe(1);
             });
             it('increments goalie five meter taken on', () => {
-                expect(game.stats[nameKeys.Eli].five_meters_taken_on).toBe(1);
+                expect(game.data.stats[nameKeys.Eli].five_meters_taken_on).toBe(1);
             });
 
             switch(made) {
                 case true:
                 case 'made':
                     it('increments the score', () => {
-                        expect(game.score[1]).toBe(1);
+                        expect(game.data.score[1]).toBe(1);
                     });
                     it('increments goals allowed', () => {
-                        expect(game.stats[nameKeys.Eli].goals_allowed).toBe(1);
+                        expect(game.data.stats[nameKeys.Eli].goals_allowed).toBe(1);
                     });
                     it('increments five meters allowed', () => {
-                        expect(game.stats[nameKeys.Eli].five_meters_allowed).toBe(1);
+                        expect(game.data.stats[nameKeys.Eli].five_meters_allowed).toBe(1);
                     });
                     break;
 
                 case false:
                 case 'blocked':
                     it('increments blocks', () => {
-                        expect(game.stats[nameKeys.Eli].five_meters_blocked).toBe(1);
+                        expect(game.data.stats[nameKeys.Eli].five_meters_blocked).toBe(1);
                     });
                     it('increments saves', () => {
-                        expect(game.stats[nameKeys.Eli].saves).toBe(1);
+                        expect(game.data.stats[nameKeys.Eli].saves).toBe(1);
                     });
             }
 
@@ -516,21 +516,21 @@ describe('game methods', () => {
             });
 
             it('increments shots', () => {
-                expect(game.stats[nameKeys.Chandler].shots).toBe(1);
+                expect(game.data.stats[nameKeys.Chandler].shots).toBe(1);
             });
             it('increments shootout taken', () => {
-                expect(game.stats[nameKeys.Chandler].shoot_out_taken).toBe(1);
+                expect(game.data.stats[nameKeys.Chandler].shoot_out_taken).toBe(1);
             });
 
             if(made === true || made ==='made') {
                 it('increments the score', () => {
-                    expect(game.score[0]).toBe(1);
+                    expect(game.data.score[0]).toBe(1);
                 });
                 it('increments player goals', () => {
-                    expect(game.stats[nameKeys.Chandler].goals).toBe(1);
+                    expect(game.data.stats[nameKeys.Chandler].goals).toBe(1);
                 });
                 it('increments shoot out made', () => {
-                    expect(game.stats[nameKeys.Chandler].shoot_out_made).toBe(1);
+                    expect(game.data.stats[nameKeys.Chandler].shoot_out_made).toBe(1);
                 });
             }
 
@@ -554,25 +554,25 @@ describe('game methods', () => {
             });
 
             it('increments goalie taken on', () => {
-                expect(game.stats[nameKeys.Eli].shoot_out_taken_on).toBe(1);
+                expect(game.data.stats[nameKeys.Eli].shoot_out_taken_on).toBe(1);
             });
 
             if(made === true || made ==='made') {
                 it('increments the score', () => {
-                    expect(game.score[1]).toBe(1);
+                    expect(game.data.score[1]).toBe(1);
                 });
                 it('increments goals allowed', () => {
-                    expect(game.stats[nameKeys.Eli].goals_allowed).toBe(1);
+                    expect(game.data.stats[nameKeys.Eli].goals_allowed).toBe(1);
                 });
                 it('increments shoot out allowed', () => {
-                    expect(game.stats[nameKeys.Eli].shoot_out_allowed).toBe(1);
+                    expect(game.data.stats[nameKeys.Eli].shoot_out_allowed).toBe(1);
                 });
             } else if (made === false || made === 'blocked') {
                 it('increments saves', () => {
-                    expect(game.stats[nameKeys.Eli].saves).toBe(1);
+                    expect(game.data.stats[nameKeys.Eli].saves).toBe(1);
                 });
                 it('increments shoot out blocked', () => {
-                    expect(game.stats[nameKeys.Eli].shoot_out_blocked).toBe(1);
+                    expect(game.data.stats[nameKeys.Eli].shoot_out_blocked).toBe(1);
                 });
             }
 
@@ -586,7 +586,7 @@ describe('game methods', () => {
     test('changeGoalie', () => {
         game.changeGoalie(nameKeys.Ian);
 
-        expect(game.goalie).toBe(nameKeys.Ian);
+        expect(game.data.goalie).toBe(nameKeys.Ian);
         expect(mockEmit).toBeCalledTimes(1);
         expect(mockEmit).toBeCalledWith(game.data, 'changeGoalie', [nameKeys.Ian]);
     });
@@ -595,7 +595,7 @@ describe('game methods', () => {
         const status = 'quarter';
         game.setStatus(status);
 
-        expect(game.status).toBe(status);
+        expect(game.data.status).toBe(status);
         expect(mockEmit).toBeCalledTimes(1);
         expect(mockEmit).toBeCalledWith(game.data, 'setStatus', [status]);
     });
@@ -606,12 +606,12 @@ describe('game methods', () => {
         });
 
         it('should update the data', () => {
-            expect(game.quarters_played).toBe(4);
+            expect(game.data.quarters_played).toBe(4);
         });
 
         it('should add blank boxscores', () => {
-            expect(game.boxscore[0].length).toBe(5);
-            expect(game.boxscore[1].length).toBe(5);
+            expect(game.data.boxscore[0].length).toBe(5);
+            expect(game.data.boxscore[1].length).toBe(5);
         });
 
         it('emits', () => {
@@ -629,7 +629,7 @@ describe('game methods', () => {
             it('emit', () => {
                 game.timeout(us, time);
 
-                let team = us ? game.us : game.opponent;
+                let team = us ? game.data.us : game.data.opponent;
                 expect(mockEmit).toBeCalledTimes(1);
                 expect(mockEmit).toBeCalledWith(game.data, 'timeout', [team, time]);
             });
@@ -669,15 +669,34 @@ describe('game methods', () => {
         });
 
         it('adds new players', () => {
-            expect(game.stats).toHaveProperty(nameKeys.Henry);
+            expect(game.data.stats).toHaveProperty(nameKeys.Henry);
         });
 
         it('adds new players with all the data', () => {
-            expect(Object.keys(game.stats[nameKeys.Henry]).length).toBeGreaterThanOrEqual(Object.keys(baseData).length);
+            expect(Object.keys(game.data.stats[nameKeys.Henry]).length).toBeGreaterThanOrEqual(Object.keys(baseData).length);
         });
 
         it('removes players', () => {
-            expect(game.stats).not.toHaveProperty(nameKeys.Eli);
+            expect(game.data.stats).not.toHaveProperty(nameKeys.Eli);
         });
     });
+});
+
+test('emit doesnt lock the data', async () => {
+    game = await gameFactory.open(1, 1);
+
+    const status = 'quarter';
+    game.setStatus(status);
+
+    expect(game.data.status).toBe(status);
+    expect(mockEmit).toBeCalledTimes(1);
+    expect(mockEmit).toBeCalledWith(game.data, 'setStatus', [status]);
+
+    game = await gameFactory.open(1, 1);
+    const newStatus = 'final';
+    game.setStatus(newStatus);
+
+    expect(game.data.status).toBe(newStatus);
+    expect(mockEmit).toBeCalledTimes(2);
+    expect(mockEmit).toBeCalledWith(game.data, 'setStatus', [newStatus]);
 });

@@ -109,7 +109,7 @@ function createNew(connection, gameId) {
                 data.stats[p.name_key] = {...p, ...statsObj}
             });
 
-            resolve(data);
+            return data;
         });
 }
 

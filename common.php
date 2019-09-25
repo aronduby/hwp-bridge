@@ -64,8 +64,10 @@ $userInfo = $auth0->getUser();
 if (!$userInfo) {
     $auth0->login();
 } else {
-    print_p($auth0->getIdToken());
-    print_p($userInfo, true);
+    if (array_key_exists('dumpUser', $_GET)) {
+        print_p($auth0->getIdToken());
+        print_p($userInfo, true);
+    }
 }
 
 
