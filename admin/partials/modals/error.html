@@ -1,0 +1,16 @@
+<div class="modal-container error">
+    <header class="modal-header">
+        <h4 class="modal-title">{{err.name ? err.name : 'Error'}}</h4>
+    </header>
+    <section class="modal-body">
+        <pre ng-if="err.message">{{err.message}}</pre>
+
+        <p>You might have to logout and log back in.</p>
+
+    </section>
+    <footer class="modal-footer">
+        <button class="btn btn-link" ng-click="logout()">Logout</button>
+        <button class="btn btn-success btn-large" ng-click="cancel()">Close</button>
+        </section>
+    </footer>
+</div>

@@ -497,7 +497,28 @@ angular.module('myApp.services', [])
 		return $scope;
 
 	}])
-	.factory('socket', ['$rootScope', '$window', function ($rootScope, $window) {
+	.factory('socket', ['$rootScope', '$window', '$modal', function ($rootScope, $window, $modal) {
+
+		socket.on('error', (err) => {
+			console.error(err);
+			var errCtrl = function ($scope, $modalInstance) {
+				$scope.err = err;
+
+				$scope.logout = function () {
+					$window.location.replace($window.location.origin + '/logout.php');
+				};
+
+				$scope.cancel = function () {
+					$modalInstance.dismiss('cancel');
+				};
+			};
+
+			var errInstance = $modal.open({
+				templateUrl: 'partials/modals/error.html',
+				controller: errCtrl,
+				backdrop: 'static'
+			});
+		});
 
 		/*
 		 *	Create scoped objects which correspond to controllers scopes
@@ -551,7 +572,7 @@ angular.module('myApp.services', [])
 
 		/*
 		 *	This actually adds the event listener to the socket. Make sure the handler has already been
-		 *	wraped using the wrapHandler() function above
+		 *	wrapped using the wrapHandler() function above
 		 */
 		function addListener(e, wrapped_handler) {
 			socket.on(e, wrapped_handler);
