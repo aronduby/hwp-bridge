@@ -10,10 +10,10 @@ class TwitterBroadcaster extends Middleware {
     /**
      *
      * @param {object} settings - settings for twitter
-     * @param {string} settings.consumer_key - the app's twitter consumer key
-     * @param {string} settings.consumer_secret - the app's twitter consumer secret
-     * @param {string} settings.access_token - the user's twitter access token
-     * @param {string} settings.access_token_secret - the user's twitter access token secret
+     * @param {string} settings.consumerKey - the app's twitter consumer key
+     * @param {string} settings.consumerSecret - the app's twitter consumer secret
+     * @param {string} settings.accessToken - the user's twitter access token
+     * @param {string} settings.accessTokenSecret - the user's twitter access token secret
      * @param {boolean} testMode - are we in test mode and should log instead
      */
     constructor(settings, testMode) {
@@ -22,10 +22,10 @@ class TwitterBroadcaster extends Middleware {
         this._testMode = testMode;
 
         this._twit = new Twit({
-            consumer_key: settings.consumer_key,
-            consumer_secret: settings.consumer_secret,
-            access_token: settings.access_token,
-            access_token_secret: settings.access_token_secret
+            consumer_key: settings.consumerKey,
+            consumer_secret: settings.consumerSecret,
+            access_token: settings.accessToken,
+            access_token_secret: settings.accessTokenSecret
         });
     }
 

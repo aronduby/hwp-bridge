@@ -18,14 +18,13 @@ module.exports = {
 		'from': '+TWILIO_OUTBOUND_NUMBER'
 	},
 	twitter: {
-		consumer_key: 'TWITTER-CONSUMER-KEY',
-		consumer_secret: 'TWITTER-CONSUMER-SECRET',
-		access_token: 'TWITTER-ACCESS-TOKEN',
-		access_token_secret: 'TWITTER-ACCESS-TOKEN-SECRET'
+		consumerKey: 'TWITTER-CONSUMER-KEY',
+		consumerSecret: 'TWITTER-CONSUMER-SECRET',
+		accessToken: 'TWITTER-ACCESS-TOKEN',
+		accessTokenSecret: 'TWITTER-ACCESS-TOKEN-SECRET'
 	},
 	jwtAuth: {
-		customClaimNamespace: 'https://hudsonvillewaterpolo.com/',
-		secret: 'JWT_AUTH_SECRET',
-		algorithm: 'HS256'
+		publicKey: 'path/to/key/setup/on/hwp',
+		algorithm: 'RS256'
 	}
 };

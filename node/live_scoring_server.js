@@ -82,7 +82,8 @@ gameEmitter.setBroadcaster(sendToBroadcasters);
 const gameFactory = require('./game-factory')(dataHandler, gameEmitter, updateManager);
 
 // AUTH
-const tokenToUser = require('./token-to-user')(settings.jwtAuth.customClaimNamespace);
+const tokenToUser = require('./token-to-user')();
+const tokenSecret = fs.readFileSync(settings.jwtAuth.publicKey);
 
 // SOCKETS
 const https = require('https');
@@ -114,7 +115,7 @@ io.of((name, query, next) => {
 // <editor-fold desc="JWT Authentication">
 .use(jwtAuth.authenticate(
 	{
-		secret: settings.jwtAuth.secret,		// required, used to verify the token's signature
+		secret: tokenSecret,		// required, used to verify the token's signature
 		algorithm: settings.jwtAuth.algorithm,  // optional, default to be HS256
 		succeedWithoutToken: true				// allow anonymous connections
 	}, function(payload, done) {
@@ -203,7 +204,7 @@ io.of((name, query, next) => {
 		 * @param {function} cb - the callback to send confirmation back through
 		 */
 		socket.on('update', async (func, args, cb) => {
-			console.log('Controller sent update', func, args);
+			console.log('Controller sent update', socket.openGameId, func, args);
 			try {
 				let game = gameFactory.get(socket.openGameId, socket.request.user.sub);
 				game[func].apply(game, args);
@@ -239,7 +240,7 @@ io.of((name, query, next) => {
 		socket.on('final', async (cb) => {
 			console.log('FINAL');
 			try {
-				const saved = await gameFactory.finalize(socket.openGameId);
+				const saved = await gameFactory.finalize(socket.openGameId, socket.request.user.sub);
 				socket.broadcast.emit('final', socket.openGameId);
 				delete socket.openGameId;
 

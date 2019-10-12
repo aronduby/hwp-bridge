@@ -5,6 +5,7 @@ define('DB_USER','hwp');
 define('DB_PASSWD','PASSWD');
 define('DB_NAME','hwp');
 
+define('MASTER_PATH', 'PATH/TO/hwp');
 define('BRIDGE_PATH', 'PATH/TO/hwp-bridge');
 define('PUBLIC_PATH', 'PATH/TO/hwp/public');
 define('PHOTO_PATH', 'PATH/TO/hwp-photos');
@@ -21,10 +22,7 @@ define('THUMB_BASE_HREF', 'https://photos.hudsonvillewaterpolo.local/thumbs');
 
 define('MANDRILL_API_KEY', 'XXXXX');
 
-define('SERVER', 'DEV');
-
-define('ADMIN_USERNAME', 'XXXXX');
-define('ADMIN_PASSWORD', 'XXXXX');
+define('SERVER_ROLE', 'DEV');
 
 define('DEBUG', true);
 
@@ -39,7 +37,8 @@ define('FACEBOOK_CONSUMER_SECRET', 'XXXXX');
 define('FOURSQUARE_CONSUMER_KEY', 'XXXXX');
 define('FOURSQUARE_CONSUMER_SECRET', 'XXXXX');
 
-define('AUTH0_DOMAIN', 'XXXXX');
-define('AUTH0_CLIENT_ID', 'XXXXX');
-define('AUTH0_CLIENT_SECRET', 'XXXXX');
-define('AUTH0_REDIRECT_URI', 'XXXXX');
+define('AUTH_ENDPOINT', 'XXXXX');
+define('AUTH_CLIENT_ID', 'XXXXX');
+define('AUTH_CLIENT_SECRET', 'XXXXX');
+define('AUTH_PUBLIC_KEY_PATH', 'XXXXX');
+define('AUTH_PRIVATE_KEY_PATH', 'XXXXX');

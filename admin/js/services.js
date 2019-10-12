@@ -174,20 +174,19 @@ angular.module('myApp.services', [])
 
 			final: function () {
 				this.push('final', arguments);
-				var self = this,
-					d = $q.defer();
+				var self = this;
 
-				this._socket.emit('final', null, function (err, data) {
-					if (err) {
-						console.log(err);
-						d.reject(err);
-					} else {
-						self._history.clear();
-						d.resolve(data);
-					}
+				return new Promise((resolve, reject) => {
+					self._socket.emit('final', function (err, data) {
+						if (err) {
+							console.log(err);
+							reject(err);
+						} else {
+							self._history.clear();
+							resolve(data);
+						}
+					});
 				});
-
-				return d.promise;
 			},
 
 			shot: function (player, made, assisted_by) {

@@ -1,29 +1,7 @@
 <?php
+require '../common.php';
 
-use Auth0\SDK\Auth0;
-
-require __DIR__ . '/../define.php';
-require __DIR__ . '/../vendor/autoload.php';
-
-$auth0 = new Auth0([
-    'domain' => AUTH0_DOMAIN,
-    'client_id' => AUTH0_CLIENT_ID,
-    'client_secret' => AUTH0_CLIENT_SECRET,
-    'redirect_uri' => AUTH0_REDIRECT_URI,
-    'persist_id_token' => true,
-    'persist_access_token' => true,
-    'persist_refresh_token' => true,
-    'scope' => 'openid profile email',
-]);
-
-$userInfo = $auth0->getUser();
-
-if ($userInfo) {
-    $auth0->logout();
-    $logout_url = sprintf('https://%s/v2/logout?client_id=%s&returnTo=%s', AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_LOGOUT_URI);
-    header('Location: ' . $logout_url);
-    die();
-}
+Auth::logout();
 
 require '_pre.php';
 ?>

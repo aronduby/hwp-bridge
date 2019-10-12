@@ -1,4 +1,6 @@
 <?php /** @noinspection PhpUnhandledExceptionInspection */
+session_start();
+
 set_time_limit(0);
 ini_set('display_errors', '1');
 
@@ -13,7 +15,7 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 
-function uncaughtExceptionHandler(Exception $exception){
+function uncaughtExceptionHandler(Throwable $exception){
     /*
     $handlers = ob_list_handlers();
     while(!empty($handlers)){
@@ -46,34 +48,13 @@ function uncaughtExceptionHandler(Exception $exception){
 set_error_handler('exception_error_handler');
 set_exception_handler('uncaughtExceptionHandler');
 
-
-use Auth0\SDK\Auth0;
-
-$auth0 = new Auth0([
-    'domain' => AUTH0_DOMAIN,
-    'client_id' => AUTH0_CLIENT_ID,
-    'client_secret' => AUTH0_CLIENT_SECRET,
-    'redirect_uri' => AUTH0_REDIRECT_URI,
-    'persist_id_token' => true,
-    'persist_access_token' => true,
-    'persist_refresh_token' => true,
-    'scope' => 'openid profile email',
-]);
-
-$userInfo = $auth0->getUser();
-if (!$userInfo) {
-    $auth0->login();
-} else {
-    if (array_key_exists('dumpUser', $_GET)) {
-        print_p($auth0->getIdToken());
-        print_p($userInfo, true);
-    }
+if (!Auth::authenticated() && $_SERVER['PHP_SELF'] !== '/login.php') {
+    header('Location: login.php');
+    die();
 }
-
 
 $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, PDODB::getInstance());
 Config::setDbh(PDODB::getInstance());
-
 
 function print_p($value, $exit = false) {
 	if (!DEBUG)

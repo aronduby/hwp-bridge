@@ -1,5 +1,17 @@
 <?php
 require '../common.php';
+
+// make sure we have the necessary claims
+$claims = Auth::claims();
+if (
+    !property_exists($claims, 'site_id')
+    || !property_exists($claims, 'sub')
+    || !property_exists($claims, 'admin')
+) {
+    Auth::logout();
+    header('Location: login.php');
+    die();
+}
 ?>
 <!doctype html>
 <html lang="en" ng-app="myApp">
@@ -16,7 +28,7 @@ require '../common.php';
 
     <script src="<?php echo BASE_HREF ?>:7656/socket.io/socket.io.js"></script>
     <script>
-        var token = "<?php echo $auth0->getIdToken() ?>";
+        var token = "<?php echo Auth::token() ?>";
     </script>
 </head>
 <body>
