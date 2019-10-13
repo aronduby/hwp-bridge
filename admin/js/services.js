@@ -62,7 +62,7 @@ angular.module('myApp.services', [])
 		return new History($localStorage);
 
 	}])
-	.service('game', ['$q', function ($q) {
+	.service('game', ['$q', '$modal', function ($q, $modal) {
 		return {
 			game_id: 0,
 			season_id: 0,
@@ -103,11 +103,56 @@ angular.module('myApp.services', [])
 			loadData: function (game_id, q) {
 				var self = this;
 				this._socket.emit('openGame', game_id, function (err, data) {
-					// TODO -- could error if someone else has it open
-					//console.log(data);
-					self.takeData(data);
-					self.loaded = true;
-					q.resolve();
+
+					new Promise(async (resolve, reject) => {
+						if (err) {
+							if (err.type === 'LockedError') {
+								// if its a lock error give the option to steal it
+								try {
+									var stealConfirm = $modal.open({
+										templateUrl: 'partials/modals/locked.html',
+										controller: YesNoModalCtrl,
+										resolve: {
+											title: function () {
+												return 'I dont matter';
+											},
+										}
+									});
+
+									var result = await stealConfirm.result;
+									if (result) {
+										self._socket.emit('stealGame', game_id, (err, data) => {
+											if (err) {
+												reject(err);
+												return;
+											}
+
+											resolve(data);
+										})
+									} else {
+										reject();
+									}
+								} catch(e) {
+									reject(e);
+								}
+							} else {
+								reject(err);
+							}
+						} else {
+							resolve(data);
+						}
+					})
+						.then((data) => {
+							self.takeData(data);
+							self.loaded = true;
+							q.resolve();
+						})
+						.catch((err) => {
+							console.error(err);
+							window.location.replace('events.php');
+							q.reject();
+							return;
+						});
 				});
 			},
 
@@ -495,6 +540,27 @@ angular.module('myApp.services', [])
 
 		return $scope;
 
+	}])
+	.service('gameStolen', ['socket', 'game', '$modal', function(socket, game, $modal) {
+		socket.on('gameStolen', async (gameId) => {
+			if (gameId+'' === game.game_id+'') {
+				try {
+					const stealConfirm = $modal.open({
+						templateUrl: 'partials/modals/stolen.html',
+						controller: ($scope, $modalInstance) => {
+							$scope.close = $modalInstance.close;
+						}
+					});
+
+					await stealConfirm.result;
+
+				} catch(err) {}
+
+				window.location.replace('events.php');
+			}
+		});
+
+		return {};
 	}])
 	.factory('socket', ['$rootScope', '$window', '$modal', function ($rootScope, $window, $modal) {
 

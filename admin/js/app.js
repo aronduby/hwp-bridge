@@ -78,12 +78,11 @@ config(['$routeProvider', function($routeProvider) {
 	$routeProvider.otherwise({redirectTo: '/'});
 
 }])
-.run(['socket', 'history', 'localCopy', 'game', function(socket, history, localCopy, game){
+.run(['socket', 'history', 'localCopy', 'game', 'gameStolen', function(socket, history, localCopy, game, gameStolen) {
 	window.s = socket;
     game.setHistory(history);
     game.setSocket(socket);
 	game.setLocalCopy(localCopy);
-
 }]);
 
 var gameDataDefer = function($route, $q, game){

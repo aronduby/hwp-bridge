@@ -155,7 +155,6 @@ io.of((name, query, next) => {
 				socket.broadcast.emit('open', game.data);
 				cb(null, game.data);
 			} catch(err) {
-				console.error(err);
 				cb(err);
 			}
 		});
