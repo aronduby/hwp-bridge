@@ -3,7 +3,8 @@ module.exports = {
 		host: 'localhost',
 		user: 'hwp',
 		password: 'poiuy098',
-		database: 'hwp'
+		database: 'hwp',
+		connectionLimit: 10
 	},
 	artisanPath: 'D:/web/hwp/artisan',
 	ssl: {
@@ -13,12 +14,17 @@ module.exports = {
 	},
 	twilio: {
 		'sid': 'TWILIO_SID_HERE',
-		'token': 'TWILIO_TOKEN_HERE'
+		'token': 'TWILIO_TOKEN_HERE',
+		'from': '+TWILIO_OUTBOUND_NUMBER'
 	},
 	twitter: {
-		consumer_key: 'TWITTER-CONSUMER-KEY',
-		consumer_secret: 'TWITTER-CONSUMER-SECRET',
-		access_token: 'TWITTER-ACCESS-TOKEN',
-		access_token_secret: 'TWITTER-ACCESS-TOKEN-SECRET'
+		consumerKey: 'TWITTER-CONSUMER-KEY',
+		consumerSecret: 'TWITTER-CONSUMER-SECRET',
+		accessToken: 'TWITTER-ACCESS-TOKEN',
+		accessTokenSecret: 'TWITTER-ACCESS-TOKEN-SECRET'
+	},
+	jwtAuth: {
+		publicKey: 'path/to/key/setup/on/hwp',
+		algorithm: 'RS256'
 	}
 };

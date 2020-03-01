@@ -1,4 +1,6 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
+session_start();
+
 set_time_limit(0);
 ini_set('display_errors', '1');
 
@@ -9,21 +11,20 @@ define('INPUT_DATE_FORMAT', 'Y-m-d');
 require __DIR__ . '/define.php';
 require __DIR__ . '/vendor/autoload.php';
 
-
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 
-function uncaughtExceptionHandler(Exception $exception){
-	/*
-	$handlers = ob_list_handlers();
-	while(!empty($handlers)){
-		ob_end_clean();
-		$handlers = ob_list_handlers();
-	}
-	*/
-	
-    $msg = "Uncaught Exception Handler:  Uncaught exception '%s' with message '%s' in %s:%s\nStack trace:\n%s\n  thrown in %s on line %s"; 
+function uncaughtExceptionHandler(Throwable $exception){
+    /*
+    $handlers = ob_list_handlers();
+    while(!empty($handlers)){
+        ob_end_clean();
+        $handlers = ob_list_handlers();
+    }
+    */
+
+    $msg = "Uncaught Exception Handler:  Uncaught exception '%s' with message '%s' in %s:%s\nStack trace:\n%s\n  thrown in %s on line %s";
     $msg = sprintf(
         $msg,
         get_class($exception),
@@ -35,42 +36,25 @@ function uncaughtExceptionHandler(Exception $exception){
         $exception->getLine()
     );
 
-	//include 'hdr.php';
-	//print '<article id="error_screen"><h1>Sorry...</h1><p>Looks like something crashed. Our developers have been notified. Please try another page.</p>';
-		print '<pre>'.$msg.'</pre>';
-	//else
-	//	mail(DEV_EMAIL, 'HistoryGR Uncaught Exception', $msg);
-	//print '</article>';
-	//include 'ftr.php';
+    //include 'hdr.php';
+    //print '<article id="error_screen"><h1>Sorry...</h1><p>Looks like something crashed. Our developers have been notified. Please try another page.</p>';
+    print '<pre>'.$msg.'</pre>';
+    //else
+    //	mail(DEV_EMAIL, 'HistoryGR Uncaught Exception', $msg);
+    //print '</article>';
+    //include 'ftr.php';
 }
-
 
 set_error_handler('exception_error_handler');
 set_exception_handler('uncaughtExceptionHandler');
 
-session_start();
-
-$facebook = new Facebook(array(
-  'appId'  => '286321628055151',
-  'secret' => 'a8e9a0c5d1cc9a17a4e9dde0d776bd0f',
-  'cookie' => TRUE,
-  'domain' => BASE_HREF
-));
-
-try {
-  $me = $facebook->api('/me');
-} catch (FacebookApiException $e) {
-  $me = NULL;
+if (!Auth::authenticated() && $_SERVER['PHP_SELF'] !== '/login.php') {
+    header('Location: login.php');
+    die();
 }
-
-// print_p($_COOKIE);
 
 $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, PDODB::getInstance());
 Config::setDbh(PDODB::getInstance());
-
-
-
-
 
 function print_p($value, $exit = false) {
 	if (!DEBUG)

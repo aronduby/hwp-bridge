@@ -1,11 +1,13 @@
 'use strict';
 
 // Setup socket.io as normal
-var addr = 'https://' + window.location.hostname + ':7656';
+var ns = location.hostname.replace(/^((www|admin)\.)?/, '');
+var addr = 'https://' + window.location.hostname + ':7656/'+ns;
 var socket = io(addr, {
 	'sync disconnect on unload': true,
-	// 'reconnectionAttempts': 5,
-	'secure': true
+	'secure': true,
+	'query': 'auth_token=' + token,
+	'timeout': window.location.hostname.endsWith('.local') ? 60000 : 2000
 });
 
 
@@ -60,11 +62,13 @@ angular.module('myApp.services', [])
 		return new History($localStorage);
 
 	}])
-	.service('game', ['$q', function ($q) {
+	.service('game', ['$q', '$modal', function ($q, $modal) {
 		return {
 			game_id: 0,
 			season_id: 0,
+			site_id: 0,
 			version: '1.1',
+			us: 'Hudsonville', // TODO -- not hardcoded at some point
 			opponent: null,
 			status: null,
 			quarters_played: 0,
@@ -98,19 +102,65 @@ angular.module('myApp.services', [])
 
 			loadData: function (game_id, q) {
 				var self = this;
-				this._socket.emit('getGameData', game_id, function (err, data) {
-					//console.log(data);
-					self.takeData(data);
-					self.loaded = true;
-					q.resolve();
+				this._socket.emit('openGame', game_id, function (err, data) {
+
+					new Promise(async (resolve, reject) => {
+						if (err) {
+							if (err.type === 'LockedError') {
+								// if its a lock error give the option to steal it
+								try {
+									var stealConfirm = $modal.open({
+										templateUrl: 'partials/modals/locked.html',
+										controller: YesNoModalCtrl,
+										resolve: {
+											title: function () {
+												return 'I dont matter';
+											},
+										}
+									});
+
+									var result = await stealConfirm.result;
+									if (result) {
+										self._socket.emit('stealGame', game_id, (err, data) => {
+											if (err) {
+												reject(err);
+												return;
+											}
+
+											resolve(data);
+										})
+									} else {
+										reject();
+									}
+								} catch(e) {
+									reject(e);
+								}
+							} else {
+								reject(err);
+							}
+						} else {
+							resolve(data);
+						}
+					})
+						.then((data) => {
+							self.takeData(data);
+							self.loaded = true;
+							q.resolve();
+						})
+						.catch((err) => {
+							console.error(err);
+							window.location.replace('events.php');
+							q.reject();
+							return;
+						});
 				});
 			},
 
 			takeData: function (data) {
 				// loop through and set the data
 				for (var i in data) {
-					if (i in this) {
-						if (i[0] != '_')
+					if (this.hasOwnProperty(i)) {
+						if (i[0] !== '_')
 							this[i] = data[i];
 					}
 				}
@@ -118,7 +168,23 @@ angular.module('myApp.services', [])
 
 			export: function () {
 				var d = {},
-					flds = ['game_id', 'season_id', 'opponent', 'status', 'quarters_played', 'stats', 'goalie', 'advantage_conversion', 'kickouts', 'score', 'boxscore'];
+					flds = [
+						'game_id',
+						'site_id',
+						'season_id',
+						'version',
+						'us',
+						'opponent',
+						'status',
+						'quarters_played',
+						'stats',
+						'goalie',
+						'advantage_conversion',
+						'kickouts',
+						'kickouts_drawn_by',
+						'boxscore',
+						'score'
+					];
 				for (var i in flds) {
 					d[flds[i]] = this[flds[i]];
 				}
@@ -153,20 +219,19 @@ angular.module('myApp.services', [])
 
 			final: function () {
 				this.push('final', arguments);
-				var self = this,
-					d = $q.defer();
+				var self = this;
 
-				this._socket.emit('final', null, function (err, data) {
-					if (err) {
-						console.log(err);
-						d.reject(err);
-					} else {
-						self._history.clear();
-						d.resolve(data);
-					}
+				return new Promise((resolve, reject) => {
+					self._socket.emit('final', function (err, data) {
+						if (err) {
+							console.log(err);
+							reject(err);
+						} else {
+							self._history.clear();
+							resolve(data);
+						}
+					});
 				});
-
-				return d.promise;
 			},
 
 			shot: function (player, made, assisted_by) {
@@ -476,7 +541,49 @@ angular.module('myApp.services', [])
 		return $scope;
 
 	}])
-	.factory('socket', ['$rootScope', '$window', function ($rootScope, $window) {
+	.service('gameStolen', ['socket', 'game', '$modal', function(socket, game, $modal) {
+		socket.on('gameStolen', async (gameId) => {
+			if (gameId+'' === game.game_id+'') {
+				try {
+					const stealConfirm = $modal.open({
+						templateUrl: 'partials/modals/stolen.html',
+						controller: ($scope, $modalInstance) => {
+							$scope.close = $modalInstance.close;
+						}
+					});
+
+					await stealConfirm.result;
+
+				} catch(err) {}
+
+				window.location.replace('events.php');
+			}
+		});
+
+		return {};
+	}])
+	.factory('socket', ['$rootScope', '$window', '$modal', function ($rootScope, $window, $modal) {
+
+		socket.on('error', (err) => {
+			console.error(err);
+			var errCtrl = function ($scope, $modalInstance) {
+				$scope.err = err;
+
+				$scope.logout = function () {
+					$window.location.replace($window.location.origin + '/logout.php');
+				};
+
+				$scope.cancel = function () {
+					$modalInstance.dismiss('cancel');
+				};
+			};
+
+			var errInstance = $modal.open({
+				templateUrl: 'partials/modals/error.html',
+				controller: errCtrl,
+				backdrop: 'static'
+			});
+		});
 
 		/*
 		 *	Create scoped objects which correspond to controllers scopes
@@ -530,7 +637,7 @@ angular.module('myApp.services', [])
 
 		/*
 		 *	This actually adds the event listener to the socket. Make sure the handler has already been
-		 *	wraped using the wrapHandler() function above
+		 *	wrapped using the wrapHandler() function above
 		 */
 		function addListener(e, wrapped_handler) {
 			socket.on(e, wrapped_handler);

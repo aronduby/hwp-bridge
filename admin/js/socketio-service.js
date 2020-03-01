@@ -1,3 +1,6 @@
+/**
+ * @Deprecated
+ */
 'use strict';
 
 var angularSocketIO = angular.module('socketioModule', ['ng']);

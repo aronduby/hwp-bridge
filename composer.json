@@ -9,7 +9,9 @@
         "swiftmailer/swiftmailer": "^5.4",
         "symfony/console": "^2.7",
         "symfony/monolog-bridge": "^2.7",
-        "symfony/event-dispatcher": "^2.7"
+        "symfony/event-dispatcher": "^2.7",
+        "firebase/php-jwt": "^5.0",
+        "guzzlehttp/guzzle": "~6.0"
     },
     "authors": [
         {

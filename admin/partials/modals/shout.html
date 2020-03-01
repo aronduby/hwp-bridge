@@ -4,13 +4,11 @@
 		<h4 class="modal-title">Shout</h4>
 	</header>
 	<section class="modal-body">
-
-		<textarea name="msg" ng-model="msg" ng-minlength="10" placeholder="your message here" required autofocus></textarea>
-		
+		<textarea name="msg" ng-model="msg" placeholder="your message here" required autofocus></textarea>
 	</section>
 	<footer class="modal-footer">
-		<button class="btn btn-success btn-large" ng-click="shout(msg)">Shout It</button>
 		<button class="btn btn-link" ng-click="cancel()">cancel</button>
-	</section>
+		<button class="btn btn-success btn-large" ng-click="shout(msg)">Shout It</button>
+		</section>
 	</footer>
 </div>

@@ -1,0 +1,15 @@
+module.exports = {
+    carded: require('./carded'),
+    final: require('./final'),
+    fiveMeterCalled: require('./five-meter-called'),
+    fiveMeterDrawn: require('./five-meter-drawn'),
+    goalAllowed: require('./goal-allowed'),
+    kickout: require('./kickout'),
+    setQuartersPlayed: require('./set-quarters-played'),
+    shootOutThem: require('./shoot-out-them'),
+    shootOutUs: require('./shoot-out-us'),
+    shot: require('./shot'),
+    shout: require('./shout'),
+    sprint: require('./sprint'),
+    timeout: require('./timeout'),
+};

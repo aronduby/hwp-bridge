@@ -10,7 +10,7 @@ angular.module('myApp.controllers', [])
     $scope.order_by = 'number_sort';
 
     $scope.sprintTakenBy = function (sprint_by) {
-      if ($scope.game.goalie == '') {
+      if ($scope.game.goalie === '') {
         alert('SET GOALIE!');
         return false;
       }
@@ -362,7 +362,8 @@ angular.module('myApp.controllers', [])
     };
   }])
 
-  .controller('SocketStatusCtrl', ['$scope', '$timeout', '$q', 'socket', 'fakeSocket', 'game', 'IAmController', function ($scope, $timeout, $q, socket, fakeSocket, game, IAmController) {
+  .controller('SocketStatusCtrl', ['$scope', '$timeout', '$q', 'socket', 'fakeSocket', 'game', 'IAmController',
+  function ($scope, $timeout, $q, socket, fakeSocket, game, IAmController) {
 
     $scope.status = false;
     $scope.msg = false;
@@ -407,7 +408,7 @@ angular.module('myApp.controllers', [])
 
         // there's so queued updates, meaning we lost connection so we have to do some sending
         // but first make sure the server has grabbed the data from the database in case it has restarted
-        socket.emit('getGameData', game.game_id, function (err) {
+        socket.emit('openGame', game.game_id, function (err) {
           if (err != null) {
             alert('Error getting game data');
             console.error(err);
@@ -519,7 +520,7 @@ angular.module('myApp.controllers', [])
           localCopy.save(data);
 
           // send data to the server for taking
-          socket.emit('undo', data);
+          socket.emit('undo', data, ()=>{});
         });
     }
   }])

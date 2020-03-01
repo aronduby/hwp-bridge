@@ -511,6 +511,10 @@ section.kickouts-fixed {
     opacity: .5;
 }
 
+.modal-body p {
+    margin-top: 0;
+}
+
 .modal .players {
     margin: 0;
 }

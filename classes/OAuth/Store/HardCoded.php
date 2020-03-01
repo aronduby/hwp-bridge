@@ -4,8 +4,8 @@ namespace OAuth\Store;
 
 class HardCoded extends \OAuth\Store {
 
-	private $token = '783299587-TGM7b75OktcXRJAUlXLpClTtfqI3UzCSKxlDgfym';
-	private $token_secret = 'Aic90o7VwQGqAMRf2c8OVJ5cafLWx2eLiI5hSs4Phg';
+	private $token = TWITTER_TOKEN;
+	private $token_secret = TWITTER_TOKEN_SECRET;
 
 	public function saveToken($token, $secret, $type, $ttl = false, $additional = array()){
 		return $this->createToken($this->token, $this->token_secret, $type, $ttl, $additional);

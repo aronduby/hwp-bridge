@@ -4,8 +4,8 @@ namespace OAuth\Service;
 
 class FourSquare extends \OAuth\v2\Service{
 	
-	protected $consumer_key = 'CJFDWOK2QBJVNV4WUH5XF1GRQA3RWAOB3QLJQ1DZ1J5NLGXN';
-	protected $consumer_secret = 'YPDVV1MSILNJ0LMBQUDALL32TQUTIXFW3FH0ZJBKAG0RDETS';
+	protected $consumer_key = FOURSQUARE_CONSUMER_KEY;
+	protected $consumer_secret = FOURSQUARE_CONSUMER_SECRET;
 
 	protected $api_url = 'https://api.foursquare.com/v2/';
 	protected $authorize_url = 'https://foursquare.com/oauth2/authenticate';

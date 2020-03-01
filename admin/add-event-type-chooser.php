@@ -1,10 +1,5 @@
 <?php
 require '../common.php';
-if(!isset($_COOKIE['in'])){
-	header("Location: login.php");;
-	die();
-}
-
 require '_pre.php';
 ?>
 
