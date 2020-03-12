@@ -28,6 +28,7 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 
 $dbh = PDODB::getInstance();
 Config::setDbh($dbh);
+Config::setSite($site);
 
 $shutterfly_site = Config::get('SHUTTERFLY_SITE');
 $log->addNotice('shutterfly site', [$shutterfly_site]);

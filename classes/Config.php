@@ -3,11 +3,17 @@
 class Config {
 
 	private static $dbh;
+	private static $site;
+
 	private static $data = [];
 
 	public static function setDbh(PDO $dbh){
 		self::$dbh = $dbh;
 	}
+
+	public static function setSite(Site $site) {
+	    self::$site = $site;
+    }
 
 	public static function get($key){
 		if($key != 'dbh'){
@@ -25,12 +31,15 @@ class Config {
 		self::$dbh->query("REPLACE INTO config SET title=".self::$dbh->quote($key).", value=".self::$dbh->quote($val));
 	}
 
-	/**
-	 * Config constructor.
-	 */
-	public function __construct(\PDO $dbh)
+    /**
+     * Config constructor.
+     * @param PDO $dbh
+     * @param Site $site
+     */
+	public function __construct(\PDO $dbh, Site $site)
 	{
 		self::setDbh($dbh);
+		self::setSite($site);
 	}
 
 	public function __get($name)

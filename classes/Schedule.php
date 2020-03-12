@@ -9,14 +9,17 @@ class Schedule implements IteratorAggregate {
 	public $end;
 
 	private $schedule;
-	
+
+	private $register;
 	private $dbh;
 
-	public function __construct($season_id = null, PDO $dbh){
+	public function __construct($season_id = null, Register $register){
 		$this->season_id = $season_id;
-		$this->dbh = $dbh;
-		
-		$sql = "SELECT * FROM schedule ".( !is_null($season_id) ? "WHERE season_id=".intval($this->season_id)." " : "" )."ORDER BY start";
+
+		$this->register = $register;
+		$this->dbh = $register->dbh;
+
+		$sql = "SELECT * FROM schedule WHERE site_id = ".intval($register->site->id).( !is_null($season_id) ? " AND season_id=".intval($this->season_id)." " : "" )." ORDER BY start";
 		$stmt = $this->dbh->query($sql);
 		$this->schedule = $stmt->fetchAll(PDO::FETCH_OBJ);
 	}

@@ -6,7 +6,7 @@ $past_by_team = [
 	'JV' => [] 
 ];
 
-$schedule = new Schedule($season->id, PDODB::getInstance());
+$schedule = new Schedule($season->id, $register);
 $schedule->reverse();
 $filtered = $schedule->getIterator();
 $past = new \ScheduleFilter\DateRange($filtered, null, date('Y-m-d G:i:s', time()));
@@ -17,7 +17,7 @@ if($past->valid()){
 	$i=0;
 	foreach($past as $next){
 		$type = ucwords($next->type);
-		$next = new $type($next->id, PDODB::getInstance());
+		$next = new $type($next->id, $register);
 		$past_by_team[$next->team][] = $next;
 
 		$i++;

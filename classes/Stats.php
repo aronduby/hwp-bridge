@@ -212,13 +212,22 @@ class Stats implements Iterator{
 		'shoot_out_missed',
 		'shoot_out_save_percent'
 	];
+
 	public $averages;
+
 	protected $stats = array();
-	
-	/**
-	 *	STATIC CONTROLLER FUNCTIONS
-	*/
-	public static function getPlayerForSeason($player_id, $season_id, PDO $dbh){		
+
+
+    /**
+     *    STATIC CONTROLLER FUNCTIONS
+     * @param $player_id
+     * @param $season_id
+     * @param Register $register
+     * @return bool|Stats
+     */
+	public static function getPlayerForSeason($player_id, $season_id, Register $register){
+	    $dbh = $register->dbh;
+
 		$stat_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v) && $v['calculated'] === true)
@@ -226,10 +235,10 @@ class Stats implements Iterator{
 
 			$stat_fields[] = "SUM(".$k.") AS ".$k;
 		}
-		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE player_id=".intval($player_id)." AND season_id=".intval($season_id)." GROUP BY season_id";
+		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE player_id=".intval($player_id)." AND site_id=".intval($register->site->id)." AND season_id=".intval($season_id)." GROUP BY season_id";
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 
-		$averages = self::getAverageForSeason($season_id, $dbh);
+		$averages = self::getAverageForSeason($season_id, $register);
 		
 		if($stats === false)
 			return false;
@@ -237,14 +246,17 @@ class Stats implements Iterator{
 			return new Stats($stats, $averages);
 	}
 
-	public static function getPlayerForCareer($player_id, PDO $dbh){
+	public static function getPlayerForCareer($player_id, Register $register){
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		$stat_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$stat_fields[] = "SUM(".$k.") AS ".$k;
 		}
-		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE player_id=".intval($player_id);
+		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE player_id=".intval($player_id)." AND site_id = ".intval($site->id);
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 
 		$averages = self::getAverageForCareer($dbh);
@@ -255,17 +267,20 @@ class Stats implements Iterator{
 			return new Stats($stats, $averages);
 	}
 
-	public static function getPlayerForGame($player_id, $game_id, PDO $dbh){
+	public static function getPlayerForGame($player_id, $game_id, Register $register) {
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		$stat_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$stat_fields[] = $k;
 		}
-		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE player_id=".intval($player_id)." AND game_id=".intval($game_id);
+		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE player_id=".intval($player_id)." AND site_id = ".intval($site->id)." AND game_id=".intval($game_id);
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 
-		$averages = self::getAverageForGame($game_id, $dbh);
+		$averages = self::getAverageForGame($game_id, $register);
 
 		if($stats === false)
 			return false;
@@ -273,38 +288,44 @@ class Stats implements Iterator{
 			return new Stats($stats, $averages);
 	}
 
-	public static function getAllPlayersForGame($game_id, PDO $dbh){
+	public static function getAllPlayersForGame($game_id, Register $register){
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		$stat_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$stat_fields[] = $k;
 		}
-		$sql = "SELECT player_id, ".implode(', ', $stat_fields)." FROM stats WHERE game_id=".intval($game_id);
+		$sql = "SELECT player_id, ".implode(', ', $stat_fields)." FROM stats WHERE site_id = ".intval($site->id)." AND game_id=".intval($game_id);
 		$stmt = $dbh->query($sql);
 
 		$return = [];
 		while($r = $stmt->fetch(PDO::FETCH_ASSOC)){
-			$temp = ['player' => new Player($r['player_id'], $dbh), 'stats'=>[]];
+			$temp = ['player' => new Player($r['player_id'], $register), 'stats'=>[]];
 			unset($r['player_id']);
 			$temp['stats'] = new Stats($r);
 			$return[] = $temp;
 		}
 
-		return $temp;
+		return $return;
 	}
 
 
 	# AVERAGES
 
-	public static function getAverageForSeason($season_id, PDO $dbh){
+	public static function getAverageForSeason($season_id, Register $register){
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		$avg_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$avg_fields[] = "ROUND(AVG(".$k."), 2) AS ".$k;
 		}
-		$sql = "SELECT ".implode(', ', $avg_fields)." FROM stats WHERE season_id=".intval($season_id)." GROUP BY season_id";
+		$sql = "SELECT ".implode(', ', $avg_fields)." FROM stats WHERE site_id = ".intval($site->id)." AND season_id=".intval($season_id)." GROUP BY season_id";
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 		if($stats !== false)
 			return new Stats($stats);
@@ -312,14 +333,17 @@ class Stats implements Iterator{
 			return false;
 	}
 
-	public static function getAverageForCareer(PDO $dbh){
+	public static function getAverageForCareer(Register $register){
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		$avg_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$avg_fields[] = "ROUND(AVG(".$k."), 2) AS ".$k;
 		}
-		$sql = "SELECT ".implode(', ', $avg_fields)." FROM stats GROUP BY player_id";
+		$sql = "SELECT ".implode(', ', $avg_fields)." FROM stats WHERE site_id = ".intval($site->id)." GROUP BY player_id";
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 		if($stats !== false)
 			return new Stats($stats);
@@ -327,14 +351,17 @@ class Stats implements Iterator{
 			return false;
 	}
 
-	public static function getAverageForGame(PDO $dbh){
+	public static function getAverageForGame($game_id, Register $register){
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		$avg_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$avg_fields[] = "ROUND(AVG(".$k."), 2) AS ".$k;
 		}
-		$sql = "SELECT ".implode(', ', $avg_fields)." FROM stats WHERE game_id=".intval($game_id)." GROUP BY game_id";
+		$sql = "SELECT ".implode(', ', $avg_fields)." FROM stats WHERE site_id = ".intval($site->id)." AND game_id=".intval($game_id)." GROUP BY game_id";
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 		if($stats !== false)
 			return new Stats($stats);
@@ -344,14 +371,17 @@ class Stats implements Iterator{
 
 	
 	# TOTALS
-	public static function getTotalsForSeason($season_id, PDO $dbh){
-		$stat_fields = [];
+	public static function getTotalsForSeason($season_id, Register $register){
+        $dbh = $register->dbh;
+        $site = $register->site;
+
+        $stat_fields = [];
 		foreach(self::$fields as $k=>$v){
 			if(array_key_exists('calculated', $v))
 				continue;
 			$stat_fields[] = "SUM(".$k.") AS ".$k;
 		}
-		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE season_id=".intval($season_id)." GROUP BY season_id";
+		$sql = "SELECT ".implode(', ', $stat_fields)." FROM stats WHERE site_id = ".intval($site->id)." AND season_id=".intval($season_id)." GROUP BY season_id";
 		$stats = $dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 		
 		if($stats === false)

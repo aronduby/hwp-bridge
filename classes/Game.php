@@ -27,14 +27,18 @@ class Game {
 	public $has_recap;
 	public $has_photo_album;
 	public $dump_version;
-	
-	private $dbh;
 
-	public function __construct($id = null, PDO $dbh){
-		$this->dbh = $dbh;
+	private $register;
+	private $dbh;
+	private $site;
+
+	public function __construct($id = null, Register $register){
+	    $this->register = $register;
+		$this->dbh = $register->dbh;
+		$this->site = $register->site;
 
 		if($id !== null){
-			$stmt = $this->dbh->query("SELECT * FROM games WHERE id=".intval($id));
+			$stmt = $this->dbh->query("SELECT * FROM games WHERE id = ".intval($id)." AND site_id = ".intval($this->site->id));
 			$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 			$stmt->fetch();
 		}
@@ -56,8 +60,8 @@ class Game {
 				$this->result = 'L';
 		}
 
-		$this->has_stats = (bool)$this->dbh->query("SELECT COUNT(*) FROM stats WHERE game_id=".intval($this->id))->fetch(PDO::FETCH_COLUMN);
-		$this->has_live_scoring = (bool)$this->dbh->query("SELECT COUNT(*) FROM game_update_dumps WHERE game_id=".intval($this->id))->fetch(PDO::FETCH_COLUMN);
+		$this->has_stats = (bool)$this->dbh->query("SELECT COUNT(*) FROM stats WHERE game_id=".intval($this->id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_COLUMN);
+		$this->has_live_scoring = (bool)$this->dbh->query("SELECT COUNT(*) FROM game_update_dumps WHERE game_id=".intval($this->id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_COLUMN);
 		$this->has_photo_album = isset($this->album_id);
 
 		// for the new live scoring, probably be replaced with stats later
@@ -67,12 +71,10 @@ class Game {
 
 	public function getPhotoAlbum(){
 		if(isset($this->album_id))
-			return new PhotoAlbum($this->album_id, $this->dbh);
+			return new PhotoAlbum($this->album_id, $this->register);
 		else
 			return false;
 	}
 	
 
 }
-
-?>

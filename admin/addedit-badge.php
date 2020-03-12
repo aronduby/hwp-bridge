@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 require '../common.php';
 
 if(!empty($_POST)){
@@ -54,22 +54,25 @@ if(!empty($_POST)){
 		if($inserted){
 			// set it as a season badge?
 			if($_POST['team_has_badge']){
-				$stmt = $dbh->prepare("INSERT INTO badge_season (season_id, badge_id) VALUES (:season_id, :badge_id) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)");
+				$stmt = $dbh->prepare("INSERT INTO badge_season (site_id, season_id, badge_id) VALUES (:site_id, :season_id, :badge_id) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)");
+				$stmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);
 				$stmt->bindValue(':season_id', $season->id, PDO::PARAM_INT);
 				$stmt->bindValue(':badge_id', $badge_id, PDO::PARAM_INT);
 				$stmt->execute();
 			}
 
-			$dbh->exec("DELETE FROM badge_player WHERE season_id = ".$dbh->quote($season->id)." AND badge_id = ".$dbh->quote($badge_id));
+			$dbh->exec("DELETE FROM badge_player WHERE site_id = ".$dbh->quote($site->id)." AND season_id = ".$dbh->quote($season->id)." AND badge_id = ".$dbh->quote($badge_id));
 			if(isset($_POST['player_ids_with_badge']) && count($_POST['player_ids_with_badge'])){
 				$stmt = $dbh->prepare('
 					INSERT INTO badge_player SET 
 						player_id = :player_id, 
 						badge_id = :badge_id, 
+                    	site_id = :site_id, 
 						season_id = :season_id, 
 						site_id = 1
 				');
 				$stmt->bindValue(':badge_id', $badge_id, PDO::PARAM_INT);
+				$stmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);
 				$stmt->bindValue(':season_id', $season->id, PDO::PARAM_INT);
 				$stmt->bindParam(':player_id', $player_id, PDO::PARAM_INT);
 
@@ -86,14 +89,14 @@ if(!empty($_POST)){
 	
 	} catch(Exception $e){
 		$form_errors = $e->getMessage();
-		$badge = new Badge(isset($_POST['badge_id']) ? $_POST['badge_id'] : null, PDODB::getInstance());
+		$badge = new Badge(isset($_POST['badge_id']) ? $_POST['badge_id'] : null, $register);
 		$team_has_badge = $badge->checkSeason($season->id);
 		$players = $season->getPlayers();
 		$player_ids_with_badge = isset($_POST['player_ids_with_badge']) ? $_POST['player_ids_with_badge'] : [];
 	}
 
 } else {
-	$badge = new Badge(isset($_GET['badge_id']) ? $_GET['badge_id'] : null, PDODB::getInstance());
+	$badge = new Badge(isset($_GET['badge_id']) ? $_GET['badge_id'] : null, $register);
 	$team_has_badge = $badge->checkSeason($season->id);
 	$players = $season->getPlayers();
 	$player_ids_with_badge = [];

@@ -1,7 +1,7 @@
 <?php
 require '../common.php';
 
-$badges = Badge::getAll(PDODB::getInstance());
+$badges = Badge::getAll($register);
 
 require '_pre.php';
 ?>

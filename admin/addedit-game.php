@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 require '../common.php';
 
 if(!empty($_POST)){
@@ -18,7 +18,7 @@ if(!empty($_POST)){
 
 		$sql = "INSERT INTO games SET
 				id = ".$dbh->quote($_POST['game_id']).",
-				site_id = 1, 
+				site_id = ".intval($site->id).", 
 				season_id = ".$dbh->quote($_POST['season_id']).",
 				tournament_id = ".(intval($_POST['tournament_id']) ? $dbh->quote($_POST['tournament_id']) : "NULL").",
 				location_id = ".intval($_POST['location_id']).",
@@ -34,7 +34,7 @@ if(!empty($_POST)){
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
 				id = VALUES(id),
-				site_id = 1,
+				site_id = VALUES(site_id),
 				season_id = VALUES(season_id),
 				tournament_id = VALUES(tournament_id),
 				location_id = VALUES(location_id),
@@ -71,22 +71,22 @@ if(!empty($_POST)){
 		} else {
 			$form_errors = 'Could not save the form. Please try again later';
 			if(isset($_POST['tournament_id']))
-				$tournament = new Tournament($_POST['tournament_id'], PDODB::getInstance());
+				$tournament = new Tournament($_POST['tournament_id'], $register);
 		}
 
 	} else {
 		$form_errors = 'You are missing some required fields, please try again.';
-		$tournament = new Tournament($_POST['tournament_id'], PDODB::getInstance());
+		$tournament = new Tournament($_POST['tournament_id'], $register);
 	}
 
 } else {
-	$game = new Game(isset($_GET['game_id']) ? $_GET['game_id'] : null, PDODB::getInstance());
+	$game = new Game(isset($_GET['game_id']) ? $_GET['game_id'] : null, $register);
 	if(isset($_GET['tournament_id'])) {
         $game->tournament_id = $_GET['tournament_id'];
-        $tournament = new Tournament($_GET['tournament_id'], PDODB::getInstance());
+        $tournament = new Tournament($_GET['tournament_id'], $register);
     } else {
 	    if ($game->tournament_id) {
-            $tournament = new Tournament($game->tournament_id, PDODB::getInstance());
+            $tournament = new Tournament($game->tournament_id, $register);
         } else {
             $tournament = false;
         }
@@ -151,9 +151,7 @@ require '_pre.php';
 					<select name="tournament_id" id="g-tournament" data-theme="d">
 						<option value=""></option>
 			        	<?php
-			        	$dbh = PDODB::getInstance();
-			        	$stmt = $dbh->query("SELECT id, CONCAT(team,' - ',IFNULL(title, 'Tournament'),' on ',DATE_FORMAT(start,'%m/%e')) AS title FROM tournaments WHERE season_id=".intval($season->id)." ORDER BY title");
-			        	while($t = $stmt->fetch(PDO::FETCH_OBJ))
+			        	while($t = Tournament::getOptionsForSelect($register))
 			        		print '<option value="'.$t->id.'" '.($t->id == $game->tournament_id ? 'selected="selected"' : '').'>'.$t->title.'</option>';
 
 			        	?>
@@ -164,11 +162,8 @@ require '_pre.php';
 					<label for="g-location">Location:</label>
 					<select name="location_id" id="g-location" data-theme="d">
 			        	<?php
-			        	$dbh = PDODB::getInstance();
-			        	$stmt = $dbh->query("SELECT id, title FROM locations ORDER BY title");
-			        	while($l = $stmt->fetch(PDO::FETCH_OBJ))
+			        	while($l = Location::getOptionsForSelect($register))
 			        		print '<option value="'.$l->id.'" '.($l->id==$game->location_id || ($tournament && $tournament->location_id === $l->id) ? 'selected="selected"' : '').'>'.$l->title.'</option>';
-
 			        	?>
 		        	</select>
 				</li>
@@ -199,9 +194,7 @@ require '_pre.php';
 					<select name="album_id" id="g-album_id" data-theme="d">
 						<option value=""></option>
 			        	<?php
-			        	$dbh = PDODB::getInstance();
-			        	$albums = $dbh->query("SELECT id, title FROM albums WHERE season_id=".intval($season->id)." ORDER BY title")->fetchAll(PDO::FETCH_KEY_PAIR);
-			        	foreach($albums as $id=>$title){
+			        	foreach(PhotoAlbum::getOptionsForSelect($register) as $id=>$title){
 			        		print '<option value="'.$id.'" '.($id==$game->album_id?'selected="selected"':'').'>'.$title.'</option>';
 			        	}
 			        	?>

@@ -15,19 +15,24 @@ class Photo{
 
 	protected $prepend = '';
 	protected $append = '.jpg';
-	protected $dbh;
 
-	public function __construct($photo_id, PDO $dbh){
-		$this->photo_id = $photo_id;
-		$this->dbh = $dbh;
-		
-		$this->photo = PHOTO_BASE_HREF . $this->prepend . $this->photo_id . $this->append;
+	protected $register;
+	protected $dbh;
+	protected $site;
+
+	public function __construct($photo_id, Register $register){
+        $this->register = $register;
+        $this->dbh = $register->dbh;
+        $this->site = $register->site;
+
+        $this->photo_id = $photo_id;
+        $this->photo = PHOTO_BASE_HREF . $this->prepend . $this->photo_id . $this->append;
 		$this->thumb = THUMB_BASE_HREF . $this->prepend . $this->photo_id . $this->append;
 
 		$this->players = $this->getPlayersInPhoto();
 
 		// TODO might have to change id to something else
-		$stmt = $this->dbh->query("SELECT width, height FROM photos WHERE id=".$this->dbh->quote($this->photo_id));
+		$stmt = $this->dbh->query("SELECT width, height FROM photos WHERE id=".$this->dbh->quote($this->photo_id)." AND site_id = ".intval($this->site->id));
 		$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 		$stmt->fetch();
 	}
@@ -60,12 +65,12 @@ class Photo{
 	}
 
 	private function getPlayersInPhoto(){
-		$sql = "SELECT player_id FROM photo_player WHERE photo_id=".$this->dbh->quote(($this->photo_id));
+		$sql = "SELECT player_id FROM photo_player WHERE photo_id=".$this->dbh->quote(($this->photo_id))." AND site_id = ".intval($this->site->id);
 		$stmt = $this->dbh->query($sql);
 
 		$players = [];
 		while($player_id = $stmt->fetch(PDO::FETCH_COLUMN))
-			$players[$player_id] = new Player($player_id, $this->dbh);
+			$players[$player_id] = new Player($player_id, $this->register);
 
 		return $players;
 	}

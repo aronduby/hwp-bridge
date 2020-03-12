@@ -14,7 +14,7 @@ if(!empty($_POST)){
 
 		$sql = "INSERT INTO tournaments SET
 				id = ".$dbh->quote($_POST['tournament_id']).",
-				site_id = 1,
+				site_id = ".intval($site->id).",
 				season_id = ".$dbh->quote($_POST['season_id']).",
 				location_id = ".intval($_POST['location_id']).",
 				team = ".$dbh->quote($_POST['team']).",
@@ -26,7 +26,7 @@ if(!empty($_POST)){
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
 				id = VALUES(id),
-				site_id = 1,
+				site_id = VALUES(site_id),
 				season_id = VALUES(season_id),
 				location_id = VALUES(location_id),
 				team = VALUES(team),
@@ -46,16 +46,16 @@ if(!empty($_POST)){
 		} else {
 			$form_errors = 'Could not save the form. Please try again later';
 			if(isset($_POST['tournament_id']))
-				$tournament = new Tournament($_POST['tournament_id'], PDODB::getInstance());
+				$tournament = new Tournament($_POST['tournament_id'], $register);
 		}
 
 	} else {
 		$form_errors = 'You are missing some required fields, please try again.';
-		$tournament = new Tournament($_POST['tournament_id'], PDODB::getInstance());
+		$tournament = new Tournament($_POST['tournament_id'], $register);
 	}
 
 } else {
-	$tournament = new Tournament(isset($_GET['tournament_id']) ? $_GET['tournament_id'] : null, PDODB::getInstance());
+	$tournament = new Tournament(isset($_GET['tournament_id']) ? $_GET['tournament_id'] : null, $register);
 }
 
 require '_pre.php';
@@ -89,11 +89,8 @@ require '_pre.php';
 					<label for="t-location">Location:</label>
 					<select name="location_id" id="t-location" data-theme="d">
 			        	<?php
-			        	$dbh = PDODB::getInstance();
-			        	$stmt = $dbh->query("SELECT id, title FROM locations ORDER BY title");
-			        	while($l = $stmt->fetch(PDO::FETCH_OBJ))
+			        	while($l = Location::getOptionsForSelect($register))
 			        		print '<option value="'.$l->id.'" '.($l->id==$tournament->location_id ? 'selected="selected"' : '').'>'.$l->title.'</option>';
-
 			        	?>
 		        	</select>
 				</li>
@@ -127,9 +124,7 @@ require '_pre.php';
                     <select name="album_id" id="g-album_id" data-theme="d">
                         <option value=""></option>
                         <?php
-                        $dbh = PDODB::getInstance();
-                        $albums = $dbh->query("SELECT id, title FROM albums WHERE season_id=".intval($season->id)." ORDER BY title")->fetchAll(PDO::FETCH_KEY_PAIR);
-                        foreach($albums as $id=>$title){
+                        foreach(PhotoAlbum::getOptionsForSelect($register) as $id=>$title){
                             print '<option value="'.$id.'" '.($id==$tournament->album_id?'selected="selected"':'').'>'.$title.'</option>';
                         }
                         ?>

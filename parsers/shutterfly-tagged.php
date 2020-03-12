@@ -34,6 +34,7 @@ $log->pushHandler($error_log_handler);
 
 $dbh = PDODB::getInstance();
 Config::setDbh($dbh);
+Config::setSite($site);
 
 // grab options from the cli
 $short_opts = '';

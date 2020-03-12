@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection PhpExpressionResultUnusedInspection */
 require '../common.php';
 
 $upcomingLimit = 10;
 
-$schedule = new Schedule($season->id, PDODB::getInstance());
+$schedule = new Schedule($season->id, $register);
 $filtered = $schedule->getIterator();
 
 $upcoming = new ScheduleFilter\DateRange($filtered, date('Y-m-d G:i:s', time()));
@@ -15,11 +15,11 @@ $jv->rewind();
 $varsity = new ScheduleFilter\Team($upcoming, 'V');
 $varsity->rewind();
 
-function printItems($iterator, $title) {
+function printItems($iterator, $title, Register $register) {
     print '<li data-role="list-divider">'.$title.'</li>';
     foreach($iterator as $next) {
         $type = ucwords($next->type);
-        $next = new $type($next->id, PDODB::getInstance());
+        $next = new $type($next->id, $register);
         print $next->output('mobile-listing');
     }
 }
@@ -43,13 +43,13 @@ require '_pre.php';
 
             if ($varsity->valid()) {
                 $soon = new LimitIterator($varsity, 0, $upcomingLimit);
-                printItems($soon, 'Varsity');
+                printItems($soon, 'Varsity', $register);
                 print $varsity->valid() ? '<li data-icon="false" class="ul-li--view-more"><a href="#all-varsity" title="view all upcoming varsity events">view all</a></li>' : '';
             }
 
             if ($jv->valid()) {
                 $soon = new LimitIterator($jv, 0, $upcomingLimit);
-                printItems($soon, 'JV');
+                printItems($soon, 'JV', $register);
                 print $jv->valid() ? '<li data-icon="false" class="ul-li--view-more"><a href="#all-jv" title="view all upcoming jv events">view all</a></li>' : '';
             }
 
@@ -76,7 +76,7 @@ require '_pre.php';
         if ($varsity->valid()) {
             print '<ul data-role="listview" data-theme="d" data-divider-theme="d" data-split-theme="d" data-split-icon="gear">';
             if ($varsity->valid()) {
-                printItems($varsity, 'Varsity');
+                printItems($varsity, 'Varsity', $register);
             }
             print '</ul>';
         } else {
@@ -100,7 +100,7 @@ require '_pre.php';
         if ($jv->valid()) {
             print '<ul data-role="listview" data-theme="d" data-divider-theme="d" data-split-theme="d" data-split-icon="gear">';
             if ($jv->valid()) {
-                printItems($jv, 'JV');
+                printItems($jv, 'JV', $register);
             }
             print '</ul>';
         } else {

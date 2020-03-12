@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 class Location {
 
@@ -11,14 +11,24 @@ class Location {
 	public $notes;
 	public $full_address;
 
+	private $register;
 	private $dbh;
 	private $google_api_key;
 
-	public function __construct($id = null, PDO $dbh){
-		$this->dbh = $dbh;
+    public static function getOptionsForSelect(Register $register)
+    {
+        $dbh = $register->dbh;
+        $sql = "SELECT id, title FROM locations WHERE site_id = ".intval($register->site->id)." ORDER BY title";
+        $stmt = $dbh->query($sql);
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+	public function __construct($id = null, Register $register){
+	    $this->register = $register;
+		$this->dbh = $register->dbh;
 
 		if($id !== null){
-			$stmt = $this->dbh->query("SELECT * FROM locations WHERE id=".intval($id));
+			$stmt = $this->dbh->query("SELECT * FROM locations WHERE id=".intval($id)." AND site_id = ".intval($register->site->id));
 			$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 			$stmt->fetch();
 		}

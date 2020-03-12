@@ -2,7 +2,8 @@
 
 class AlexPhoto extends Photo{
 	
-	public function __construct($photo_id, PDO $dbh){
+	public function __construct($photo_id, Register $register){
+	    $dbh = $register->dbh;
 		parent::__construct($photo_id, $dbh);
 
 		$this->photo = PHOTO_BASE_HREF . $this->prepend . 'alex' . $this->append;

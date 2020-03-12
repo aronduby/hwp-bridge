@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
 session_start();
 
 set_time_limit(0);
@@ -53,8 +53,43 @@ if (!Auth::authenticated() && $_SERVER['PHP_SELF'] !== '/login.php') {
     die();
 }
 
-$season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, PDODB::getInstance());
+try {
+    $register = new Register();
+    $register->dbh = PDODB::getInstance();
+
+    $domain = isCli() ? getFromCli('domain') : Site::parseHost($_SERVER['HTTP_HOST']);
+    $site = new Site($domain, $register);
+    $register->site = $site;
+
+    $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, $register);
+    $register->season = $season;
+
+} catch (Exception $e) {
+    print 'could not find that site and/or season';
+    exit;
+}
+
 Config::setDbh(PDODB::getInstance());
+Config::setSite($site);
+
+function isCli() {
+    return php_sapi_name() === 'cli' || php_sapi_name() === 'phpdbg';
+}
+
+function getFromCli($option) {
+    $searchFor = '--' . $option . '=';
+
+    $args = $_SERVER['argv'];
+    foreach($args as $arg) {
+        if(starts_with($arg, $searchFor)) {
+            $value = explode('=', $arg);
+            $value = array_pop($value);
+            return $value;
+        }
+    }
+
+    return null;
+}
 
 function print_p($value, $exit = false) {
 	if (!DEBUG)

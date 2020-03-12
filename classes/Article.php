@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 class Article {
 
@@ -11,13 +11,17 @@ class Article {
 	public $published;
 	public $mentions = [];
 
-	public $dbh;
+    public $dbh;
+    private $register;
+    private $site;
 
-	public function __construct($article_id = null, PDO $dbh){
-		$this->dbh = $dbh;
+    public function __construct($article_id = null, Register $register){
+        $this->register = $register;
+		$this->dbh = $register->dbh;
+		$this->site = $register->site;
 
 		if($article_id !== null){
-			$stmt = $this->dbh->query("SELECT article_id, title, url, description, published FROM article WHERE article_id=".intval($article_id));
+			$stmt = $this->dbh->query("SELECT article_id, title, url, description, published FROM article WHERE site_id = ".intval($this->site->id)." AND article_id=".intval($article_id));
 			$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 			if(!$stmt->fetch()){
 				throw new Exception('Article Not Found');

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 require '../common.php';
 
 if(!empty($_POST)){
@@ -9,13 +9,13 @@ if(!empty($_POST)){
 
 		$sql = "INSERT INTO players SET
 				id = ".$dbh->quote($_POST['player_id']).",
-				site_id = 1,
+				site_id = ".intval($site->id).",
 				first_name = ".$dbh->quote($_POST['first_name']).",
 				last_name = ".$dbh->quote($_POST['last_name']).",
 				name_key = ".$dbh->quote($_POST['name_key'])."
 			ON DUPLICATE KEY UPDATE
 				id = VALUES(id),
-				site_id = 1,
+				site_id = VALUES(site_id),
 				first_name = VALUES(first_name),
 				last_name = VALUES(last_name),
 				name_key = VALUES(name_key),
@@ -35,7 +35,7 @@ if(!empty($_POST)){
 		if($inserted !== false){
 			// update the season info
 			$sql = "INSERT INTO player_season SET
-					site_id = 1,
+					site_id = ".intval($site->id).",
 					player_id = ".$player_id.",
 					season_id = ".$season->id.",
 					title = ".$dbh->quote($_POST['title']).",
@@ -45,7 +45,7 @@ if(!empty($_POST)){
 					shutterfly_tag = ".$dbh->quote($_POST['shutterfly_tag']).",
 					sort = ".$dbh->quote($_POST['sort'])."
 				ON DUPLICATE KEY UPDATE
-					site_id = 1,
+					site_id = VALUES(site_id),
 					player_id = VALUES(player_id),
 					season_id = VALUES(season_id),
 					title = VALUES(title),
@@ -65,22 +65,21 @@ if(!empty($_POST)){
 			header("Location: players.php");
 			die();
 
-
 		} else {
 			$form_errors = 'Could not save the form. Please try again later';
-			$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, PDODB::getInstance());
-			$player_season = new PlayerSeason($player, $season->id, PDODB::getInstance());
+			$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, $register);
+			$player_season = new PlayerSeason($player, $season->id, $register);
 		}
 
 	} else {
 		$form_errors = 'You are missing some required fields, please try again.';
-		$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, PDODB::getInstance());
-		$player_season = new PlayerSeason($player, $season->id, PDODB::getInstance());
+		$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, $register);
+		$player_season = new PlayerSeason($player, $season->id, $register);
 	}
 
 } else {
-	$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, PDODB::getInstance());
-	$player_season = new PlayerSeason($player, $season->id, PDODB::getInstance());
+	$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, $register);
+	$player_season = new PlayerSeason($player, $season->id, $register);
 	$player_season->team = explode(',', $player_season->team);
 }
 

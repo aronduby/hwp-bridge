@@ -23,18 +23,23 @@ class PlayerSeason {
 	protected $articles;
 	protected $stats;
 
+	private $register;
 	private $dbh;
+	private $site;
 
-	public function __construct(Player $player, $season_id, PDO $dbh){
+	public function __construct(Player $player, $season_id, Register $register){
 		$this->player = $player;
-		$this->dbh = $dbh;
 
-		$sql = "SELECT * FROM player_season WHERE player_id=".intval($this->player->id)." AND season_id=".intval($season_id);
+		$this->register = $register;
+		$this->dbh = $register->dbh;
+		$this->site = $register->site;
+
+		$sql = "SELECT * FROM player_season WHERE player_id=".intval($this->player->id)." AND season_id=".intval($season_id)." AND site_id = ".intval($this->site->id);
 		$stmt = $this->dbh->query($sql);
 		$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 		$stmt->fetch();
 
-		$s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id))->fetch(PDO::FETCH_OBJ);
+		$s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_OBJ);
 		$this->season_title = $s->title;
 		$this->season_short_title = $s->short_title;
 	}
@@ -50,12 +55,13 @@ class PlayerSeason {
 				WHERE 
 					ptp.player_id=".intval($this->player->id)." 
 					AND ptp.season_id=".intval($this->season_id)." 
+					AND ptp.site_id=".intval($this->site->id)."
 				ORDER BY 
 					p.created_at DESC";
 			$stmt = $this->dbh->query($sql);
 
 			while($photo_id = $stmt->fetch(PDO::FETCH_COLUMN))
-				$this->photos[] = !$this->player->alex ? new Photo($photo_id, $this->dbh) : new AlexPhoto($photo_id, $this->dbh);
+				$this->photos[] = !$this->player->alex ? new Photo($photo_id, $this->register) : new AlexPhoto($photo_id, $this->register);
 			
 		}
 
@@ -73,11 +79,12 @@ class PlayerSeason {
 				WHERE 
 					ptb.player_id=".intval($this->player->id)." 
 					AND ptb.season_id=".intval($this->season_id)." 
+					AND ptb.site_id=".intval($this->site->id)."
 				ORDER BY 
 					ptb.created_at DESC, 
 					ptb.badge_id DESC
 			");
-			$stmt->setFetchMode(PDO::FETCH_CLASS, 'Badge', [null, $this->dbh]);
+			$stmt->setFetchMode(PDO::FETCH_CLASS, 'Badge', [null, $this->register]);
 
 			$this->badges = $stmt->fetchAll();
 		}
@@ -96,10 +103,11 @@ class PlayerSeason {
 				WHERE 
 					pta.player_id=".intval($this->player->id)." 
 					AND pta.season_id=".intval($this->season_id)." 
+					AND pta.site_id=".intval($this->site->id)."
 				ORDER BY 
 					a.published DESC
 				");
-			$stmt->setFetchMode(PDO::FETCH_CLASS, 'Article', [null, $this->dbh]);
+			$stmt->setFetchMode(PDO::FETCH_CLASS, 'Article', [null, $this->register]);
 
 			$this->articles = $stmt->fetchAll();
 		}
@@ -110,7 +118,7 @@ class PlayerSeason {
 	public function getStats(){
 		if(!isset($this->stats)){
 			try{
-				$this->stats = Stats::getPlayerForSeason($this->player->id, $this->season_id, $this->dbh);
+				$this->stats = Stats::getPlayerForSeason($this->player->id, $this->season_id, $this->register);
 			} catch(Exception $e){
 				$this->stats = false;
 			}

@@ -1,71 +1,99 @@
-<?php
+<?php /** @noinspection ALL */
 
-class Tournament {
+class Tournament
+{
 
-	use Outputable;
+    use Outputable;
 
-	public $id;
-	public $season_id;
-	public $title;
-	public $location_id;
-	public $team;
-	public $start;
-	public $end;
-	public $result;
-	public $note;
-	public $album_id;
+    public $id;
+    public $season_id;
+    public $title;
+    public $location_id;
+    public $team;
+    public $start;
+    public $end;
+    public $result;
+    public $note;
+    public $album_id;
 
-	public $location;
-	public $games;
+    public $location;
+    public $games;
 
-	private $dbh;
+    private $register;
+    private $dbh;
+    private $site;
 
-	public function __construct($id = null, PDO $dbh){
-		$this->dbh = $dbh;
+    public static function getOptionsForSelect(Register $register)
+    {
+        $dbh = $register->dbh;
+        $sql = "
+            SELECT 
+                id, 
+               CONCAT(team,' - ',IFNULL(title, 'Tournament'),' on ',DATE_FORMAT(start,'%m/%e')) AS title 
+            FROM 
+                 tournaments 
+            WHERE
+                site_id=".intval($register->site->id)."
+                AND season_id=".intval($register->season->id)." 
+            ORDER BY 
+                title";
+        $stmt = $dbh->query($sql);
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
 
-		if($id !== null){
-			$stmt = $this->dbh->query("SELECT * FROM tournaments WHERE id=".intval($id));
-			$stmt->setFetchMode(PDO::FETCH_INTO, $this);
-			$stmt->fetch();
-		}
+    public function __construct($id = null, Register $register)
+    {
+        $this->register = $register;
+        $this->dbh = $register->dbh;
+        $this->site = $register->site;
 
-		$this->start = new DateTime($this->start);
-		$this->end = new DateTime($this->end);
+        if ($id !== null) {
+            $stmt = $this->dbh->query("SELECT * FROM tournaments WHERE id=" . intval($id) . " AND site_id = " . intval($this->site->id));
+            $stmt->setFetchMode(PDO::FETCH_INTO, $this);
+            $stmt->fetch();
+        }
 
-		if(strlen($this->title) == 0)
-			$this->title = 'Tournament';
+        $this->start = new DateTime($this->start);
+        $this->end = new DateTime($this->end);
 
-		$this->location = new Location($this->location_id, $this->dbh);
-	}
+        if (strlen($this->title) == 0)
+            $this->title = 'Tournament';
 
-	public function getGames(){
-		if(!isset($this->games)){
-			$sql = "SELECT * FROM games WHERE tournament_id=".intval($this->id);
-			$stmt = $this->dbh->query($sql);
-			$stmt->setFetchMode(PDO::FETCH_CLASS, 'Game', [null, $this->dbh]);
-			
-			$this->games = $stmt->fetchAll();
-		}
+        $this->location = new Location($this->location_id, $this->register);
+    }
 
-		return $this->games;
-	}
+    public function getGames()
+    {
+        if (!isset($this->games)) {
+            $sql = "SELECT * FROM games WHERE site_id = " . intval($site->id) . " AND  tournament_id=" . intval($this->id);
+            $stmt = $this->dbh->query($sql);
+            $stmt->setFetchMode(PDO::FETCH_CLASS, 'Game', [null, $this->register]);
 
-	public function hasStats(){
-		$sql = "SELECT 
+            $this->games = $stmt->fetchAll();
+        }
+
+        return $this->games;
+    }
+
+    public function hasStats()
+    {
+        $sql = "SELECT 
 			COUNT(*) 
 		FROM 
 			stats 
 		WHERE 
+           site_id = " . intval($site->id) . " AND 
 			game_id IN (
-				SELECT id FROM games WHERE tournament_id=".intval($this->id)."
+				SELECT id FROM games WHERE site_id = " . intval($site->id) . " AND tournament_id=" . intval($this->id) . "
 			)";
-		// print_p($sql);
-		return (bool)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
-	}
+        // print_p($sql);
+        return (bool)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+    }
 
-    public function getPhotoAlbum(){
-        if(isset($this->album_id))
-            return new PhotoAlbum($this->album_id, $this->dbh);
+    public function getPhotoAlbum()
+    {
+        if (isset($this->album_id))
+            return new PhotoAlbum($this->album_id, $this->register);
         else
             return false;
     }

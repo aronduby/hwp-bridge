@@ -7,7 +7,7 @@ if(!empty($_POST) && array_key_exists('tournament_id', $_POST)){
 
 	$sql = "
 		INSERT INTO recent SET
-			site_id = 1,
+			site_id = :site_id,
 			season_id = :season_id,
 			renderer = 'tournament',
 			content = :content,
@@ -18,6 +18,7 @@ if(!empty($_POST) && array_key_exists('tournament_id', $_POST)){
 
 	$stmt = $dbh->prepare($sql);
 	$stmt->execute([
+		'site_id' => intval($register->site->id),
 		'season_id' => intval($_POST['season_id']),
 		'content' => '['.intval($_POST['tournament_id']).']'
 	]);
@@ -26,7 +27,7 @@ if(!empty($_POST) && array_key_exists('tournament_id', $_POST)){
 	die();
 }
 else {
-	$tournament = new Tournament($_GET['tournament_id'], PDODB::getInstance());
+	$tournament = new Tournament($_GET['tournament_id'], $register);
 }
 
 require '_pre.php';

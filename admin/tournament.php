@@ -1,7 +1,7 @@
 <?php
 require '../common.php';
 
-$tournament = new Tournament($_GET['tournament_id'], PDODB::getInstance());
+$tournament = new Tournament($_GET['tournament_id'], $register);
 if($tournament != false){
 	$games = $tournament->getGames();
 }

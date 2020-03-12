@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 class Season {
 	
@@ -13,9 +13,14 @@ class Season {
 
 	protected $stats;
 
+	private $register;
 	private $dbh;
+	private $site;
 
-	public static function getAllSeasons($order='ASC', PDO $dbh){
+	public static function getAllSeasons($order='ASC', Register $register){
+	    $dbh = $register->dbh;
+	    $site = $register->site;
+
 		if($order !== 'ASC' && $order !== 'DESC')
 			throw new Exception('Order must be ASC or DESC');
 
@@ -25,16 +30,20 @@ class Season {
 				id 
 			FROM 
 				seasons 
+			WHERE
+			    site_id = ".intval($site->id)."
 			ORDER BY 
 				id ".$order
 		)->fetchAll(PDO::FETCH_COLUMN) as $sid){
-			$seasons[] = new Season($sid, $dbh);
+			$seasons[] = new Season($sid, $register);
 		}
 		return $seasons;
 	}
 
-	public function __construct($id = false, PDO $dbh){
-		$this->dbh = $dbh;
+	public function __construct($id = false, Register $register){
+	    $this->register = $register;
+		$this->dbh = $register->dbh;
+		$this->site = $register->site;
 
 		// id is false, grab the current one
 		if($id === false){
@@ -45,7 +54,7 @@ class Season {
 					seasons
 				WHERE 
 					current=1
-			";
+                    AND site_id = ".intval($this->site->id);
 		} else {
 			$sql = "
 				SELECT 
@@ -53,10 +62,11 @@ class Season {
 				FROM 
 					seasons 
 				WHERE 
-					id=".$this->dbh->quote($id);
+					id=".$this->dbh->quote($id)."
+					AND site_id = ".intval($this->site->id);
 		}
 
-		$stmt = $dbh->query($sql);
+		$stmt = $this->dbh->query($sql);
 		$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 		if(!$stmt->fetch()){
 			throw new Exception('No Season Found');
@@ -88,6 +98,7 @@ class Season {
 			LEFT JOIN players p ON(pts.player_id = p.id) 
 		WHERE 
 			pts.season_id=".$this->id."
+			AND pts.site_id=".intval($this->site->id)."
 			AND (".implode(' OR ', $team_where).")
 		ORDER BY ".$order_by;
 		
@@ -98,7 +109,7 @@ class Season {
 		$players = $this->dbh->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 		foreach($players as $r){
 			foreach(explode(',', $r['team']) as $t)
-				$teams[$t][] = new Player($r['id'], $this->dbh);
+				$teams[$t][] = new Player($r['id'], $this->register);
 		}
 
 		return $teams;
@@ -113,18 +124,21 @@ class Season {
 				LEFT JOIN players p ON(pts.player_id = p.id) 
 			WHERE 
 				pts.season_id = :season_id 
+			    AND pts.site_id = :site_id
 			ORDER BY 
 				p.first_name
 		";
 		$stmt = $this->dbh->prepare($sql);
 		$stmt->bindValue(':season_id', $this->id);
-		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Player', [null, $this->dbh]);
+		$stmt->bindValue(':site_id', $this->site->id);
+		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Player', [null, $this->register]);
 		$stmt->execute();
 
 		return $stmt->fetchAll();
 	}
 
 	public function getBadges(){
+	    // not tenanted to site
 		$stmt = $this->dbh->query("
 			SELECT 
 				b.* 
@@ -136,7 +150,7 @@ class Season {
 			ORDER BY 
 				created_at DESC
 		");
-		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Badge', [null, $this->dbh]);
+		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Badge', [null, $this->register]);
 
 		return $stmt->fetchAll();
 	}
@@ -149,10 +163,11 @@ class Season {
 				articles a 
 			WHERE 
 				season_id = ".$this->id." 
+				AND site_id = ".intval($this->site->id)."
 			ORDER BY 
 				published DESC
 		");
-		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Article', [null, $this->dbh]);
+		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Article', [null, $this->register]);
 
 		return $stmt->fetchAll();
 	}
@@ -170,6 +185,7 @@ class Season {
 				games 
 			WHERE 
 				season_id=".intval($this->id)."
+				AND site_id=".intval($this->site->id)."
 				AND team=".$this->dbh->quote($team)."
 				AND score_us IS NOT NULL
 			GROUP BY result 
@@ -189,7 +205,7 @@ class Season {
 	public function getStats(){
 		if(!isset($this->stats)){
 			try{
-				$this->stats = Stats::getTotalsForSeason($this->id, $this->dbh);
+				$this->stats = Stats::getTotalsForSeason($this->id, $this->register);
 			} catch(Exception $e){
 				$this->stats = false;
 			}
@@ -206,10 +222,11 @@ class Season {
 				albums
 			 WHERE 
 			 	season_id = ".$this->id." 
+			 	AND site_id = ".intval($this->site->id)."
 			ORDER BY 
 				updated_at DESC
 		");
-		$stmt->setFetchMode(PDO::FETCH_CLASS, 'PhotoAlbum', [null, $this->dbh]);
+		$stmt->setFetchMode(PDO::FETCH_CLASS, 'PhotoAlbum', [null, $this->register]);
 
 		return $stmt->fetchAll();
 	}
@@ -223,13 +240,14 @@ class Season {
 				photos 
 			WHERE 
 				season_id = ".$this->id." 
+				AND site_id = ".intval($this->site->id)."
 			ORDER BY 
 				RAND()
 			LIMIT 
 				".intval($limit)."
 		";
 		foreach($this->dbh->query($sql)->fetchAll(PDO::FETCH_COLUMN) as $photo_id)
-			$photos[] = new Photo($photo_id, $this->dbh);
+			$photos[] = new Photo($photo_id, $this->register);
 
 		return $photos;	
 	}
@@ -243,13 +261,14 @@ class Season {
 				photos 
 			WHERE 
 				season_id = ".$this->id." 
+				AND site_id = ".intval($this->site->id)."
 			ORDER BY 
 				RAND()
 			LIMIT 
 				".intval($limit)."
 		";
 		foreach($this->dbh->query($sql)->fetchAll(PDO::FETCH_COLUMN) as $photo_id)
-			$photos[] = new Photo($photo_id, $this->dbh);
+			$photos[] = new Photo($photo_id, $this->register);
 
 		return $photos;	
 	}
