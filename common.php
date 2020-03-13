@@ -11,6 +11,24 @@ define('INPUT_DATE_FORMAT', 'Y-m-d');
 require __DIR__ . '/define.php';
 require __DIR__ . '/vendor/autoload.php';
 
+try {
+    $register = new Register();
+    $register->dbh = PDODB::getInstance();
+
+    $domain = isCli() ? getFromCli('domain') : Site::parseHost($_SERVER['HTTP_HOST']);
+    $site = new Site($domain, $register);
+    $register->site = $site;
+
+    $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, $register);
+    $register->season = $season;
+
+} catch (Exception $e) {
+    print 'could not find that site and/or season';
+    exit;
+}
+
+require_once __DIR__ . '/site-defines/' . $site->domain . '.php';
+
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
@@ -51,22 +69,6 @@ set_exception_handler('uncaughtExceptionHandler');
 if (!Auth::authenticated() && $_SERVER['PHP_SELF'] !== '/login.php') {
     header('Location: login.php');
     die();
-}
-
-try {
-    $register = new Register();
-    $register->dbh = PDODB::getInstance();
-
-    $domain = isCli() ? getFromCli('domain') : Site::parseHost($_SERVER['HTTP_HOST']);
-    $site = new Site($domain, $register);
-    $register->site = $site;
-
-    $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, $register);
-    $register->season = $season;
-
-} catch (Exception $e) {
-    print 'could not find that site and/or season';
-    exit;
 }
 
 Config::setDbh(PDODB::getInstance());
