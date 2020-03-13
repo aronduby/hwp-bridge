@@ -5,6 +5,7 @@ define('DB_USER','hwp');
 define('DB_PASSWD','PASSWD');
 define('DB_NAME','hwp');
 
+define('ROOT_PATH', 'PATH/');
 define('MASTER_PATH', 'PATH/TO/hwp');
 define('BRIDGE_PATH', 'PATH/TO/hwp-bridge');
 define('PUBLIC_PATH', 'PATH/TO/hwp/public');

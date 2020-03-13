@@ -89,8 +89,10 @@ require '_pre.php';
 					<label for="t-location">Location:</label>
 					<select name="location_id" id="t-location" data-theme="d">
 			        	<?php
-			        	while($l = Location::getOptionsForSelect($register))
-			        		print '<option value="'.$l->id.'" '.($l->id==$tournament->location_id ? 'selected="selected"' : '').'>'.$l->title.'</option>';
+						$locations = Location::getOptionsForSelect($register);
+						foreach($locations as $l) {
+                            print '<option value="' . $l->id . '" ' . ($l->id == $tournament->location_id ? 'selected="selected"' : '') . '>' . $l->title . '</option>';
+                        }
 			        	?>
 		        	</select>
 				</li>

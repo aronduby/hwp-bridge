@@ -20,7 +20,7 @@ class Location {
         $dbh = $register->dbh;
         $sql = "SELECT id, title FROM locations WHERE site_id = ".intval($register->site->id)." ORDER BY title";
         $stmt = $dbh->query($sql);
-        return $stmt->fetch(PDO::FETCH_OBJ);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
 	public function __construct($id = null, Register $register){

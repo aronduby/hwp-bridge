@@ -38,7 +38,7 @@ class Tournament
             ORDER BY 
                 title";
         $stmt = $dbh->query($sql);
-        return $stmt->fetch(PDO::FETCH_OBJ);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     public function __construct($id = null, Register $register)
@@ -65,7 +65,7 @@ class Tournament
     public function getGames()
     {
         if (!isset($this->games)) {
-            $sql = "SELECT * FROM games WHERE site_id = " . intval($site->id) . " AND  tournament_id=" . intval($this->id);
+            $sql = "SELECT * FROM games WHERE site_id = " . intval($this->site->id) . " AND  tournament_id=" . intval($this->id);
             $stmt = $this->dbh->query($sql);
             $stmt->setFetchMode(PDO::FETCH_CLASS, 'Game', [null, $this->register]);
 

@@ -5,10 +5,11 @@ if(!empty($_POST)){
 
 	try{
 		if(!empty($_FILES) && $_FILES['image']['error'] !== 4){
-			$upload = Upload::factory(PUBLIC_PATH . '/badges');
+			$destination = str_replace(ROOT_PATH, '', PUBLIC_PATH);
+			$upload = Upload::factory($destination . '/badges', ROOT_PATH);
 			$upload->file($_FILES['image']);
 			$upload->set_max_file_size(1); // in mb
-			$upload->set_allowed_mime_types(array('image/png'));
+			$upload->set_allowed_mime_types(array('image/png', 'image/jpeg'));
 
 			$upload->check();
 			$upload->set_filename($upload->file['original_filename']);
@@ -18,7 +19,7 @@ if(!empty($_POST)){
 			if(!count($results['errors'])){
 				$_POST['image'] = $results['filename'];
 			} else {
-				throw new Exception('Could not save file, please try again later.');
+				throw new Exception('Could not save file: '.$results['errors']);
 			}
 		}
 
@@ -54,8 +55,7 @@ if(!empty($_POST)){
 		if($inserted){
 			// set it as a season badge?
 			if($_POST['team_has_badge']){
-				$stmt = $dbh->prepare("INSERT INTO badge_season (site_id, season_id, badge_id) VALUES (:site_id, :season_id, :badge_id) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)");
-				$stmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);
+				$stmt = $dbh->prepare("INSERT INTO badge_season (season_id, badge_id) VALUES (:season_id, :badge_id) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)");
 				$stmt->bindValue(':season_id', $season->id, PDO::PARAM_INT);
 				$stmt->bindValue(':badge_id', $badge_id, PDO::PARAM_INT);
 				$stmt->execute();
@@ -68,8 +68,7 @@ if(!empty($_POST)){
 						player_id = :player_id, 
 						badge_id = :badge_id, 
                     	site_id = :site_id, 
-						season_id = :season_id, 
-						site_id = 1
+						season_id = :season_id
 				');
 				$stmt->bindValue(':badge_id', $badge_id, PDO::PARAM_INT);
 				$stmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);

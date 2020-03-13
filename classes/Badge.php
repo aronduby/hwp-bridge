@@ -24,6 +24,7 @@ class Badge {
 
 
 	public function __construct($badge_id = null, Register $register){
+	    $this->register = $register;
 		$this->dbh = $register->dbh;
 		$this->site = $register->site;
 
@@ -37,7 +38,7 @@ class Badge {
 	}
 
 	public function checkSeason($season_id){
-		$stmt = $this->dbh->prepare("SELECT COUNT(*) FROM badge_season WHERE badge_id = :badge_id AND site_id = :site_id AND season_id = :season_id");
+		$stmt = $this->dbh->prepare("SELECT COUNT(*) FROM badge_season WHERE badge_id = :badge_id AND season_id = :season_id");
 		$stmt->bindValue(':badge_id', $this->id, PDO::PARAM_INT);
 		$stmt->bindValue(':season_id', $season_id, PDO::PARAM_INT);
 		$stmt->execute();

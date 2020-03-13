@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 class Game {
 
@@ -8,7 +8,6 @@ class Game {
 	public $season_id;
 	public $tournament_id;
 	public $title_append;
-	public $bus_time;
 	public $start;
 	public $end;
 	public $location_id;
@@ -26,7 +25,6 @@ class Game {
 	public $has_live_scoring;
 	public $has_recap;
 	public $has_photo_album;
-	public $dump_version;
 
 	private $register;
 	private $dbh;
@@ -46,7 +44,7 @@ class Game {
 		$this->start = new DateTime($this->start);
 		$this->end = new DateTime($this->end);
 
-		$this->location = new Location($this->location_id, $this->dbh);
+		$this->location = new Location($this->location_id, $this->register);
 
 		$this->title = (strlen($this->title_append)>0 ? $this->title_append : 'Game').' against '.$this->opponent;
 
@@ -75,6 +73,6 @@ class Game {
 		else
 			return false;
 	}
-	
+
 
 }

@@ -151,9 +151,10 @@ require '_pre.php';
 					<select name="tournament_id" id="g-tournament" data-theme="d">
 						<option value=""></option>
 			        	<?php
-			        	while($t = Tournament::getOptionsForSelect($register))
-			        		print '<option value="'.$t->id.'" '.($t->id == $game->tournament_id ? 'selected="selected"' : '').'>'.$t->title.'</option>';
-
+				        $tournaments = Tournament::getOptionsForSelect($register);
+			        	foreach($tournaments as $t) {
+                            print '<option value="' . $t->id . '" ' . ($t->id == $game->tournament_id ? 'selected="selected"' : '') . '>' . $t->title . '</option>';
+                        }
 			        	?>
 		        	</select>
 				</li>
@@ -162,8 +163,10 @@ require '_pre.php';
 					<label for="g-location">Location:</label>
 					<select name="location_id" id="g-location" data-theme="d">
 			        	<?php
-			        	while($l = Location::getOptionsForSelect($register))
-			        		print '<option value="'.$l->id.'" '.($l->id==$game->location_id || ($tournament && $tournament->location_id === $l->id) ? 'selected="selected"' : '').'>'.$l->title.'</option>';
+				        $locations = Location::getOptionsForSelect($register);
+			        	foreach($locations as $l) {
+                            print '<option value="' . $l->id . '" ' . ($l->id == $game->location_id || ($tournament && $tournament->location_id === $l->id) ? 'selected="selected"' : '') . '>' . $l->title . '</option>';
+                        }
 			        	?>
 		        	</select>
 				</li>
@@ -194,7 +197,8 @@ require '_pre.php';
 					<select name="album_id" id="g-album_id" data-theme="d">
 						<option value=""></option>
 			        	<?php
-			        	foreach(PhotoAlbum::getOptionsForSelect($register) as $id=>$title){
+				        $albums = PhotoAlbum::getOptionsForSelect($register);
+			        	foreach($albums as $id=>$title){
 			        		print '<option value="'.$id.'" '.($id==$game->album_id?'selected="selected"':'').'>'.$title.'</option>';
 			        	}
 			        	?>
