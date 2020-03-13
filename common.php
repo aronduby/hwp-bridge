@@ -27,7 +27,7 @@ try {
     exit;
 }
 
-require_once __DIR__ . '/site-defines/' . $site->domain . '.php';
+require_once SITE_DEFINES_PATH . '/' . $site->domain . '.php';
 
 function exception_error_handler($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);

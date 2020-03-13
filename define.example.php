@@ -17,6 +17,7 @@ define('ARTISAN_PATH', 'PATH/TO/hwp/artisan');
 define('TEMPLATE_PATH', BRIDGE_PATH.'/templates/');
 define('TOKEN_PATH', BRIDGE_PATH.'/parsers/tmp/token');
 define('JSON_PATH', BRIDGE_PATH.'/parsers/tmp/tags.json');
+define('SITE_DEFINES_PATH', 'PATH/TO/hwp-bridge/site-defines');
 
 define('MANDRILL_API_KEY', 'XXXXX');
 
