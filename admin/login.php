@@ -16,6 +16,7 @@ if (!empty($_POST)) {
         $form_errors = "Supplied credentials were incorrect";
 
     } catch (Exception $e) {
+    	error_log($e);
         $form_errors = 'An unexpected error happened. Please try again.';
     }
 }
