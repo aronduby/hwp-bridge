@@ -1,4 +1,4 @@
-<?php /** @noinspection ALL */
+<?php /** @noinspection SqlResolve */
 
 class Season {
 	

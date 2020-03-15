@@ -42,6 +42,8 @@ require '_pre.php';
 
 	<div data-role="content">	
 		<?php
+        include '_alerts.php';
+
 		if($past_by_team !==false){
 
 			print '<ul data-role="listview" data-theme="d" data-divider-theme="d" data-split-theme="d" data-split-icon="gear">';

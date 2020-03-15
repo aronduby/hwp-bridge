@@ -16,10 +16,13 @@ require '_pre.php';
 
 	<div data-role="content">	
 		<?php
+        include '_alerts.php';
+
 		$cur_display_order = false;
 		if($badges !==false && count($badges) > 0){
 			?>
 			<ul data-role="listview" data-theme="d" data-divider-theme="d">
+				<li data-role="list-divider"></li>
 				<?php
 				foreach($badges as $b){
 					if($b->display_order != $cur_display_order){

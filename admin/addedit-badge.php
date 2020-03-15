@@ -117,14 +117,7 @@ require '_pre.php';
 
 	<div data-role="content">	
 		<?php
-		// print_p($player_ids_with_badge);
-		// print_p($players);
-
-		if(isset($form_errors)){
-			print '<div data-role="content" data-theme="e">';
-				print $form_errors;
-			print '</div>';
-		}
+        include '_form-errors.php';
 		?>
 		<form action="addedit-badge.php<?= isset($_GET['badge_id']) ? '?badge_id='.$_GET['badge_id'] : ''?>" method="POST" data-ajax="false" autocomplete="off" enctype="multipart/form-data">
 			<input type="hidden" name="badge_id" value="<?php echo $badge->id ?>" />
@@ -191,12 +184,11 @@ require '_pre.php';
 						   ?>
 					    </fieldset>
 				</li>
+
+				<li data-role="fieldcontain">
+					<button type="submit">Save</button>
+				</li>
 			</ul>
-
-			<div data-role="footer" class="ui-bar" data-theme="a">
-				<button type="submit" data-theme="b">Save</button>
-			</div>
-
 		</form>
 	</div><!-- /content -->
 

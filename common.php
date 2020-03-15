@@ -19,7 +19,7 @@ try {
     $site = new Site($domain, $register);
     $register->site = $site;
 
-    $season = new Season(isset($_COOKIE['season_id']) ? $_COOKIE['season_id'] : false, $register);
+    $season = new Season(isset($_SESSION['season_id']) ? $_SESSION['season_id'] : false, $register);
     $register->season = $season;
 
 } catch (Exception $e) {

@@ -105,11 +105,7 @@ require '_pre.php';
 
 	<div data-role="content">	
 		<?php
-		if(isset($form_errors)){
-			print '<div data-role="content" data-theme="e">';
-				print $form_errors;
-			print '</div>';
-		}
+        include '_form-errors.php';
 		?>
 		<form action="addedit-game.php" method="POST" data-ajax="false">
 			<input type="hidden" name="game_id" value="<?php echo $game->id ?>" />

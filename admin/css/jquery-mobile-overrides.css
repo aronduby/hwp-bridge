@@ -29,3 +29,14 @@ li.ui-field-contain .helper-text {
     text-shadow: none;
     color: #666;
 }
+
+.ui-icon-inline {
+    display: inline-block;
+}
+
+.ui-alert + .ui-listview {
+    margin-top: 1em;
+}
+.ui-alert + form {
+    margin-top: 2em;
+}

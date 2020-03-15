@@ -12,6 +12,11 @@ require '_pre.php';
 	</div><!-- /header -->
 
 	<div data-role="content">
+
+        <?php
+        include '_alerts.php';
+        ?>
+
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
 			<li><a href="events.php" title="events">Events</a></li>
 			<li><a href="players.php" title="players">Players</a></li>
@@ -19,6 +24,10 @@ require '_pre.php';
 			<li><a href="pastevents.php" title="past events">Past Events</a></li>
 			<li data-role="list-divider"></li>
 			<li><a href="badges.php" title="badges">Badges</a></li>
+		</ul>
+
+		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
+			<li><a href="seasons.php" title="seasons">Seasons</a></li>
 		</ul>
 
         <ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
