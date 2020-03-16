@@ -3,7 +3,8 @@
 class PlayerSeason {
 
 	use Outputable;
-	
+
+	public $id;
 	public $player_id;
 	public $season_id;
 	public $title;
@@ -27,21 +28,25 @@ class PlayerSeason {
 	private $dbh;
 	private $site;
 
-	public function __construct(Player $player, $season_id, Register $register){
+	public function __construct(Player $player = null, $season_id = null, Register $register){
 		$this->player = $player;
 
 		$this->register = $register;
 		$this->dbh = $register->dbh;
 		$this->site = $register->site;
 
-		$sql = "SELECT * FROM player_season WHERE player_id=".intval($this->player->id)." AND season_id=".intval($season_id)." AND site_id = ".intval($this->site->id);
-		$stmt = $this->dbh->query($sql);
-		$stmt->setFetchMode(PDO::FETCH_INTO, $this);
-		$stmt->fetch();
+		if ($player && $season_id) {
+            $sql = "SELECT * FROM player_season WHERE player_id=".intval($this->player->id)." AND season_id=".intval($season_id)." AND site_id = ".intval($this->site->id);
+            $stmt = $this->dbh->query($sql);
+            $stmt->setFetchMode(PDO::FETCH_INTO, $this);
+            $stmt->fetch();
+        }
 
-		$s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_OBJ);
-		$this->season_title = $s->title;
-		$this->season_short_title = $s->short_title;
+		if ($season_id) {
+            $s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_OBJ);
+            $this->season_title = $s->title;
+            $this->season_short_title = $s->short_title;
+        }
 	}
 
 	public function getPhotos(){

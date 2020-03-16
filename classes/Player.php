@@ -48,7 +48,7 @@ class Player{
 		$this->name = $this->first_name .' '. $this->last_name;
 		$this->last_update = DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->last_update);
 
-		$copy_from_season = $this->getValuesFromSeason();
+		$copy_from_season = $this->getValuesFromSeason($register->season->id);
 		$this->number = $copy_from_season['number'];
 		$this->title = $copy_from_season['title'];
 	}
@@ -122,7 +122,6 @@ class Player{
 		return $this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
 	}
 
-
 	public function getCareer($full = false){
 		$career = new PlayerCareer($this);
 
@@ -136,8 +135,18 @@ class Player{
 		return $career;
 	}
 
-	private function getValuesFromSeason(){
-		$sql = "SELECT title, number FROM player_season WHERE player_id=".intval($this->id)." AND site_id = ".intval($this->site->id)." ORDER BY season_id DESC LIMIT 1";
+	private function getValuesFromSeason($seasonId){
+		$sql = "SELECT 
+            title, number 
+        FROM 
+            player_season 
+        WHERE 
+              player_id=".intval($this->id)." 
+              AND site_id = ".intval($this->site->id)."
+              AND season_id = ".intval($seasonId)."
+        ORDER BY 
+            season_id DESC 
+        LIMIT 1";
 		return $this->dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
 	}
 

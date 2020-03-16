@@ -1,0 +1,37 @@
+.add-existing-players .player {
+    padding: 0;
+}
+
+.add-existing-players .player > .ui-checkbox .ui-btn {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: #f8f8f8;
+}
+
+.add-existing-players .player > .subfields {
+    padding: 0 20px;
+    background: #f8f8f8;
+    display: none;
+}
+
+.add-existing-players .player > .subfields fieldset {
+    margin-top: 0;
+}
+
+.add-existing-players .subfields .ui-controlgroup-label,
+.add-existing-players .subfields label.ui-input-text {
+    font-size: 12.5px;
+}
+
+.add-existing-players .player--checked > .subfields {
+    display: flex;
+    justify-content: space-between;
+}
+
+.add-existing-players .subfields-cap {
+    flex: 0 1 11%;
+}
+
+.add-existing-players .subfields-team,
+.add-existing-players .subfields-position {}

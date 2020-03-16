@@ -45,6 +45,11 @@ class Season {
 		$this->dbh = $register->dbh;
 		$this->site = $register->site;
 
+		if ($id === null) {
+		    $this->current = false;
+		    return $this;
+        }
+
 		// id is false, grab the current one
 		if($id === false){
 			$sql = "
@@ -115,10 +120,10 @@ class Season {
 		return $teams;
 	}
 
-	public function getPlayers(){
+	public function getPlayers() {
 		$sql = "
 			SELECT 
-				p.* 
+				p.*
 			FROM 
 				player_season pts 
 				LEFT JOIN players p ON(pts.player_id = p.id) 
@@ -273,6 +278,22 @@ class Season {
 		return $photos;	
 	}
 
-}
+	public function getPlayerSeasons() {
+        $stmt = $this->dbh->prepare("
+			SELECT 
+				ps.* 
+			FROM 
+				player_season ps 
+			WHERE 
+				ps.site_id = :site_id
+                AND ps.season_id = :season_id
+		");
+        $stmt->bindValue(':site_id', $this->site->id, PDO::PARAM_INT);
+        $stmt->bindValue(':season_id', $this->id, PDO::PARAM_INT);
+        $stmt->setFetchMode(PDO::FETCH_CLASS, 'PlayerSeason', [null, $this->id, $this->register]);
 
-?>
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+}

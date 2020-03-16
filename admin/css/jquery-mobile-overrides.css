@@ -40,3 +40,16 @@ li.ui-field-contain .helper-text {
 .ui-alert + form {
     margin-top: 2em;
 }
+
+/* li's that are only content that only have buttons */
+.ui-li-static .ui-content:first-child:last-child {
+    padding: 0;
+}
+.ui-li-static .ui-content:first-child:last-child .ui-btn:first-child:last-child {
+    margin: 0;
+}
+
+/* stacked divider don't look like they have borders */
+.ui-li-divider + .ui-li-divider {
+    border-top-color: #aaa;
+}

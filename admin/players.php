@@ -18,21 +18,30 @@ require '_pre.php';
 		<?php
         include '_alerts.php';
 
-		if($player_list !==false){
+        ?>
+		<ul data-role="listview" data-theme="d" data-divider-theme="d" data-split-theme="d" data-split-icon="gear">
+			<li data-role="list-divider">Batch</li>
+			<li>
+				<div data-role="content">
+					<a href="add-existing-players.php" data-role="button" data-theme="b">Batch Existing Players</a>
+				</div>
+			</li>
 
-			print '<ul data-role="listview" data-theme="d" data-divider-theme="d" data-split-theme="d" data-split-icon="gear">';
-			foreach($player_list as $team => $players){
-				print '<li data-role="list-divider">'.($team=='V' ? 'Varsity' : $team).'</li>';
-				foreach($players as $p){
-					print '<li><a href="addedit-player.php?player_id='.$p->id.'" title="edit player">'.(strlen($p->number) ? '#'.$p->number : '').' '.$p->name.'</a></li>';
-				}
-			}
-			print '</ul>';
+            <?php
+            if ($player_list !== false) {
 
-		} else {
-			print '<p>No players found for this season</p>';
-		}
-		?>
+                foreach($player_list as $team => $players){
+                    print '<li data-role="list-divider">'.($team=='V' ? 'Varsity' : $team).'</li>';
+                    foreach($players as $p){
+                        print '<li><a href="addedit-player.php?player_id='.$p->id.'" title="edit player">'.(strlen($p->number) ? '#'.$p->number : '').' '.$p->name.'</a></li>';
+                    }
+                }
+
+            } else {
+                print '<p>No players found for this season</p>';
+            }
+            ?>
+		</ul>
 	</div><!-- /content -->
 
 </div><!-- /page -->

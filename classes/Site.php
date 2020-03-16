@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 class Site
 {
@@ -42,6 +42,20 @@ class Site
         if(!$stmt->fetch()){
             throw new Exception('No Site Found');
         }
+    }
+
+    /**
+     * Gets all of the players, regardless of season
+     *
+     * @return array
+     */
+    public function getAllPlayers() {
+        $stmt = $this->dbh->prepare("SELECT * FROM players WHERE site_id = :site_id");
+        $stmt->bindValue(':site_id', $this->id, PDO::PARAM_INT);
+        $stmt->setFetchMode(PDO::FETCH_CLASS, 'Player', [null, $this->register]);
+
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
 }
