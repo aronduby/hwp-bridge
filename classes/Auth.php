@@ -8,7 +8,7 @@ class Auth
     /**
      * The key in session that houses the token
      */
-    const TOKEN_KEY = 'token';
+    const TOKEN_KEY = 'hwp:token';
 
     /**
      * The key in session that houses the claims

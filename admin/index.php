@@ -5,8 +5,12 @@ require '_pre.php';
 ?>
 
 <div data-role="page" data-theme="b">
+	<?php
+    include "_flash.php";
+	?>
 
 	<div data-role="header" data-theme="b">
+		<a href="settings.php" title="settings" data-icon="gear" data-iconpos="notext" data-direction="reverse">settings</a>
 		<h1>Index</h1>
         <a href="logout.php" data-icon="alert" data-ajax="false" class="ui-btn-right">Logout</a>
 	</div><!-- /header -->

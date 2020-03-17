@@ -5,15 +5,14 @@ namespace OAuth\Service;
 class Twitter extends \OAuth\v1\Service{
 	
 	// Hudsonville Water Polo App
-	protected $consumer_key = TWITTER_CONSUMER_KEY;
-	protected $consumer_secret = TWITTER_CONSUMER_SECRET;
+	public $consumer_key = TWITTER_CONSUMER_KEY;
+	public $consumer_secret = TWITTER_CONSUMER_SECRET;
+    public $redirect_url = 'http://www.hudsonvillewaterpolo.com/norewrite/auth_callback.php';
 
 	protected $api_url = 'https://api.twitter.com/1.1/';
 	protected $request_token_url = 'https://api.twitter.com/oauth/request_token';
 	protected $authorize_url = 'https://api.twitter.com/oauth/authenticate';
 	protected $access_token_url = 'https://api.twitter.com/oauth/access_token';
-
-	protected $redirect_url = 'http://www.hudsonvillewaterpolo.com/norewrite/auth_callback.php';
 
 
 	// protected $token_key = 'token';
