@@ -37,7 +37,10 @@ require '_pre.php';
 	                        <p>click to re-authorize</p>
                             <?php
                         } else {
-                            ?>Auth Twitter<?php
+	                        ?>
+	                        <h3>Auth Twitter</h3>
+	                        <p>click to authorize your twitter account</p>
+	                        <?php
                         }
                         ?>
                     </a>

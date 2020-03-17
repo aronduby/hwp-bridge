@@ -53,7 +53,7 @@ class Service extends \OAuth\ServiceAbstract {
 		if(!isset($arg['token']) && isset($arg['oauth_token'])){
 			$arg['token'] = $arg['oauth_token'];
 		} else {
-			throw new Exception("Could not find token in passed in arguments");
+			throw new \Exception("Could not find token in passed in arguments");
 		}
 		
 		// verifier isn't a required field

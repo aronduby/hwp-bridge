@@ -1,14 +1,32 @@
 <?php
 require '../../common.php';
 
-$store = new OAuth\Store\Session();
+function clear() {
+    // clear the store data
+    unset($_SESSION['tokens']);
+    unset($_SESSION['serialized']);
+}
+
+
+if (array_key_exists('denied', $_GET)) {
+    clear();
+    header("Location: ".BASE_HREF.'/settings.php');
+    die();
+}
 
 try{
+    $store = new OAuth\Store\Session();
+
     $service = $store->restoreFromSerialized($_SESSION['serialized']);
     if (!$service->areWeAuthorized()) {
         $service->getAccessToken($_GET);
     }
-} catch(Exception $e){}
+} catch(Exception $e){
+    $_SESSION['flashMsg'] = 'Error -- I think you cancelled?';
+    clear();
+    header("Location: ".BASE_HREF.'/settings.php');
+    die();
+}
 
 if ($service->areWeAuthorized()) {
 
@@ -16,9 +34,7 @@ if ($service->areWeAuthorized()) {
     $token = $store->getTokens(\OAuth\Token::TYPE_ACCESS);
     $rsp = $service->account_verify_credentials();
 
-    // clear the store data
-    unset($_SESSION['tokens']);
-    unset($_SESSION['serialized']);
+    clear();
 
     $twitterData = [
         'accessToken' => $token->getToken(),
@@ -39,4 +55,4 @@ if ($service->areWeAuthorized()) {
     $_SESSION['flashMsg'] = 'Auth error with Twitter.';
 }
 
-header("Location: ".BASE_HREF);
+header("Location: ".BASE_HREF.'/settings.php');
