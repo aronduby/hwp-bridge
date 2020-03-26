@@ -25,6 +25,9 @@ console.log('Test Mode:', testMode);
 const db = require('./db')(settings.mysql);
 const dataHandler = require('./data')(db);
 
+// SITE SETTINGS MANAGER
+const settingsManager = new (require('./settings-manager'))(db, settings);
+
 // UPDATE MANAGER
 const UpdateManager = require('./update-manager');
 const updateManager = new UpdateManager();
@@ -32,13 +35,13 @@ const updateManager = new UpdateManager();
 // BROADCASTERS
 const mids = require('./middleware');
 
-const TwitterBroadcaster = new (require('./broadcasters/twitter'))(settings.twitter, testMode);
+const TwitterBroadcaster = new (require('./broadcasters/twitter'))(settingsManager, testMode);
 TwitterBroadcaster
 	.use(mids.isDefined)
 	.use(mids.messageWithScore)
 	.use(mids.prefixJV);
 
-const TwilioBroadcaster = new (require('./broadcasters/twilio'))(settings.twilio, db, testMode);
+const TwilioBroadcaster = new (require('./broadcasters/twilio'))(settingsManager, db, testMode);
 TwilioBroadcaster
 	.use(mids.isDefined)
 	.use(mids.messageWithScore)
@@ -247,6 +250,10 @@ io.of((name, query, next) => {
 			} catch (err) {
 				cb(err);
 			}
+		});
+
+		socket.on('broadcast', async (gameData, data) => {
+			sendToBroadcasters(gameData, data);
 		});
 	}
 

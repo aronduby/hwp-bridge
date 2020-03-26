@@ -9,23 +9,20 @@ class TwilioBroadcaster extends Middleware {
 
     /**
      *
-     * @param {object} settings - twilio related settings
-     * @param {string} settings.sid - the twilio accounts sid
-     * @param {string} settings.token - the twilio account access token
-     * @param {string} settings.from - the phone number twilio sends from, needs the + prefix
+     * @param {SettingsManager} settingsManager - a settings manager instance
      * @param {Pool} db - mysql pool connection
      * @param {boolean} testMode - are we in test mode, currently forced to true
      */
-    constructor(settings, db, testMode) {
+    constructor(settingsManager, db, testMode) {
         super();
 
         this._db = db;
 
-        // always test mode for now
+        this._settingsManager = settingsManager;
         this._testMode = true;
 
-        this._settings = settings;
-        this._twilioClient = new twilio.RestClient(settings.sid, settings.token, {});
+        const {sid, token} = settingsManager.getGlobal().twilio;
+        this._twilioClient = new twilio.RestClient(sid, token, {});
     }
 
     /**
@@ -34,29 +31,66 @@ class TwilioBroadcaster extends Middleware {
      * @param {?object} initialOut - used to supply an initial output with empty body
      */
     broadcast(data, initialOut = {body: ""}) {
-        this.go(data, initialOut, function(input, output) {
-            if (this._testMode !== true) {
+        this.go(data, initialOut, async function(input, output) {
+            if (true || this._testMode !== true) {
+
+                const from = await this.setSiteAuth(input.site_id);
+                if (!from) {
+                    this.setGlobalAuth();
+                    return;
+                }
+
                 const self = this;
-                const sql = 'SELECT phone FROM subscriptions WHERE game_id=? OR tournament_id IN (SELECT tournament_id FROM game WHERE game_id=?)';
+                const sql = 'SELECT phone FROM subscriptions WHERE game_id=? OR tournament_id IN (SELECT tournament_id FROM games WHERE game_id=?)';
 
                 const query = this._db.query(sql, [input.game_id, input.game_id]);
                 query.on('error', function(err) { console.log(err); })
                     .on('result', function(row) {
                         self._twilioClient.sendSms({
                             to: row.phone, // Any number Twilio can deliver to
-                            from: self._settings.from, // A number you bought from Twilio and can use for outbound communication
+                            from: from, // A number you bought from Twilio and can use for outbound communication
                             body: output.body // body of the SMS message
                         }, function(err, responseData) { //this function is executed when a response is received from Twilio
                             if (!err) {
                                 console.log("Sent text to " + responseData.to);
                             }
                         });
+                    })
+                    .on('end', function() {
+                        self.setGlobalAuth();
                     });
+
             } else {
                 testLogger('TWILIO', output.body);
             }
         }.bind(this));
-    };
+    }
+
+    setGlobalAuth() {
+        const {sid, token} = this._settingsManager.getGlobal().twilio;
+        this._twilioClient.accountSid = sid;
+        this._twilioClient.authToken = token;
+    }
+
+    /**
+     * Resolves with the number to send from, or false to not send
+     *
+     * @param siteId
+     * @returns {Promise<boolean|string>}
+     */
+    async setSiteAuth(siteId) {
+        const settings = await this._settingsManager.getForSite(siteId);
+        const { enabled, from, sid, token } = settings.twilio;
+
+        if (!enabled || !sid || !token) {
+            return false;
+        }
+
+        this._twilioClient.accountSid = sid;
+        this._twilioClient.authToken = token;
+
+        return from;
+    }
 }
 
 module.exports = TwilioBroadcaster;
