@@ -21,10 +21,10 @@ function loadPlayers(pool, seasonId, team) {
         let sql, params;
 
         if (team) {
-            sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET (?, team)";
+            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET (?, team)";
             params = [seasonId, team];
         } else {
-            sql = "SELECT p.name_key, p.first_name, p.last_name, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
+            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
             params = [seasonId];
         }
 

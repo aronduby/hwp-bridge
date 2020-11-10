@@ -12,13 +12,15 @@ if(!empty($_POST)){
 				site_id = ".intval($site->id).",
 				first_name = ".$dbh->quote($_POST['first_name']).",
 				last_name = ".$dbh->quote($_POST['last_name']).",
-				name_key = ".$dbh->quote($_POST['name_key'])."
+				name_key = ".$dbh->quote($_POST['name_key']).",
+				pronouns = ".$dbh->quote($_POST['pronouns'])."
 			ON DUPLICATE KEY UPDATE
 				id = VALUES(id),
 				site_id = VALUES(site_id),
 				first_name = VALUES(first_name),
 				last_name = VALUES(last_name),
 				name_key = VALUES(name_key),
+				pronouns = VALUES(pronouns),
 				id = LAST_INSERT_ID(id)";
 
 		$inserted  = $dbh->exec($sql);
@@ -81,6 +83,11 @@ if(!empty($_POST)){
 	$player = new Player(isset($_GET['player_id']) ? $_GET['player_id'] : null, $register);
 	$player_season = new PlayerSeason($player, $season->id, $register);
 	$player_season->team = explode(',', $player_season->team);
+
+	if (!isset($player->pronouns)) {
+		$settings = $site->getSettings();
+		$player->pronouns = $settings->defaultPronouns;
+	}
 }
 
 require '_pre.php';
@@ -115,6 +122,18 @@ require '_pre.php';
 				<li data-role="fieldcontain">
 					<label for="p-name_key">Name Key:</label>
 		        	<input type="text" name="name_key" id="p-name_key" placeholder="name key" value="<?php echo $player->name_key ?>" />
+				</li>
+
+				<li data-role="fieldcontain">
+					<fieldset data-role="controlgroup" data-type="horizontal">
+						<legend>Pronouns:</legend>
+						<label for="p-pronouns-he">He</label>
+						<input type="radio" name="pronouns" id="p-pronouns-he" value="he" data-theme="d" <?php echo $player->pronouns === 'he' ? 'checked="checked"' : '' ?> />
+						<label for="p-pronouns-she">She</label>
+						<input type="radio" name="pronouns" id="p-pronouns-she" value="she" data-theme="d" <?php echo $player->pronouns === 'she' ? 'checked="checked"' : '' ?> />
+						<label for="p-pronouns-they">They</label>
+						<input type="radio" name="pronouns" id="p-pronouns-they" value="they" data-theme="d" <?php echo $player->pronouns === 'they' ? 'checked="checked"' : '' ?> />
+					</fieldset>
 				</li>
 
 				<li data-role="fieldcontain">

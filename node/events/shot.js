@@ -1,6 +1,7 @@
 const ordinal = require('../utils/ordinal');
 const oxford = require('../utils/oxford');
 const nameAndNumber = require('../utils/player-name-and-number');
+const pn = require('../utils/pronouns').playerPronouns;
 
 module.exports = function shot(game, player, made, assist) {
     if (made === true) {
@@ -13,9 +14,9 @@ module.exports = function shot(game, player, made, assist) {
 
         // advantage?
         if (game.kickouts[0].length !== game.kickouts[1].length) {
-            data.msg += ` off a ${(6 - game.kickouts[0].length)} on ${(6 - game.kickouts[1].length)}! ${nameAndNumber(shooter)} scoring his ${ordinal(shooter.goals)}`;
+            data.msg += ` off a ${(6 - game.kickouts[0].length)} on ${(6 - game.kickouts[1].length)}! ${nameAndNumber(shooter)} scoring ${pn(shooter, 'possessive')} ${ordinal(shooter.goals)}`;
         } else {
-            data.msg += `! ${nameAndNumber(shooter)}, his ${ordinal(shooter.goals)}`;
+            data.msg += `! ${nameAndNumber(shooter)}, ${pn(shooter, 'possessive')} ${ordinal(shooter.goals)}`;
         }
 
         // assist?

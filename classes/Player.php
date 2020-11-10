@@ -7,6 +7,7 @@ class Player{
 	public $id;
 	public $first_name;
 	public $last_name;
+	public $pronouns;
 	public $name_key;
 	public $last_update;
 		
