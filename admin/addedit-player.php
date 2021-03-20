@@ -30,9 +30,7 @@ if(!empty($_POST)){
 			$_POST['position'] = null;
 		}
 
-		if(!array_key_exists('sort', $_POST)){
-			$_POST['sort'] = intval($_POST['number']);
-		}
+		$_POST['sort'] = intval($_POST['sort']);
 
 		if($inserted !== false){
 			// update the season info

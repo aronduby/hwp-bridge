@@ -40,18 +40,17 @@ if (!empty($_POST)) {
          * team array<array<V|JV|STAFF>> array indexed by player id where values are an array of the teams they are on, [[80] => ['V','JV']]
          * position array<FIELD|GOALIE> array of player positions, indexed by player id
         */
-        // print_p($_POST);
 
         $write = [];
         foreach($_POST['player'] as $pid) {
-            $psid = $_POST['playerSeasonId'][$pid];
+            $psid = intval($_POST['playerSeasonId'][$pid]);
 
         	// team and position could not exists
             $team = array_key_exists($pid, $_POST['team']) ? implode(',', $_POST['team'][$pid]) : '';
             $position = array_key_exists($pid, $_POST['position']) ? $_POST['position'][$pid] : '';
 
         	$write[] = [
-        	    ':id' => $psid,
+        	    ':id' => $psid ?: null,
 		        ':player_id' => $pid,
 		        ':team' => $team,
 		        ':position' => $position,
@@ -110,6 +109,11 @@ if (!empty($_POST)) {
             $stmt = $dbh->prepare($sql);
             $stmt->execute($delete);
         }
+
+        // clear the artisan cache so playerlist is regened
+        // also regen the JS player list
+        exec('php '.ARTISAN_PATH.' cache:clear');
+        exec('php '.ARTISAN_PATH.' generate:js-player-list');
 
         header("Location: players.php");
         die();
