@@ -13,7 +13,7 @@ if(!empty($_POST)){
 		$end = date('Y-m-d', $end);
 
 		$sql = "INSERT INTO tournaments SET
-				id = ".$dbh->quote($_POST['tournament_id']).",
+				id = ".($_POST['tournament_id'] ? $dbh->quote($_POST['tournament_id']) : 'null').",
 				site_id = ".intval($site->id).",
 				season_id = ".$dbh->quote($_POST['season_id']).",
 				location_id = ".intval($_POST['location_id']).",

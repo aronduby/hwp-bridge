@@ -17,7 +17,7 @@ if(!empty($_POST)){
 		$score_them = $_POST['score_them']!=='' ? intval($_POST['score_them']) : 'null';
 
 		$sql = "INSERT INTO games SET
-				id = ".$dbh->quote($_POST['game_id']).",
+				id = ".($_POST['game_id'] ? $dbh->quote($_POST['game_id']) : 'null').",
 				site_id = ".intval($site->id).", 
 				season_id = ".$dbh->quote($_POST['season_id']).",
 				tournament_id = ".(intval($_POST['tournament_id']) ? $dbh->quote($_POST['tournament_id']) : "NULL").",
