@@ -1,6 +1,12 @@
 <?php /** @noinspection SqlResolve */
 require '../common.php';
 
+function sortByName(&$arr) {
+	return usort($arr, function ($a, $b) {
+		return strnatcmp ( strtoupper($a->name_key), strtoupper($b->name_key) );
+	});
+}
+
 function groupBy($arr, $fnc) {
 	$return = [];
 
@@ -26,7 +32,9 @@ function indexBy($arr, $fnc) {
 	return $return;
 }
 
-$allPlayers = groupBy($site->getAllPlayers(), function($p) { return strtoupper($p->first_name[0]); });
+$allPlayers = $site->getAllPlayers();
+sortByName($allPlayers);
+$allPlayers = groupBy($allPlayers, function($p) { return strtoupper($p->first_name[0]); });
 $seasonPlayersNoIndex = $season->getPlayerSeasons();
 $seasonPlayers = indexBy($seasonPlayersNoIndex, function($ps) { return $ps->player_id; });
 
@@ -105,9 +113,9 @@ if (!empty($_POST)) {
         }
 
         if (count($delete)) {
-            $sql = "DELETE FROM player_season WHERE ind in (".str_repeat("?,", count($delete) - 1)."?)";
+            $sql = "DELETE FROM player_season WHERE id IN (".str_repeat("?,", count($delete) - 1)."?)";
             $stmt = $dbh->prepare($sql);
-            $stmt->execute($delete);
+            $stmt->execute(array_values($delete));
         }
 
         // clear the artisan cache so playerlist is regened
