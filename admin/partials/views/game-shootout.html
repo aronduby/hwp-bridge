@@ -40,7 +40,7 @@
 	</header>
 	<section>
 		<ul class="players">
-			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-if="player.name_key != game.goalie" ng-click="shotUs(player.name_key)" ng-class="{
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-click="shotUs(player.name_key)" ng-class="{
 				disabled: player.shoot_out_taken > 0,
 				'success': player.shoot_out_made > 0,
 				'error': (player.shoot_out_made == 0 && player.shoot_out_taken > 0)
