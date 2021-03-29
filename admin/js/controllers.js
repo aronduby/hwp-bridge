@@ -533,9 +533,10 @@ angular.module('myApp.controllers', [])
 
     $scope.currentPlayers = Object.values(game.stats)
       .map((player) => ({
+        name_key: player.name_key,
         first_name: player.first_name,
         last_name: player.last_name,
-        name_key: player.name_key,
+        pronouns: player.pronouns,
         number: player.number,
         number_sort: player.number_sort,
         status: 0,
@@ -549,9 +550,10 @@ angular.module('myApp.controllers', [])
     $scope.addablePlayers = allPlayers.reduce((acc, player) => {
       acc.push(
           ...player.team.map((team) => ({
+              name_key: player.name_key,
               first_name: player.first_name,
               last_name: player.last_name,
-              name_key: player.name_key,
+              pronouns: player.pronouns,
               number: player.number,
               number_sort: player.number_sort,
               team: team,
