@@ -68,22 +68,21 @@ if(!array_key_exists('skip-check', $cli_opts)){
 }
 
 $dbh = PDODB::getInstance();
-$season_id = $dbh->query("SELECT id FROM seasons WHERE current=1")->fetch(PDO::FETCH_COLUMN);
-if($season_id == false){
-    $log->addError('Cant find the current season');
-    die();
-}
+$site_id = (int) $site->id;
+$season_id = (int) $season->id;
+$tagFilePath = BRIDGE_PATH.'/parsers/tmp/'.$site->domain.'.tags.json';
 
-header("Cache-Control: no-cache, must-revalidate");
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+$log->info('Site', [$site]);
+$log->info('Season', [$season]);
+$log->info('tag path', [$tagFilePath]);
 
-
-$tagged_data = file_get_contents(BRIDGE_PATH.'/parsers/tmp/tags.json');
+$tagged_data = file_get_contents($tagFilePath);
 if ($tagged_data === false) {
     $log->addCritical('Could not get file contents');
     die();
 }
 $tagged_data = json_decode($tagged_data);
+$log->debug('Tagged Data', [$tagged_data]);
 
 // grab all of the players in this season
 $player_stmt = $dbh->query("
@@ -130,16 +129,15 @@ $log->debug('players by tag', $players_by_tag);
 
 $pics_to_import = [];
 
-foreach($tagged_data->tags as $value) {
-    $log->addDebug('handling parsed data for tag ' . $value->result->section->tagIdentity->id, [$value]);
+foreach($tagged_data as $playerData) {
+    $log->addDebug('handling parsed data for tag ' . $playerData->tagIdentity->id, [$playerData]);
 
-    if (isset($value->result->section->contentTags) && count($value->result->section->contentTags) > 0) {
-        $base = $value->result->section;
-        $tag = $base->tagIdentity->id;
+    if (isset($playerData->contentTags) && count($playerData->contentTags) > 0) {
+        $tag = $playerData->tagIdentity->id;
 
         $player = $players_by_tag[$tag];
 
-        foreach($base->contentTags as $pic){
+        foreach($playerData->contentTags as $pic) {
             $filename = 's' . $season_id . '-p' . $pic->item->nodeId;
             $shutterfly_id = $pic->item->pictureId;
             $shutterfly_id[35] = 5; // biggest publicly available 800px
@@ -187,7 +185,7 @@ $delete_ptp_stmt->bindParam(':shutterfly_id', $shutterfly_id);
 // add new photo
 $add_photo_stmt = $dbh->prepare("
   INSERT INTO photos SET 
-    site_id = 1, 
+    site_id = :site_id, 
     season_id = :season_id,
     shutterfly_id = :shutterfly_id,
     file = :filename,
@@ -195,7 +193,8 @@ $add_photo_stmt = $dbh->prepare("
     height = :height,
     created_at = :created_at 
 ");
-$add_photo_stmt->bindValue(':season_id', $season_id);
+$add_photo_stmt->bindValue(':site', $site_id, PDO::PARAM_INT);
+$add_photo_stmt->bindValue(':season_id', $season_id, PDO::PARAM_INT);
 $add_photo_stmt->bindParam(':shutterfly_id', $shutterfly_id);
 $add_photo_stmt->bindParam(':filename', $filename);
 $add_photo_stmt->bindParam(':width', $width);
@@ -204,20 +203,21 @@ $add_photo_stmt->bindParam(':created_at', $created_at);
 
 // insert player to photo relationship
 $add_ptp_stmt = $dbh->prepare("
-  INSERT IGNORE INTO photo_player 
-    (site_id, player_id, season_id, photo_id)
+  INSERT INTO photo_player 
+    (site_id, season_id, player_id, photo_id)
   SELECT
-    1 AS site_id,
-    :player_id AS player_id,
+    :site_id AS site_id,
     :season_id AS season_id,
+    :player_id AS player_id,    
     id AS photo_id
   FROM
     photos
   WHERE
     shutterfly_id = :shutterfly_id
 ");
-$add_ptp_stmt->bindParam(':player_id', $player_id);
-$add_ptp_stmt->bindValue(':season_id', $season_id);
+$add_ptp_stmt->bindValue(':site_id', $site_id, PDO::PARAM_INT);
+$add_ptp_stmt->bindValue(':season_id', $season_id, PDO::PARAM_INT);
+$add_ptp_stmt->bindParam(':player_id', $player_id, PDO::PARAM_INT);
 $add_ptp_stmt->bindParam(':shutterfly_id', $shutterfly_id);
 
 
@@ -283,7 +283,7 @@ foreach($batches as $bi => $batch){
         $request = $httpclient->request('GET', $img_req_base.$shutterfly_id , array('user-agent'=>'Custom/1.0'));
         $request->on('response',
             function (React\HttpClient\Response $response)
-            use ($dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $season_id)
+            use ($dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $site_id, $season_id)
             {
                 $img_data = '';
 
@@ -293,7 +293,7 @@ foreach($batches as $bi => $batch){
 
                 $response->on('end',
                     function ($err)
-                    use (&$img_data, $dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $season_id)
+                    use (&$img_data, $dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $site_id, $season_id)
                     {
                         try{
                             if($err)
@@ -335,6 +335,7 @@ foreach($batches as $bi => $batch){
 
                             # UPDATE THE DATABASE
                             $added = $add_photo_stmt->execute([
+                                ':site_id' => $site_id,
                                 ':season_id' => $season_id,
                                 ':shutterfly_id' => $photo_data['shutterfly_id'],
                                 ':filename' => $photo_data['filename'], // don't use $filename since it has the extension
@@ -346,6 +347,7 @@ foreach($batches as $bi => $batch){
                             if( $added ){
                                 foreach($photo_data['player_ids'] as $player_id){
                                     $add_ptp_stmt->execute([
+                                        ':site_id' => $site_id,
                                         ':player_id' => $player_id,
                                         ':shutterfly_id' => $shutterfly_id,
                                         ':season_id' => $season_id
@@ -378,7 +380,7 @@ if (count($new_photos) > 0) {
     if(!$SKIP_RECENT){
         $dbh->exec("
           INSERT INTO recent SET 
-            site_id = 1, 
+            site_id = ".$site_id.", 
             season_id = ".$season_id.", 
             renderer = 'PHOTOS', 
             content=".$dbh->quote(json_encode($new_photos)).",
@@ -405,4 +407,4 @@ if (count($new_photos) > 0) {
     }
 }
 
-$log->addNotice('Deleting tag file', [unlink(JSON_PATH)]);
+$log->addNotice('Deleting tag file', [unlink($tagFilePath)]);

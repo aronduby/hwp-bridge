@@ -30,7 +30,7 @@ $dbh = PDODB::getInstance();
 Config::setDbh($dbh);
 Config::setSite($site);
 
-$shutterfly_site = Config::get('SHUTTERFLY_SITE');
+$shutterfly_site = $site->getSettings()->shutterfly->site;
 $log->addNotice('shutterfly site', [$shutterfly_site]);
 
 // grab options from the cli
@@ -66,11 +66,11 @@ $SKIP_RECENT = array_key_exists('skip-recent', $cli_opts);
 
 
 $dbh = PDODB::getInstance();
-$season_id = $dbh->query("SELECT id FROM seasons WHERE current=1")->fetch(PDO::FETCH_COLUMN);
-if ($season_id == false) {
-    $log->addError('Cant find the current season');
-    die();
-}
+$site_id = $site->id;
+$season_id = $season->id;
+
+$log->info('Site', [$site]);
+$log->info('Season', [$season]);
 
 # LOGIN AS ME TO SET THE COOKIES FOR THE NEXT REQUEST
 $log->addNotice('logging in');
@@ -147,6 +147,7 @@ try {
 
     $json = new ServicesJSON();
     $value = $json->decode($rsp);
+    $log->info('Received album data', [$value]);
 
     // prepare our queries
     $dbh = PDODB::getInstance();
@@ -167,7 +168,7 @@ try {
             FROM
                 (
                     SELECT
-                        1 AS site_id,
+                        :site_id AS site_id,
                         :season_id AS season_id,
                         :shutterfly_id AS shutterfly_id,
                         :title AS title,
@@ -177,7 +178,7 @@ try {
                 ) supplied
                 LEFT JOIN photos ON(supplied.cover_shutterfly_id = photos.shutterfly_id)
         ON DUPLICATE KEY UPDATE
-            site_id = 1,
+            site_id = VALUES(site_id),
             season_id = VALUES(season_id),
             cover_id = VALUES(cover_id),
             shutterfly_id = VALUES(shutterfly_id),
@@ -206,6 +207,7 @@ try {
 
             // update the album info
             $data = [
+                'site_id' => $site_id,
                 'season_id' => $season_id,
                 'shutterfly_id' => $shutterfly_id,
                 'title' => $album->title,
@@ -297,7 +299,7 @@ try {
             $in = str_repeat('?,', count($photo_shutterfly_ids) - 1) . '?';
             $sql = "INSERT INTO album_photo (site_id, album_id, photo_id)
                 SELECT
-                  1 AS site_id,
+                  ? AS site_id,
                   ? AS album_id,
                   p.id AS photo_id
                 FROM
@@ -308,7 +310,7 @@ try {
             $glue_stmt = $dbh->prepare($sql);
 
             try {
-                $glue_stmt->execute(array_merge([$album_id], $photo_shutterfly_ids));
+                $glue_stmt->execute(array_merge([$site_id, $album_id], $photo_shutterfly_ids));
                 $photos_linked += $glue_stmt->rowCount();
             } catch (PDOException $e) {
                 $e->last_stmt = $glue_stmt;

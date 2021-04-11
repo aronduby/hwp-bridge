@@ -66,7 +66,7 @@ function uncaughtExceptionHandler(Throwable $exception){
 set_error_handler('exception_error_handler');
 set_exception_handler('uncaughtExceptionHandler');
 
-if (!Auth::authenticated() && $_SERVER['PHP_SELF'] !== '/login.php') {
+if (!isCli() && !Auth::authenticated() && $_SERVER['PHP_SELF'] !== '/login.php') {
     header('Location: login.php');
     die();
 }
@@ -83,7 +83,7 @@ function getFromCli($option) {
 
     $args = $_SERVER['argv'];
     foreach($args as $arg) {
-        if(starts_with($arg, $searchFor)) {
+        if(startsWith($arg, $searchFor)) {
             $value = explode('=', $arg);
             $value = array_pop($value);
             return $value;
@@ -208,4 +208,15 @@ if(strpos($input, '<p>')!== 0)
 	}
 	return $input;
 }
-?>
+
+
+function startsWith($haystack, $needles)
+{
+    foreach ((array) $needles as $needle) {
+        if ($needle !== '' && substr($haystack, 0, strlen($needle)) === (string) $needle) {
+            return true;
+        }
+    }
+
+    return false;
+}
