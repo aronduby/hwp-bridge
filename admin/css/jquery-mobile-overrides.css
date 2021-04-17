@@ -53,3 +53,40 @@ li.ui-field-contain .helper-text {
 .ui-li-divider + .ui-li-divider {
     border-top-color: #aaa;
 }
+
+/* list thumbnails that cover the full 80x80*/
+.ui-li-thumb.cover {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+/* makes search row in article inline */
+.search-row {
+    display: flex !important;
+}
+
+.search-row .ui-btn {
+    margin-left: .5em !important;
+}
+
+/* forms as siblings */
+form + form {
+    margin-top: 15px;
+}
+
+/* radio buttons with images */
+.ui-radio .ui-btn-text img {
+    max-width: 50%;
+    max-height: 150px;
+    min-width: 80px;
+    min-height: 80px;
+}
+
+/* checkbox buttons with subfields toggle */
+.subfields-toggle {
+    display: none;
+}
+.ui-checkbox-on .subfields-toggle {
+    display: block;
+}

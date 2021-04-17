@@ -1,5 +1,6 @@
 {
     "name": "aronduby/hudsonvillewaterpolo",
+    "description": "",
     "require": {
         "predis/predis": "^1.0",
         "slim/slim": "~2.0",
@@ -11,7 +12,9 @@
         "symfony/monolog-bridge": "^2.7",
         "symfony/event-dispatcher": "^2.7",
         "firebase/php-jwt": "^5.0",
-        "guzzlehttp/guzzle": "~6.0"
+        "guzzlehttp/guzzle": "~6.0",
+        "fusonic/opengraph": "^1.0",
+        "fusonic/linq": "@dev"
     },
     "authors": [
         {

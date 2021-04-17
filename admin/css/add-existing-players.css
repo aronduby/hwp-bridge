@@ -35,3 +35,7 @@
 
 .add-existing-players .subfields-team,
 .add-existing-players .subfields-position {}
+
+.add-existing-players .subfields-mention {
+    flex: 1;
+}

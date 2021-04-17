@@ -27,6 +27,7 @@ require '_pre.php';
 			<li data-role="list-divider"></li>
 			<li><a href="pastevents.php" title="past events">Past Events</a></li>
 			<li data-role="list-divider"></li>
+			<li><a href="articles.php" title="articles">Articles</a></li>
 			<li><a href="badges.php" title="badges">Badges</a></li>
 		</ul>
 

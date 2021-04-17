@@ -7,6 +7,11 @@ ini_set('display_errors', '1');
 define('MYSQL_DATETIME_FORMAT', 'Y-m-d H:i:s');
 define('INPUT_DATETIME_FORMAT', 'Y-m-d\TH:i');
 define('INPUT_DATE_FORMAT', 'Y-m-d');
+define('USER_DATETIME_FORMAT', 'n/j/y g:ia');
+define('USER_DATE_FORMAT', 'n/j/y');
+define('USER_DATETIME_FORMAT_LONG', 'M jS, Y \a\t g:ia');
+define('USER_DATE_FORMAT_LONG', 'M jS, Y');
+define('FALLBACK_IMG_SRC', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNsbKy0AgAEvQG3xtuP6AAAAABJRU5ErkJggg==');
 
 require __DIR__ . '/define.php';
 require __DIR__ . '/vendor/autoload.php';
