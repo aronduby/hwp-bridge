@@ -130,6 +130,11 @@ $log->debug('players by tag', $players_by_tag);
 $pics_to_import = [];
 
 foreach($tagged_data as $playerData) {
+    if ($playerData->error !== '') {
+        $log->addError($playerData->error);
+        continue;
+    }
+
     $log->addDebug('handling parsed data for tag ' . $playerData->tagIdentity->id, [$playerData]);
 
     if (isset($playerData->contentTags) && count($playerData->contentTags) > 0) {
