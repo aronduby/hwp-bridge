@@ -1,0 +1,49 @@
+.rankRow {
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+}
+
+.rankRow-rank,
+.rankRow-self {
+    flex: 1;
+}
+
+.rankRow-team {
+    flex: 8;
+}
+
+.rankRow-points {
+    flex: 3;
+    text-align: center;
+}
+
+.rank-header.ui-header {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.rank-header.ui-header .ui-title {
+    margin: .75em 0;
+    overflow: visible;
+}
+
+ul.ranks {
+    margin-bottom: 0 !important;
+}
+ul.ranks + ul {
+    margin-top: 0 !important;
+}
+
+ul.ranks input.ui-input-text {
+    margin: 0;
+}
+
+/** Tweaks to the checkbox */
+.rankRow-self .ui-checkbox .ui-btn-icon-left .ui-btn-inner {
+    padding: 18px;
+}
+
+.rankRow-self .ui-checkbox .ui-btn-icon-left .ui-btn-inner .ui-btn-text {
+    display: none;
+}

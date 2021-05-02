@@ -29,6 +29,7 @@ require '_pre.php';
 			<li data-role="list-divider"></li>
 			<li><a href="articles.php" title="articles">Articles</a></li>
 			<li><a href="badges.php" title="badges">Badges</a></li>
+			<li><a href="rankings.php" title="rankings">Rankings</a></li>
 		</ul>
 
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
