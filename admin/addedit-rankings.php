@@ -126,7 +126,7 @@ SQL;
             $currentStmt = $dbh->prepare("UPDATE seasons SET ranking = :ranking, ranking_tie = :ranking_tie, ranking_updated = NOW() WHERE id = :season_id");
             $currentStmt->execute([
                 ':ranking' => $currentRank,
-                ':ranking_tie' => $currentTie,
+                ':ranking_tie' => $currentTie ? 1 : 0,
                 ':season_id' => $season->id
             ]);
         }
