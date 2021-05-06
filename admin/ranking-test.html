@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+	<p>
+		<button id="load">Load Url</button>
+		<input id="sliceI" type="number" min="0" max="9" value="0" placeholder="slice" >
+		<button id="generate">Generate Slice</button>
+		<button id="generateAll">Generate All</button>
+	</p>
+
+	<div id="holder"></div>
+
+	<script src="js/mwpa-ranking-image-parser.js"></script>
+	<script>
+        const boysPreseason = 'https://static.wixstatic.com/media/4f0655_02c9fa64122441a4a665144bd843bc73~mv2.jpg/v1/fill/w_1110,h_1110,al_c,q_90,usm_0.66_1.00_0.01/4f0655_02c9fa64122441a4a665144bd843bc73~mv2.webp';
+        const girls4 = 'https://static.wixstatic.com/media/4f0655_98fbd774d1f64b77b6b3311c69ba39f8~mv2.png/v1/fill/w_1110,h_1110,al_c,q_90,usm_0.66_1.00_0.01/4f0655_98fbd774d1f64b77b6b3311c69ba39f8~mv2.webp';
+        const girls1Ties = 'https://static.wixstatic.com/media/4f0655_39b87aeda26540e3842fdbc795e8f0cb~mv2.jpg/v1/fill/w_1110,h_1110,al_c,q_90,usm_0.66_1.00_0.01/4f0655_39b87aeda26540e3842fdbc795e8f0cb~mv2.webp';
+
+        const defaultImg = girls1Ties;
+
+        const holder = document.getElementById('holder');
+        const loadBtn = document.getElementById('load');
+        const sliceInput = document.getElementById('sliceI');
+        const generateBtn = document.getElementById('generate');
+        const generateAllBtn = document.getElementById('generateAll');
+
+		const parser = new MWPARankingImageParser();
+		holder.appendChild(parser.baseCanvas);
+		holder.appendChild(parser.sliceCanvas);
+
+		if (defaultImg) {
+            parser.loadBase(defaultImg);
+		}
+
+		loadBtn.addEventListener('click', () => {
+            parser.parse()
+                .then(data => console.log(data));
+        });
+
+		generateBtn.addEventListener('click', () => {
+		    parser.generateSlice(sliceInput.value)
+                .then(result => console.log(result));
+		});
+
+		generateAllBtn.addEventListener('click', () => {
+			parser.parse(defaultImg)
+				.then(data => console.log(data));
+		});
+
+	</script>
+
+</body>
+</html>

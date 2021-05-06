@@ -245,6 +245,13 @@ require '_pre.php';
 			<div data-role="header" data-theme="e"> 
 				<h2>Ranks</h2>
 			</div>
+
+			<ul data-role="listview">
+				<li data-role="fieldcontain">
+					<button type="button" id="importFromImage" data-theme="b">Import from Image</button>
+				</li>
+			</ul>
+
 			<div data-role="header" data-theme="d" class="rank-header rankRow">
 				<h3 class="rankRow-rank">Rank</h3>
 				<h3 class="rankRow-team">Team</h3>
@@ -252,7 +259,8 @@ require '_pre.php';
 				<h3 class="rankRow-self">Self</h3>
 			</div>
 
-			<ul data-role="listview" class="ranks">
+			<ul data-role="listview" class="ranks" data-divider-theme="d">
+
 				<?php
 				$rankOptions = array_reduce(range(1,10), function($acc, $rank) {
 					return $acc .= '<option value="'.$rank.'">'.$rank.'</option>';
@@ -293,7 +301,7 @@ require '_pre.php';
 						</fieldset>
 						<fieldset data-role="controlgroup" class="rankRow-self ui-hide-label">
 							<label for="rank.<?= $i ?>.self" data-theme="d">&nbsp;</label>
-							<input type="checkbox" name="rank[<?= $i ?>][self]" id="rank.<?= $i ?>.self" data-theme="d" value="1" <?= $isSelf ? 'checked' : '' ?> />
+							<input type="checkbox" name="rank[<?= $i ?>][self]" id="rank.<?= $i ?>.self" class="self" data-theme="d" value="1" <?= $isSelf ? 'checked' : '' ?> />
 						</fieldset>
 					</li>
 					<?php
@@ -311,36 +319,69 @@ require '_pre.php';
 				</li>
 			</ul>
 		</form>
-
-		<!-- make sure this is after the form otherwise styles break -->
-		<link rel="stylesheet" href="css/addedit-rankings.css" />
-		<script>
-            $('#page--addedit-rankings').live( 'pageinit',function(event){
-                $('#addAnotherRank').bind('click', function(event, ui) {
-                   const lastRow = $(this).parents('.ranks').find('li.rankRow').last();
-                   const newRow = lastRow.clone();
-
-                   const lastI = parseInt(lastRow.data('i'), 10);
-                   const newI = lastI + 1;
-
-                   newRow.attr('data-i', newI);
-
-                   newRow.find('label[for]').each(function() {
-                       $(this).attr('for', $(this).attr('for').replace('.'+lastI+'.', '.'+newI+'.'));
-                   });
-
-                   newRow.find('[id][name]').each(function() {
-                       $(this).attr('id', $(this).attr('id').replace('.'+lastI+'.', '.'+newI+'.'));
-                       $(this).attr('name', $(this).attr('name').replace('['+lastI+']', '['+newI+']'));
-                   });
-
-                   newRow.find('input#rank\\.'+newI+'\\.team').val('');
-
-                   newRow.insertAfter(lastRow);
-                });
-            });
-		</script>
 	</div><!-- /content -->
+
+	<!-- make sure this is after the form otherwise styles break -->
+	<link rel="stylesheet" href="css/addedit-rankings.css" />
+	<script>
+        $('#page--addedit-rankings').live( 'pageinit', function(event) {
+            let script = document.createElement('script');
+            script.src = 'js/mwpa-ranking-image-parser.js';
+            script.async = false;
+            document.body.append(script);
+
+            $('#importFromImage').bind('click', function(event, ui) {
+                const currentSelfName = $('input.self:checked').parents('li').find('.rankRow-team input').val();
+                const parser = new MWPARankingImageParser();
+
+                $.mobile.showPageLoadingMsg();
+
+                parser.parse()
+                    .then(results => {
+                        results.forEach((rank, i) => {
+                            const idx = i + 1;
+
+                            const rankSelect = $(`#rank\\.${idx}\\.rank`);
+                            rankSelect[0].selectedIndex = rank.rank - 1;
+                            rankSelect.selectmenu("refresh");
+
+                            $(`#rank\\.${idx}\\.team`).val(rank.team);
+                            $(`#rank\\.${idx}\\.points`).val(rank.points);
+
+                            const self = rank.team === currentSelfName;
+                            $(`#rank\\.${idx}\\.self`).prop('checked', self).checkboxradio("refresh");
+                        });
+                    })
+                    .finally(() => $.mobile.hidePageLoadingMsg());
+
+                event.preventDefault();
+                return false;
+            });
+
+            $('#addAnotherRank').bind('click', function(event, ui) {
+                const lastRow = $(this).parents('.ranks').find('li.rankRow').last();
+                const newRow = lastRow.clone();
+
+                const lastI = parseInt(lastRow.data('i'), 10);
+                const newI = lastI + 1;
+
+                newRow.attr('data-i', newI);
+
+                newRow.find('label[for]').each(function() {
+                    $(this).attr('for', $(this).attr('for').replace('.'+lastI+'.', '.'+newI+'.'));
+                });
+
+                newRow.find('[id][name]').each(function() {
+                    $(this).attr('id', $(this).attr('id').replace('.'+lastI+'.', '.'+newI+'.'));
+                    $(this).attr('name', $(this).attr('name').replace('['+lastI+']', '['+newI+']'));
+                });
+
+                newRow.find('input#rank\\.'+newI+'\\.team').val('');
+
+                newRow.insertAfter(lastRow);
+            });
+        });
+	</script>
 
 </div><!-- /page -->
 
