@@ -1,7 +1,12 @@
 <?php /** @noinspection SqlResolve */
+/**
+ * @var Register $register
+ * @var Season $season
+ * @var Site $site
+ */
 require '../common.php';
 
-if(!empty($_POST)){
+if (!empty($_POST)) {
 
 	$dbh = PDODB::getInstance();
 
@@ -53,20 +58,39 @@ if(!empty($_POST)){
 		$inserted  = $dbh->exec($sql);
 		$game_id = $dbh->lastInsertId();
 
-		if($inserted !== false){
+		if ($inserted !== false) {
+			$redirect = true;
 
-		    if (intval($_POST['tournament_id'])) {
-		        header("Location: tournament.php?tournament_id=".$_POST['tournament_id']);
+			// also add to the recent listing
+			if ($_POST['action'] === 'saveAndPost') {
+				$json = json_encode([intval($game_id)]);
+				$recentStmt = $dbh->prepare('INSERT INTO recent (site_id, season_id, renderer, content, created_at, updated_at) VALUES (:site_id, :season_id, "game", :content, NOW(), NOW())');
+				$recentStmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);
+				$recentStmt->bindValue(':season_id', $_POST['season_id'], PDO::PARAM_INT);
+				$recentStmt->bindValue(':content', $json);
 
-		    } elseif (strtotime($end) < time()) {
-                header("Location: pastevents.php");
+				$posted = $recentStmt->execute();
+				if (!$posted) {
+					$redirect = false;
+					$form_errors = 'Game was saved, but we were unable to post it to the recent listing';
+                    if(isset($_POST['tournament_id']))
+                        $tournament = new Tournament($_POST['tournament_id'], $register);
+				}
+			}
 
-		    } else {
-                header("Location: events.php");
-            }
+			if ($redirect) {
+                if (intval($_POST['tournament_id'])) {
+                    header("Location: tournament.php?tournament_id=".$_POST['tournament_id']);
 
-			die();
+                } elseif (strtotime($end) < time()) {
+                    header("Location: pastevents.php");
 
+                } else {
+                    header("Location: events.php");
+                }
+
+                die();
+			}
 
 		} else {
 			$form_errors = 'Could not save the form. Please try again later';
@@ -79,7 +103,8 @@ if(!empty($_POST)){
 		$tournament = new Tournament($_POST['tournament_id'], $register);
 	}
 
-} else {
+}
+else {
 	$game = new Game(isset($_GET['game_id']) ? $_GET['game_id'] : null, $register);
 	if(isset($_GET['tournament_id'])) {
         $game->tournament_id = $_GET['tournament_id'];
@@ -112,6 +137,8 @@ require '_pre.php';
 			<input type="hidden" name="season_id" value="<?php echo isset($game->season_id) ? $game->season_id : $season->id?>" />
 
 			<ul data-role="listview">
+				<li role="list-divider" data-theme="c">Details</li>
+
 				<li data-role="fieldcontain">
 					<label for="g-title">Title Append:</label>
 		        	<input type="text" name="title_append" id="g-title" placeholder="title append" value="<?php echo $game->title_append ?>" />
@@ -179,12 +206,12 @@ require '_pre.php';
 
 				<li data-role="fieldcontain">
 					<label for="g-score_us">Us:</label>
-		        	<input type="text" name="score_us" id="g-score_us" placeholder="score_us" value="<?php echo $game->score_us ?>" />
+		        	<input type="number" name="score_us" id="g-score_us" placeholder="score_us" value="<?php echo $game->score_us ?>" />
 				</li>
 
 				<li data-role="fieldcontain">
 					<label for="g-score_them">Them:</label>
-		        	<input type="text" name="score_them" id="g-score_them" placeholder="score_them" value="<?php echo $game->score_them ?>" />
+		        	<input type="number" name="score_them" id="g-score_them" placeholder="score_them" value="<?php echo $game->score_them ?>" />
 				</li>
 
 				<li role="list-divider" data-theme="c">Photo Album</li>
@@ -207,9 +234,28 @@ require '_pre.php';
                     ?>
 				</li>
 
+				<li role="list-divider" data-theme="c">Actions</li>
 
-				<li data-role="fieldcontain">
-					<button type="submit">Save</button>
+				<li>
+					<?php
+					$saveBtn = '<button type="submit" name="action" value="save">Save</button>';
+					$saveAndPostBtn = '<button type="submit" name="action" value="saveAndPost" data-theme="d">Save And Post</button>';
+
+					if (!$game->is_posted) {
+						?>
+						<div class="ui-grid-a">
+							<div class="ui-block-a">
+								<?= $saveBtn ?>
+							</div>
+							<div class="ui-block-b">
+                                <?= $saveAndPostBtn ?>
+							</div>
+						</div>
+						<?php
+					} else {
+						print $saveBtn;
+					}
+					?>
 				</li>
 
 			</ul>

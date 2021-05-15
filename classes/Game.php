@@ -25,6 +25,7 @@ class Game {
 	public $has_live_scoring;
 	public $has_recap;
 	public $has_photo_album;
+    public $is_posted;
 
 	private $register;
 	private $dbh;
@@ -60,11 +61,13 @@ class Game {
 
 		$this->has_stats = (bool)$this->dbh->query("SELECT COUNT(*) FROM stats WHERE game_id=".intval($this->id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_COLUMN);
 		$this->has_live_scoring = (bool)$this->dbh->query("SELECT COUNT(*) FROM game_update_dumps WHERE game_id=".intval($this->id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_COLUMN);
-		$this->has_photo_album = isset($this->album_id);
+        $this->has_photo_album = isset($this->album_id);
 
-		// for the new live scoring, probably be replaced with stats later
+        $postedSql = "SELECT COUNT(*) FROM recent WHERE renderer = 'game' AND content = '[".intval($this->id)."]'";
+        $this->is_posted = (bool)$this->dbh->query($postedSql)->fetch(PDO::FETCH_COLUMN);;
+
+        // for the new live scoring, probably be replaced with stats later
 		$this->has_recap = (bool)strlen($this->json_dump);
-
 	}
 
 	public function getPhotoAlbum(){
@@ -73,6 +76,4 @@ class Game {
 		else
 			return false;
 	}
-
-
 }
