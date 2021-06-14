@@ -1,4 +1,11 @@
-<?php /** @noinspection SqlResolve */
+<?php
+/** @noinspection SqlResolve */
+/**
+ * @var Register $register
+ * @var Season $season
+ * @var Site $site
+ */
+
 require '../common.php';
 
 if (!empty($_POST)) {
@@ -15,6 +22,7 @@ if (!empty($_POST)) {
 				current = :current,
 				ranking = :ranking,
 				ranking_tie = :ranking_tie,
+				ranking_title = :ranking_title,			                        
                 ranking_updated = NOW(),
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
@@ -24,6 +32,7 @@ if (!empty($_POST)) {
 				current = VALUES(current),
 				ranking = VALUES(ranking),
 				ranking_tie = VALUES(ranking_tie),
+                ranking_title = VALUES(ranking_title),
                 ranking_updated = NOW(),
 				updated_at = NOW(),
 				id = LAST_INSERT_ID(id)
@@ -37,6 +46,7 @@ if (!empty($_POST)) {
         $insert_update_stmt->bindValue(':current', $_POST['current'], PDO::PARAM_BOOL);
         $insert_update_stmt->bindValue(':ranking', $_POST['ranking'], PDO::PARAM_INT);
         $insert_update_stmt->bindValue(':ranking_tie', $_POST['ranking_tie'], PDO::PARAM_BOOL);
+        $insert_update_stmt->bindValue(':ranking_title', empty($_POST['ranking_title']) ? null : $_POST['ranking_title']);
 		$inserted = $insert_update_stmt->execute();
 		$season_id = $dbh->lastInsertId();
 
@@ -122,6 +132,15 @@ require '_pre.php';
 					</select>
 					<p class="helper-text ui-li-desc">auto-updated by ranking parser</p>
 				</li>
+
+				<li role="list-divider" data-theme="c">Ranking Override</li>
+
+				<li data-role="fieldcontain">
+					<label for="ranking_title">Title:</label>
+					<input type="text" name="ranking_title" id="ranking_title" placeholder="ranking title" value="<?= $editSeason->ranking_title ?>" />
+					<p class="helper-text ui-li-desc">manually set the ranking title, overriding the ranking parser values above</p>
+				</li>
+
 
 				<li data-role="fieldcontain">
 					<button type="submit">Save</button>

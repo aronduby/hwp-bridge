@@ -10,6 +10,7 @@ class Season {
 	public $ranking;
 	public $ranking_updated;
 	public $ranking_tie;
+	public $ranking_title;
 
 	protected $stats;
 
@@ -54,7 +55,7 @@ class Season {
 		if($id === false){
 			$sql = "
 				SELECT 
-					id, title, short_title, current, ranking, ranking_updated, ranking_tie 
+					id, title, short_title, current, ranking, ranking_updated, ranking_tie, ranking_title  
 				FROM 
 					seasons
 				WHERE 
@@ -63,7 +64,7 @@ class Season {
 		} else {
 			$sql = "
 				SELECT 
-					id, title, short_title, current, ranking, ranking_updated, ranking_tie 
+					id, title, short_title, current, ranking, ranking_updated, ranking_tie, ranking_title 
 				FROM 
 					seasons 
 				WHERE 
