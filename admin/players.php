@@ -1,7 +1,7 @@
 <?php
 require '../common.php';
 
-$player_list = $season->getPlayersByTeam();
+$player_list = $season->getPlayersByTeam('V,JV,STAFF', "sort IS NOT NULL DESC,	sort, CAST(pts.number as INT)");
 
 require '_pre.php';
 ?>

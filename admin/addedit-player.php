@@ -43,7 +43,7 @@ if(!empty($_POST)){
 					position = ".$dbh->quote($_POST['position']).",
 					number = ".$dbh->quote($_POST['number']).",
 					shutterfly_tag = ".$dbh->quote($_POST['shutterfly_tag']).",
-					sort = ".$dbh->quote($_POST['sort'])."
+					sort = ".(!empty($_POST['sort']) ? $dbh->quote($_POST['sort']) : 'null')."
 				ON DUPLICATE KEY UPDATE
 					site_id = VALUES(site_id),
 					player_id = VALUES(player_id),
@@ -101,6 +101,7 @@ require '_pre.php';
 	<div data-role="content">	
 		<?php
         include '_form-errors.php';
+		// print '<pre>'. print_r($player_season, true).'</pre>';
 		?>
 		<form action="addedit-player.php" method="POST" data-ajax="false">
 			<input type="hidden" name="player_id" value="<?php echo $player->id ?>" />
