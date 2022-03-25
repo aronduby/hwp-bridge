@@ -167,13 +167,16 @@ elseif (array_key_exists('url', $_GET) && $_GET['url']) {
 	try {
 
 		$to->importUrl = $_GET['url'];
-        $content = file_get_contents($_GET['url']);
-        if (!$content) {
-        	throw new Exception('Could not load content from that url. Check your entry and try again');
-        }
+        // $content = file_get_contents($_GET['url']);
+        // if (!$content) {
+        // 	throw new Exception('Could not load content from that url. Check your entry and try again');
+        // }
 
+        $httpClient = new GuzzleHttp\Client();
+        $response = $httpClient->get($_GET['url']);
+		$content = $response->getBody()->__toString();
         $ogConsumer = new \Fusonic\OpenGraph\Consumer();
-        $og = $ogConsumer->loadHtml($content, $_GET['url']);
+		$og = $ogConsumer->loadHtml($content, $_GET['url']);
 
         // check for the url in the DB and load it with a notice if it exists
 		$existing = Article::findByUrl($og->url, $register);
