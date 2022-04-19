@@ -225,3 +225,15 @@ function startsWith($haystack, $needles)
 
     return false;
 }
+
+function exceptionToArray(\Throwable $e) {
+    return [
+        'message' => $e->getMessage(),
+        'code' => $e->getCode(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTrace(),
+        'traceAsString' => $e->getTraceAsString(),
+        'previous' => $e->getPrevious() ? exceptionToArray($e->getPrevious()) : ''
+    ];
+}

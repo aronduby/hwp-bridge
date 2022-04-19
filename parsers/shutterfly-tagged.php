@@ -42,7 +42,8 @@ $long_opts = [
     'skip-check', // don't check the settings to see if we should be running, needed for running manually outside of cron
     'skip-twitter', // don't post to twitter
     'skip-recent', // don't post to homepage as recent
-    'dry-run' // just gather information and log it, don't actually import things
+    'skip-delete', // don't delete the tag file at the end of the process
+    'dry-run', // just gather information and log it, don't actually import things
 ];
 $cli_opts = getopt($short_opts, $long_opts);
 $log->addNotice('proceeding with options', $cli_opts);
@@ -52,10 +53,12 @@ $DRY_RUN = array_key_exists('dry-run', $cli_opts);
 if ($DRY_RUN) {
     $cli_opts['skip-twitter'] = true;
     $cli_opts['skip-recent'] = true;
+    $cli_opts['skip-delete'] = true;
 }
 
 $SKIP_TWITTER = array_key_exists('skip-twitter', $cli_opts);
 $SKIP_RECENT = array_key_exists('skip-recent', $cli_opts);
+$SKIP_DELETE = array_key_exists('skip-delete', $cli_opts);
 
 // should be be running?
 if(!array_key_exists('skip-check', $cli_opts)){
@@ -249,7 +252,8 @@ $log->addDebug('pics to import post db check', (array)$pics_to_import);
 
 
 // now we fetch and save any images that are left
-$img_req_base = "http://im1.shutterfly.com/procgtaserv/";
+// $img_req_base = "http://im1.shutterfly.com/procgtaserv/";
+$img_req_base = "https://uniim-share.shutterfly.com/v2/procgtaserv/";
 $photo_path = PHOTO_PATH .'/';
 $thumb_path = $photo_path . 'thumbs/';
 $new_photos = [];
@@ -267,115 +271,118 @@ if ($DRY_RUN) {
 
 # async proxy through socks tor
 $loop = React\EventLoop\Factory::create();
-$dnsResolverFactory = new React\Dns\Resolver\Factory();
-$dns = $dnsResolverFactory->createCached('8.8.8.8', $loop);
-$factory = new Socks\Factory($loop, $dns);
-$client = $factory->createClient('127.0.0.1', 9050);
-$client->setResolveLocal(false);
-$httpclient = $client->createHttpClient();
-
+$proxy = new Clue\React\Socks\Client('127.0.0.1:9050');
+$connector = new React\Socket\Connector([
+    'tcp' => $proxy,
+    'dns' => false
+], $loop);
+$browser = new \React\Http\Browser($connector);
 
 $log->addNotice(count($keys).' photos to import');
-foreach($batches as $bi => $batch){
 
-    $log->addNotice('running batch '.($bi + 1).' of '.$batches_count);
+try {
+    foreach ($batches as $bi => $batch) {
 
-    foreach($batch as $shutterfly_id){
+        $log->addNotice('running batch '.($bi + 1).' of '.$batches_count);
+        $log->addDebug('batch '.($bi + 1), $batch);
 
-        $photo_data = $pics_to_import[$shutterfly_id];
-        $filename = $photo_data['filename'].'.jpg';
+        foreach($batch as $shutterfly_id){
 
-        $request = $httpclient->request('GET', $img_req_base.$shutterfly_id , array('user-agent'=>'Custom/1.0'));
-        $request->on('response',
-            function (React\HttpClient\Response $response)
-            use ($dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $site_id, $season_id)
-            {
-                $img_data = '';
+            $photo_data = $pics_to_import[$shutterfly_id];
+            $filename = $photo_data['filename'].'.jpg';
 
-                $response->on('data', function($data) use(&$img_data){
-                    $img_data .= $data;
-                });
+            $browser->get($img_req_base.$shutterfly_id)->then(
+                function (Psr\Http\Message\ResponseInterface $response)
+                    use ($dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $site_id, $season_id)
+                {
+                    $img_data = (string) $response->getBody();
 
-                $response->on('end',
-                    function ($err)
-                    use (&$img_data, $dbh, $img_req_base, $photo_path, $thumb_path, &$new_photos, $filename, $shutterfly_id, $photo_data, $log, $log_type, $add_photo_stmt, $add_ptp_stmt, $site_id, $season_id)
-                    {
-                        try{
-                            if($err)
-                                throw new Exception($err);
-
+                    try{
+                        try {
                             $img = imagecreatefromstring($img_data);
-                            if(!$img){
-                                throw new Exception('Could not load: '.$img_req_base.$shutterfly_id);
-                            }
-                            $width = imagesx($img);
-                            $height = imagesy($img);
-                            imageinterlace($img, 1);
-                            if(imagejpeg($img, $photo_path.$filename) == false)
-                                throw new Exception('could not save full photo "'.$filename.'" to "'.$photo_path.'"');
-
-                            $log->addNotice("saved ".$photo_path.$filename);
-
-                            # THUMBNAIL
-                            $thumb_width = 200;
-                            $thumb_height = 200;
-                            $ratio_orig = $width/$height;
-                            if($thumb_width / $thumb_height > $ratio_orig) {
-                                $thumb_width = $thumb_height *$ratio_orig;
-                            } else {
-                                $thumb_height = $thumb_width / $ratio_orig;
-                            }
-
-                            $thumb = imagecreatetruecolor($thumb_width, $thumb_height);
-                            imagecopyresampled($thumb, $img, 0, 0, 0, 0, $thumb_width, $thumb_height, $width, $height);
-                            if(imagejpeg($thumb, $thumb_path.$filename) == false)
-                                throw new Exception('could not save thumbnail for photo "'.$filename.'" to "'.$thumb_path.'"');
-
-                            $log->addNotice("saved ".$thumb_path.$filename);
-
-                            imagedestroy($img);
-                            imagedestroy($thumb);
-                            $img = false;
-                            $thumb = false;
-
-                            # UPDATE THE DATABASE
-                            $added = $add_photo_stmt->execute([
-                                ':site_id' => $site_id,
-                                ':season_id' => $season_id,
-                                ':shutterfly_id' => $photo_data['shutterfly_id'],
-                                ':filename' => $photo_data['filename'], // don't use $filename since it has the extension
-                                ':width' => $width,
-                                ':height' => $height,
-                                ':created_at' => $photo_data['created_at'],
-                            ]);
-                            $photo_id = $dbh->lastInsertId();
-                            if( $added ){
-                                foreach($photo_data['player_ids'] as $player_id){
-                                    $add_ptp_stmt->execute([
-                                        ':site_id' => $site_id,
-                                        ':player_id' => $player_id,
-                                        ':shutterfly_id' => $shutterfly_id,
-                                        ':season_id' => $season_id
-                                    ]);
-                                }
-                                $new_photos[] = $photo_id;
-                            }
-
-                        } catch(Exception $e){
-                            if(isset($img) && $img !== false)
-                                imagedestroy($img);
-                            if(isset($thumb) && $thumb !== false)
-                                imagedestroy($thumb);
-
-                            $log->addError($e->getMessage(), (array)$e);
+                        } catch (\Exception $e) {
+                            $log->addError($e->getMessage(), exceptionToArray($e));
+                            throw $e;
                         }
-                    });
-            });
 
-        $request->end();
-    }
+                        if(!$img){
+                            throw new Exception('Could not load: '.$img_req_base.$shutterfly_id);
+                        }
+                        $width = imagesx($img);
+                        $height = imagesy($img);
+                        imageinterlace($img, 1);
+                        if(imagejpeg($img, $photo_path.$filename) == false)
+                            throw new Exception('could not save full photo "'.$filename.'" to "'.$photo_path.'"');
 
-    $loop->run();
+                        $log->addNotice("saved ".$photo_path.$filename);
+
+                        # THUMBNAIL
+                        $thumb_width = 200;
+                        $thumb_height = 200;
+                        $ratio_orig = $width/$height;
+                        if($thumb_width / $thumb_height > $ratio_orig) {
+                            $thumb_width = $thumb_height *$ratio_orig;
+                        } else {
+                            $thumb_height = $thumb_width / $ratio_orig;
+                        }
+
+                        $thumb = imagecreatetruecolor($thumb_width, $thumb_height);
+                        imagecopyresampled($thumb, $img, 0, 0, 0, 0, $thumb_width, $thumb_height, $width, $height);
+                        if(imagejpeg($thumb, $thumb_path.$filename) == false)
+                            throw new Exception('could not save thumbnail for photo "'.$filename.'" to "'.$thumb_path.'"');
+
+                        $log->addNotice("saved ".$thumb_path.$filename);
+
+                        imagedestroy($img);
+                        imagedestroy($thumb);
+                        $img = false;
+                        $thumb = false;
+
+                        # UPDATE THE DATABASE
+                        $added = $add_photo_stmt->execute([
+                            ':site_id' => $site_id,
+                            ':season_id' => $season_id,
+                            ':shutterfly_id' => $photo_data['shutterfly_id'],
+                            ':filename' => $photo_data['filename'], // don't use $filename since it has the extension
+                            ':width' => $width,
+                            ':height' => $height,
+                            ':created_at' => $photo_data['created_at'],
+                        ]);
+                        $photo_id = $dbh->lastInsertId();
+                        if( $added ){
+                            foreach($photo_data['player_ids'] as $player_id){
+                                $add_ptp_stmt->execute([
+                                    ':site_id' => $site_id,
+                                    ':player_id' => $player_id,
+                                    ':shutterfly_id' => $shutterfly_id,
+                                    ':season_id' => $season_id
+                                ]);
+                            }
+                            $new_photos[] = $photo_id;
+                        }
+
+                    } catch(Exception $e) {
+                        if(isset($img) && $img !== false)
+                            imagedestroy($img);
+                        if(isset($thumb) && $thumb !== false)
+                            imagedestroy($thumb);
+
+                        $log->addError($e->getMessage(), exceptionToArray($e));
+                        throw $e; // break out of all the loops
+                    }
+                },
+                function (Exception $e) use ($log) {
+                    $log->addError($e->getMessage(), exceptionToArray($e));
+                    throw $e; // break out of all the loops
+                }
+            );
+        }
+
+        $loop->run();
+
+    } // end of batches foreach loop
+} catch (\Throwable $e) {
+    $log->addInfo('Cancelled batches:' . $e->getMessage() . ' Check Debug for more info');
 }
 
 // update the log and recent table
@@ -412,4 +419,8 @@ if (count($new_photos) > 0) {
     }
 }
 
-$log->addNotice('Deleting tag file', [unlink($tagFilePath)]);
+if ($SKIP_DELETE) {
+    $log->addInfo('Not deleting the tag file due to CLI options');
+} else {
+    $log->addNotice('Deleting tag file', [unlink($tagFilePath)]);
+}
