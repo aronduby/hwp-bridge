@@ -75,22 +75,21 @@ $log->info('Season', [$season]);
 # LOGIN AS ME TO SET THE COOKIES FOR THE NEXT REQUEST
 $log->addNotice('logging in');
 try {
+    $loginJsonString = '{"AuthFlow":"USER_PASSWORD_AUTH","ClientId":"t8oiif52mece6bleeas2pof0n","AuthParameters":{"USERNAME":"aron.duby@gmail.com","PASSWORD":"rukidding?rukidding?"},"ClientMetadata":{"brand":"sfly","theme":"sfly","sfly-application-name":"sflyssofe","logged_in_device":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36","sfly-transactionid":"96e31998-2da4-4b03-8b2c-94fd0e597ae5","is_test_account":"false","is_internal_account":"false","send_welcome_email":"true","welcome_email_brand_id":"sfly","domain_origin":"accounts.shutterfly.com"}}';
+
     $ch = curl_init();
     $opts = [
-        CURLOPT_URL => "https://www.shutterfly.com/nonVisualSignin/start.sfly",
+        CURLOPT_URL => 'https://iam.shutterfly.com/',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => [
-            'av' => 0,
-            'cid' => 'SHARE3SSUHL',
-            'userName' => "aron.duby@gmail.com",
-            'password' => "rukidding?rukidding",
-            're' => "http://site.shutterfly.com/commands/dialogresult",
-            'rememberUserName' => "on",
-            'scid' => "8AZsmblm0Zs2V9",
-            't' => time()
+        CURLOPT_HTTPHEADER => [
+            'content-type: application/x-amz-json-1.1',
+            'content-length: ' . strlen($loginJsonString),
+            'x-amz-target: AWSCognitoIdentityProviderService.InitiateAuth',
+            'x-amz-user-agent: aws-amplify/5.0.4 js',
         ],
+        CURLOPT_POSTFIELDS => $loginJsonString,
         CURLOPT_COOKIEJAR => 'shutterfly-cookies.txt',
 
         //WARNING: this would prevent curl from detecting a 'man in the middle' attack
@@ -101,7 +100,78 @@ try {
     curl_setopt_array($ch, $opts);
 
     // grab URL and pass it to the browser
-    curl_exec($ch);
+    $rsp = json_decode(curl_exec($ch));
+
+    $log->addDebug('Login Response', [
+        'json' => json_decode($loginJsonString),
+        'opts' => $opts,
+        'rsp' => $rsp,
+    ]);
+
+
+    $log->addNotice('sending token');
+    $accessToken = $rsp->AuthenticationResult->AccessToken;
+    $tokenJsonString = json_encode(['AccessToken' => $accessToken]);
+    $opts = [
+        CURLOPT_URL => 'https://iam.shutterfly.com/',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'content-type: application/x-amz-json-1.1',
+            'content-length: ' . strlen($loginJsonString),
+            'x-amz-target: AWSCognitoIdentityProviderService.InitiateAuth',
+            'x-amz-user-agent: aws-amplify/5.0.4 js',
+        ],
+        CURLOPT_POSTFIELDS => $loginJsonString,
+        CURLOPT_COOKIEJAR => 'shutterfly-cookies.txt',
+
+        //WARNING: this would prevent curl from detecting a 'man in the middle' attack
+        // but since I'm using a throw away password it's cool
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSL_VERIFYPEER => 0
+    ];
+    curl_setopt_array($ch, $opts);
+    $rsp = json_decode(curl_exec($ch));
+    $log->addDebug('Token Response', [
+        'rsp' => $rsp,
+    ]);
+
+    $accessToken = $rsp->AuthenticationResult->AccessToken;
+    $idToken = $rsp->AuthenticationResult->IdToken;
+    $refreshToken = $rsp->AuthenticationResult->RefreshToken;
+
+    $log->addNotice('authorizing');
+
+    $authorizePayload = [
+        'optIn' => true,
+        'refreshToken' => $refreshToken,
+        'requestType' => 'signIn'
+    ];
+    $authorizePayloadString = json_encode($authorizePayload);
+    $opts = [
+        CURLOPT_URL => 'https://www.shutterfly.com/rest/refreshtoken/authorize',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'content-type: application/json;charset=UTF-8',
+            'content-length: ' . strlen($authorizePayloadString),
+        ],
+        CURLOPT_POSTFIELDS => $authorizePayloadString,
+        CURLOPT_COOKIEJAR => 'shutterfly-cookies.txt',
+
+        //WARNING: this would prevent curl from detecting a 'man in the middle' attack
+        // but since I'm using a throw away password it's cool
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSL_VERIFYPEER => 0
+    ];
+    curl_setopt_array($ch, $opts);
+    $rsp = json_decode(curl_exec($ch));
+    $log->addDebug('Authorize Response', [
+        'rsp' => $rsp,
+        'payload' => $authorizePayload,
+    ]);
 
 } catch (Exception $e) {
 
@@ -115,25 +185,27 @@ try {
 
 try {
 
+    $log->addNotice('Getting Albums');
+
     # GET ALL OF THE ALBUMS
-    $url = 'https://cmd.shutterfly.com/commands/pictures/getitems?site=' . $shutterfly_site . '&';
+    $url = 'https://cmd.shutterfly.com/commands/pictures/getalbums?site=' . $shutterfly_site . '&';
     $opts = [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'authorization: Bearer '.$idToken,
+        ],
         CURLOPT_POSTFIELDS => [
-            'cache' => "[object Object]",
-            'format' => "js",
-            // 'h' => "ay2j9w5mRHiiy2N8LcCabtbKba1s=",
-            'layout' => "ManagementAlbums",
-            'nodeId' => "14",
-            'page' => $shutterfly_site . "/pictures",
+            // the page id for the pictures, is apparently always 14
+            'parent' => '14',
+            'page' => $shutterfly_site . '/pictures',
+            'format' => 'js',
             'pageSize' => "-1",
             'size' => "-1",
             'startIndex' => "0",
             't' => time(),
-            'version' => "1385146657"
         ],
         CURLOPT_COOKIEJAR => 'shutterfly-cookies.txt',
         //WARNING: this would prevent curl from detecting a 'man in the middle' attack
@@ -141,6 +213,7 @@ try {
         CURLOPT_SSL_VERIFYHOST => 0,
         CURLOPT_SSL_VERIFYPEER => 0
     ];
+
     curl_setopt_array($ch, $opts);
     $rsp = curl_exec($ch);
     curl_close($ch);
@@ -192,8 +265,8 @@ try {
     $unglue_stmt->bindParam(':album_id', $album_id);
 
     $albums_to_update = [];
-    foreach ($value->result->section->groups as $album) {
-        $shutterfly_id = $album->shutterflyId;
+    foreach ($value->result->items as $album) {
+        $shutterfly_id = $album->shutterflyId; // TODO -- this should probably be the node id
 
         $log->addNotice('parsing album data #' . $album->nodeId);
         $album_select_stmt->execute();
@@ -202,7 +275,7 @@ try {
 
             $log->addDebug('album data', [$album]);
             // match the big size from photo import
-            $cover_shutterfly_id = $album->coverPicture->shutterflyId;
+            $cover_shutterfly_id = $album->shutterflyId; // apparently these have always been the same, even when it was in cover
             $cover_shutterfly_id[35] = 5;
 
             // update the album info
@@ -247,6 +320,9 @@ try {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'authorization: Bearer '.$idToken,
+        ],
         CURLOPT_POSTFIELDS => [
             'cache' => "[object Object]",
             'format' => "js",
