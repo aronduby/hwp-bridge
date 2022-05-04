@@ -390,6 +390,9 @@ try {
 
 // update the log and recent table
 $log->addNotice("Shutterfly import success: ".count($new_photos)." photos imported");
+if (!count($new_photos)) {
+    $log->addNotice('No photos import but no errors? Make sure tor is running!');
+}
 
 if (count($new_photos) > 0) {
     if(!$SKIP_RECENT){
