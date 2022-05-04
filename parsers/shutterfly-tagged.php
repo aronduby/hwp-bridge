@@ -297,7 +297,7 @@ try {
                 {
                     $img_data = (string) $response->getBody();
 
-                    try{
+                    try {
                         try {
                             $img = imagecreatefromstring($img_data);
                         } catch (\Exception $e) {
@@ -311,8 +311,11 @@ try {
                         $width = imagesx($img);
                         $height = imagesy($img);
                         imageinterlace($img, 1);
-                        if(imagejpeg($img, $photo_path.$filename) == false)
-                            throw new Exception('could not save full photo "'.$filename.'" to "'.$photo_path.'"');
+                        if(imagejpeg($img, $photo_path.$filename) == false) {
+                            $errorMsg = 'could not save full photo "' . $filename . '" to "' . $photo_path . '"';
+                            $log->addError($errorMsg);
+                            throw new Exception($errorMsg);
+                        }
 
                         $log->addNotice("saved ".$photo_path.$filename);
 
