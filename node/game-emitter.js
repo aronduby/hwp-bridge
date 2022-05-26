@@ -6,6 +6,7 @@ const eventListeners = require('./events');
  * @param {GameData} gameData - the data for the emitting game
  * @param {object} data
  * @param {string} data.msg - message from the event function
+ * @param {string} eventName - the event name that triggered the function
  */
 
 class GameEmitter {
@@ -55,7 +56,7 @@ class GameEmitter {
             const rsp = this.listeners[key].apply(null, send);
 
             if (rsp && this.broadcaster) {
-                this.broadcaster(gameData, rsp);
+                this.broadcaster(gameData, rsp, key);
             }
         }
     }

@@ -63,6 +63,7 @@ describe('events are emitted', () => {
             if (mockEvents[e].mock.results[0].value !== false) {
                 expect(mockBroadcaster).toBeCalledTimes(1);
                 expect(mockBroadcaster.mock.calls[0][0]).toEqual(game.data);
+                expect(mockBroadcaster.mock.calls[0][2]).toEqual(e);
             } else {
                 expect(mockBroadcaster).not.toBeCalled();
             }

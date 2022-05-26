@@ -55,10 +55,11 @@ SocketBroadcaster
 
 /**
  * Glue the emitter to the broadcasters
- * @param {GameData} gameData
- * @param {BroadcastData} data
+ * @param {GameData} gameData - the data for the emitting game
+ * @param {object} data
+ * @param {string} eventName - the event name that triggered the function
  */
-function sendToBroadcasters(gameData, data) {
+function sendToBroadcasters(gameData, data, eventName) {
 	data.ts = Math.round(+new Date()/1000);
 
 	// don't just set it the games score because of prototypical inheritance
@@ -70,6 +71,7 @@ function sendToBroadcasters(gameData, data) {
 	data.title = gameData.title;
 	data.opponent = gameData.opponent;
 	data.team = gameData.team;
+	data.eventName = eventName;
 
 	updateManager.add(data);
 
