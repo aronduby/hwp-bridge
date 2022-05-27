@@ -2,6 +2,13 @@ const Middleware = require('./middleware');
 const testLogger = require('./test-mode-logger');
 const twilio = require('twilio');
 
+// match subscription types
+const types = Object.freeze({
+    ALL: 'ALL',
+    QUARTERS: 'QUARTERS',
+    FINAL: 'FINAL'
+})
+
 /**
  * Broadcasts messages over Twilio
  */
@@ -32,7 +39,18 @@ class TwilioBroadcaster extends Middleware {
      */
     broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, async function(input, output) {
-            if (true || this._testMode !== true) {
+            let type = '';
+            switch (data.eventName) {
+                case 'final':
+                    type = types.FINAL;
+                    break;
+
+                case 'setQuartersPlayed':
+                    type = types.QUARTERS;
+                    break;
+            }
+
+            if (this._testMode !== true) {
 
                 const from = await this.setSiteAuth(input.site_id);
                 if (!from) {
@@ -41,9 +59,9 @@ class TwilioBroadcaster extends Middleware {
                 }
 
                 const self = this;
-                const sql = 'SELECT phone FROM subscriptions WHERE game_id=? OR tournament_id IN (SELECT tournament_id FROM games WHERE game_id=?)';
+                const sql = 'SELECT phone FROM subscriptions WHERE site_id = ? AND (type = "ALL" OR type = ?)';
 
-                const query = this._db.query(sql, [input.game_id, input.game_id]);
+                const query = this._db.query(sql, [input.site_id, type]);
                 query.on('error', function(err) { console.log(err); })
                     .on('result', function(row) {
                         self._twilioClient.sendSms({
@@ -61,7 +79,7 @@ class TwilioBroadcaster extends Middleware {
                     });
 
             } else {
-                testLogger('TWILIO', output.body);
+                testLogger('TWILIO', '('+type+') ' + output.body);
             }
         }.bind(this));
     }
