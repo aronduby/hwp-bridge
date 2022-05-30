@@ -1,22 +1,22 @@
 <div class="btn-group scroll-x">
 	
-	<button class="btn btn-info" ng-click="shotBy(player.name_key)" ng-disabled="isKickedOut(player)">Shots <span class="badge">{{player.goals}}/{{player.shots}}</span></button>
+	<button class="btn btn-info" ng-click="shotBy(player.name_key)" ng-disabled="disabled || isKickedOut(player)">Shots <span class="badge">{{player.goals}}/{{player.shots}}</span></button>
 
-	<button class="btn btn-info" ng-click="game.kickout(player.name_key)"  ng-disabled="isKickedOut(player)" ng-class="{'btn-warning': player.kickouts==2, 'btn-danger': player.kickouts>=3}">Ko <span class="badge">{{player.kickouts}}</span></button>
+	<button class="btn btn-info" ng-click="game.kickout(player.name_key); calculateTotals();"  ng-disabled="disabled || isKickedOut(player)" ng-class="{'btn-warning': player.kickouts==2, 'btn-danger': player.kickouts>=3}">Ko <span class="badge">{{player.kickouts}}</span></button>
 	
-	<button class="btn btn-info" ng-click="game.kickoutDrawn(player.name_key)"  ng-disabled="isKickedOut(player)">KoD <span class="badge">{{player.kickouts_drawn}}</span></button>
+	<button class="btn btn-info" ng-click="game.kickoutDrawn(player.name_key); calculateTotals();"  ng-disabled="disabled || isKickedOut(player)">KoD <span class="badge">{{player.kickouts_drawn}}</span></button>
 	
-	<button class="btn btn-info" ng-click="game.steal(player.name_key)"  ng-disabled="isKickedOut(player)">Steals <span class="badge">{{player.steals}}</span></button>
+	<button class="btn btn-info" ng-click="game.steal(player.name_key); calculateTotals();"  ng-disabled="disabled || isKickedOut(player)">Steals <span class="badge">{{player.steals}}</span></button>
 	
-	<button class="btn btn-info" ng-click="game.turnover(player.name_key)"  ng-disabled="isKickedOut(player)">Tos <span class="badge">{{player.turnovers}}</span></button>
+	<button class="btn btn-info" ng-click="game.turnover(player.name_key); calculateTotals();"  ng-disabled="disabled || isKickedOut(player)">Tos <span class="badge">{{player.turnovers}}</span></button>
 
-	<button class="btn btn-info" ng-click="game.block(player.name_key)"  ng-disabled="isKickedOut(player)">Blocks <span class="badge">{{player.blocks}}</span></button>
+	<button class="btn btn-info" ng-click="game.block(player.name_key); calculateTotals();"  ng-disabled="disabled || isKickedOut(player)">Blocks <span class="badge">{{player.blocks}}</span></button>
 
-	<button class="btn btn-info" ng-click="fiveMeterCalledOn(player.name_key)" ng-disabled="isKickedOut(player)">5mC<span class="badge">{{player.five_meters_called}}</span></button>
+	<button class="btn btn-info" ng-click="fiveMeterCalledOn(player.name_key)" ng-disabled="disabled || isKickedOut(player)">5mC<span class="badge">{{player.five_meters_called}}</span></button>
 	
-	<button class="btn btn-info" ng-click="fiveMeterDrawnBy(player.name_key)" ng-disabled="isKickedOut(player)">5mD<span class="badge">{{player.five_meters_drawn}}</span></button>
+	<button class="btn btn-info" ng-click="fiveMeterDrawnBy(player.name_key)" ng-disabled="disabled || isKickedOut(player)">5mD<span class="badge">{{player.five_meters_drawn}}</span></button>
 	
-	<button class="btn btn-info" disabled>S/T <span class="badge">{{player.steals / player.turn_overs | number:2}}</span></button>
+	<button class="btn btn-info" disabled>S/T <span class="badge">{{player.steals / player.turnovers | number:2}}</span></button>
 
 	<button class="btn btn-info" disabled>5mT/M<span class="badge">{{player.five_meters_made}}/{{player.five_meters_taken}}</span></button>
 

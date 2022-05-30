@@ -58,7 +58,6 @@ angular.module('myApp.controllers', [])
   .controller('inPlayCtrl', ['$scope', 'game', '$modal', function ($scope, game, $modal) {
     game.status = 'inplay';
     $scope.game = game;
-
     $scope.order_by = 'number_sort';
 
     $scope.changeGoalie = function () {
@@ -128,12 +127,15 @@ angular.module('myApp.controllers', [])
             playerListInstance.result
               .then(function (assist_by) {
                 game.shot(shot_by, true, assist_by);
+                $scope.calculateTotals();
               }, function () {
                 game.shot(shot_by, true, false);
+                $scope.calculateTotals();
               });
 
           } else {
             game.shot(shot_by, false);
+            $scope.calculateTotals();
           }
 
         });
@@ -184,6 +186,7 @@ angular.module('myApp.controllers', [])
           MMBInstance.result
             .then(function (made) {
               game.fiveMeterCalled(called_on, taken_by, made);
+              $scope.calculateTotals();
             });
         });
     };
@@ -223,6 +226,7 @@ angular.module('myApp.controllers', [])
           MMBInstance.result
             .then(function (made) {
               game.fiveMeterDrawn(drawn_by, taken_by, made);
+              $scope.calculateTotals();
             });
 
         });
@@ -245,6 +249,30 @@ angular.module('myApp.controllers', [])
           $scope.game.timeout(us, data);
         });
     }
+
+    // region Totals
+    const statKeys = Object.keys(Object.values(game.stats)[0]);
+    function resetTotals() {
+      $scope.totals = statKeys.reduce((acc, key) => ({
+        ...acc,
+        [key]: 0
+      }), {});
+    }
+    resetTotals();
+
+    $scope.calculateTotals = function() {
+      resetTotals();
+      Object.values(game.stats).forEach(stats => {
+        Object.keys(stats).forEach(statKey => {
+          if (Number.isInteger(stats[statKey])) {
+            $scope.totals[statKey] += stats[statKey];
+          }
+        });
+      });
+    }
+
+    $scope.calculateTotals();
+    // endregion
   }])
 
   .controller('quarterCtrl', ['$scope', 'game', '$modal', '$location', function ($scope, game, $modal, $location) {

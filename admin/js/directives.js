@@ -13,12 +13,24 @@ angular.module('myApp.directives', [])
 			templateUrl: 'partials/directives/player-name.html'
 		}
 	})
+
 	.directive('hwpFieldStats', function(){
 		return {
 			restrict: 'E',
 			scope: true, 
 			templateUrl: 'partials/directives/field-stats.html'
 		};
+	})
+	.directive('hwpTotalFieldStats', function() {
+		return {
+			restrict: 'E',
+			scope: {
+				player: '=',
+				disabled: '=',
+				calculateTotals: '&'
+			},
+			templateUrl: 'partials/directives/field-stats.html'
+		}
 	})
 
 	.directive('hwpGoalieStats', function(){
