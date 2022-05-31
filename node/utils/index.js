@@ -1,5 +1,6 @@
 module.exports = {
     ordinal: require('./ordinal'),
     oxford: require('./oxford'),
-    playerNameAndNumber: require('./player-name-and-number')
+    playerNameAndNumber: require('./player-name-and-number'),
+    forceInt: require('./force-int'),
 };
