@@ -32,7 +32,7 @@ class TwilioBroadcaster extends Middleware {
      */
     broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, async function(input, output) {
-            if (true || this._testMode !== true) {
+            if (this._testMode !== true) {
 
                 const from = await this.setSiteAuth(input.site_id);
                 if (!from) {

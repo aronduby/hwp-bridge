@@ -100,7 +100,15 @@ angular.module('myApp.services', [])
 				this._local_copy = local_copy;
 			},
 
-			loadData: function (game_id, q) {
+			/**
+			 *
+			 * @param game_id
+			 * @param q
+			 * @param dontTakeLoaded - override for when we don't want to take the data from the server
+			 * 	this is potentially dangerous because it treats the scoring client as the source of truth instead of the server
+			 * 	given that, we should only be using this during reconnect where we have things in place to catch the server up
+			 */
+			loadData: function (game_id, q, dontTakeLoaded) {
 				var self = this;
 				this._socket.emit('openGame', game_id, function (err, data) {
 
@@ -143,8 +151,10 @@ angular.module('myApp.services', [])
 						}
 					})
 						.then((data) => {
-							self.takeData(data);
-							self.loaded = true;
+							if (dontTakeLoaded !== true) {
+								self.takeData(data);
+								self.loaded = true;
+							}
 							q.resolve();
 						})
 						.catch((err) => {
@@ -514,32 +524,6 @@ angular.module('myApp.services', [])
 		}
 
 		return new FakeSocket($localStorage);
-	}])
-	.service('IAmController', ['$rootScope', 'socket', function ($rootScope, socket) {
-
-		var $scope = $rootScope.$new(true);
-
-		socket.on('connect', function () {
-			console.log('connected to socket server');
-			socket.emit('amIController', function (data) {
-				if (data !== true) {
-					socket.emit('IAmController', function () {
-						$scope.$emit('true');
-					});
-				} else {
-					$scope.$emit('true');
-				}
-			});
-		});
-		socket.on('disconnect', function () {
-			console.log('disconnected from socket server');
-		});
-		socket.on('reconnect', function () {
-			console.log('REconnected to socket server');
-		});
-
-		return $scope;
-
 	}])
 	.service('gameStolen', ['socket', 'game', '$modal', function(socket, game, $modal) {
 		socket.on('gameStolen', async (gameId) => {

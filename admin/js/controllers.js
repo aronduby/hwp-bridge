@@ -390,8 +390,8 @@ angular.module('myApp.controllers', [])
     };
   }])
 
-  .controller('SocketStatusCtrl', ['$scope', '$timeout', '$q', 'socket', 'fakeSocket', 'game', 'IAmController',
-  function ($scope, $timeout, $q, socket, fakeSocket, game, IAmController) {
+  .controller('SocketStatusCtrl', ['$scope', '$timeout', '$q', 'socket', 'fakeSocket', 'game',
+  function ($scope, $timeout, $q, socket, fakeSocket, game) {
 
     $scope.status = false;
     $scope.msg = false;
@@ -428,41 +428,6 @@ angular.module('myApp.controllers', [])
       return deferred.promise;
     }
 
-    IAmController.$on('true', function () {
-      console.log('IAMCONTROLLER!');
-
-      var queued_updates = fakeSocket.getUpdates();
-      if (queued_updates.length) {
-
-        // there's so queued updates, meaning we lost connection so we have to do some sending
-        // but first make sure the server has grabbed the data from the database in case it has restarted
-        socket.emit('openGame', game.game_id, function (err) {
-          if (err != null) {
-            alert('Error getting game data');
-            console.error(err);
-            return false;
-          }
-
-          console.log('UPDATES', queued_updates);
-          processQueue(socket, queued_updates)
-            .then(function () {
-              $scope.msg = 'Updates sent';
-
-              $timeout(function () {
-                $scope.status = false;
-                $scope.msg = false;
-              }, 5000);
-            })
-            .catch(function (err) {
-              throw err;
-            })
-            .finally(function () {
-              console.log('done with queue');
-            });
-        });
-      }
-    });
-
     socket
       .on('disconnect', function () {
         $scope.status = 'reconnecting';
@@ -475,7 +440,42 @@ angular.module('myApp.controllers', [])
         $scope.msg = 'Reconnected, sending queued updates';
         $scope.attempt_number = 0;
 
+        var queuedUpdates = fakeSocket.getUpdates();
+
+        /*
+        we've reconnected, but we might have been disconnected due to a server restart
+        so call loadData just in case to make sure the server has pulled the data from the database
+        and then we can process queued updates and what not
+         */
+        var deferred = $q.defer();
+
+        // before loadData otherwise loadData call goes to the fake socket
         game.setSocket(socket);
+
+        // make sure to pass dontTakeLoaded so we treat the local copy as source of truth and the server will catch up
+        game.loadData(game.game_id, deferred, true);
+        deferred.promise
+            .then(function() {
+              if (queuedUpdates.length) {
+                return processQueue(socket, queuedUpdates)
+              } else {
+                return true;
+              }
+            })
+            .catch(function (err) {
+              throw err;
+            })
+            .then(function () {
+              $scope.msg = 'Updates sent!';
+
+              $timeout(function () {
+                $scope.status = false;
+                $scope.msg = false;
+              }, 3000);
+            })
+            .finally(function () {
+              console.log('done with queue');
+            });
       })
       .on('reconnecting', function (attempt_number) {
         $scope.current_attempt = attempt_number;
