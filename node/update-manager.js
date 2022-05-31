@@ -1,3 +1,5 @@
+const {forceInt} = require("./utils");
+
 class UpdateManager {
 
     constructor() {
@@ -12,7 +14,9 @@ class UpdateManager {
      * @param {BroadcastData} update
      */
     add(update) {
-        const {game_id} = update;
+        let { game_id } = update;
+        game_id = forceInt(game_id);
+
         if (!this._updateMap.has(game_id)) {
             this._updateMap.set(game_id, []);
         }
@@ -28,6 +32,7 @@ class UpdateManager {
      * @returns {BroadcastData[] | []}
      */
     get(gameId) {
+        gameId = forceInt(gameId);
         const updates = this._updateMap.get(gameId);
         return updates ? updates : [];
     }
@@ -38,6 +43,7 @@ class UpdateManager {
      * @returns {boolean} - true if it existed and has been removed, false if it didn't exist in the first place
      */
     clear(gameId) {
+        gameId = forceInt(gameId);
         return this._updateMap.delete(gameId);
     }
 

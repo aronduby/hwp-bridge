@@ -78,6 +78,7 @@
 
 const LockedError = require('./errors/lockedError');
 const UnopenedError = require('./errors/unopenedError');
+const {forceInt} = require("./utils");
 
 
 // Export the factory methods
@@ -89,6 +90,8 @@ module.exports = function(dataHandler, emitter, updateManager) {
         activeGames: {},
 
         open: async function (gameId, ownerId, stealLock) {
+            gameId = forceInt(gameId);
+
             if (!this.activeGames[gameId]) {
                 const g = new Game(gameId, emitter);
 
@@ -118,6 +121,8 @@ module.exports = function(dataHandler, emitter, updateManager) {
         },
 
         finalize: async function(gameId, userId) {
+            gameId = forceInt(gameId);
+
             if (!this.activeGames[gameId]) {
                 throw new UnopenedError();
             }
@@ -136,6 +141,8 @@ module.exports = function(dataHandler, emitter, updateManager) {
         },
 
         get: function(gameId, userId) {
+            gameId = forceInt(gameId);
+
             if (!this.activeGames[gameId]) {
                 throw new UnopenedError();
             }
@@ -148,6 +155,8 @@ module.exports = function(dataHandler, emitter, updateManager) {
         },
 
         getReadOnly: function(gameId) {
+            gameId = forceInt(gameId);
+
             if (!this.activeGames[gameId]) {
                 throw new UnopenedError();
             }
