@@ -34,15 +34,15 @@ if (
 <body>
 
 <div
-        id="socket_status"
-        class="socket-error alert alert-danger"
-        ng-show="status !== false"
-        ng-controller="SocketStatusCtrl"
-        ng-class="{
-				'alert-warning': status=='reconnecting',
-				'alert-danger': status=='disconnected',
-				'alert-success': status=='reconnected'
-			}"
+    id="socket_status"
+    class="socket-error alert alert-danger"
+    ng-show="status !== false"
+    ng-controller="SocketStatusCtrl"
+    ng-class="{
+		'alert-warning': status=='reconnecting',
+		'alert-danger': status=='disconnected',
+		'alert-success': status=='reconnected'
+	}"
 >
     {{msg}}
     <span ng-show="status=='reconnecting' && attempt_number != 0">({{current_attempt}})</span>

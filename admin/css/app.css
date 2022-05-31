@@ -3,11 +3,14 @@ body {
 }
 
 .socket-error {
+    position: sticky;
+    top: 0;
     font-size: .8em;
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    z-index: 999;
+    font-weight: bold;
+    letter-spacing: -0.02em;
+    box-shadow: 0 2px 3px rgb(0 0 0 / 50%);
+    border-radius: 0;
+    z-index: 99999;
 }
 
 /*
@@ -362,7 +365,7 @@ li {
 .field ul.stats {
     width: 75%;
     overflow-x: auto;
-    box-shadow: inset 0px 0px 6px 2px rgba(0, 0, 0, 0.9);
+    box-shadow: inset 0 0 6px 2px rgba(0, 0, 0, 0.9);
 }
 
 .field .names li {
@@ -380,8 +383,8 @@ li {
     background: rgba(0, 0, 0, .1);
 }
 
-.field .stats li:nth-child(even) .btn-group {
-    background: rgba(0, 0, 0, .3);
+.field .stats li:nth-child(odd) .btn {
+    opacity: .85;
 }
 
 .field .player-name {
@@ -397,12 +400,12 @@ li {
     border: 1px solid #62868f;
     border-top: none;
     background: rgba(86, 174, 194, .75);
-    min-width: 60px;
     padding: .5em 1.25em;
+    min-width: 60px;
 }
 
 .stats .btn[disabled] {
-    opacity: .75;
+    opacity: .75 !important;
 }
 
 .stats .btn-warning {
@@ -423,6 +426,48 @@ li {
 
 .goalie .btn-group:before {
     left: 0;
+}
+
+/*
+ * Field Stat Buttons Grid
+ * keeps the buttons in the field stats grid all the same width
+*/
+.field .stats {
+    display: inline-grid;
+    grid-template-columns: repeat(13, minmax(min-content, 1fr));
+}
+
+.field .stats .btn {
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 50%;
+}
+
+.field .stats li,
+.field .stats hwp-field-stats,
+.field .stats hwp-total-field-stats,
+.field .stats .btn-group {
+    display: contents;
+}
+
+.field .stats hwp-total-field-stats .btn {
+    filter: grayscale(1);
+}
+
+/* keep the totals KO button from changing color */
+.field .stats hwp-total-field-stats .btn {
+    background-color: rgba(86, 174, 194, .75);
+}
+
+/* additional styling for muted/kicked out */
+.names li.muted,
+.stats li.muted .btn {
+    filter: opacity(0.5);
 }
 
 /*
@@ -619,7 +664,6 @@ header h4,
 
     .field .stats .btn-group {
         /* width:80%; */
-        display: inline-flex;
     }
 
     .field .stats .btn-group:before,

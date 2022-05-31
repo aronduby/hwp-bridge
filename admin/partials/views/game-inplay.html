@@ -44,17 +44,20 @@
 	</header>
 	<section>
 		<ul class="names">
-			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isPlayerKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
 				<strong class="player-name" hwp-player-name player="player"></strong>
 			</li>
+			<li style="text-align: right"><strong class="player-name">Totals</strong></li>
 		</ul><ul class="stats">
-			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isPlayerKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
-				<hwp-field-stats player="player"></hwp-field-stats>
+			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
+				<hwp-field-stats></hwp-field-stats>
+			</li>
+			<li style="filter: grayscale(.9);">
+				<hwp-total-field-stats player="totals" disabled="true" calculate-totals="calculateTotals"></hwp-total-field-stats>
 			</li>
 		</ul>
 	</section>
 </section>
-
 
 <section class="timeouts split">
 	<header><h2>Time Outs</h2></header>

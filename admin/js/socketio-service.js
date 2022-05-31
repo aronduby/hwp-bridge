@@ -27,13 +27,6 @@ angularSocketIO.service('socketio', [
 					'secure': true
 				});
 
-				socket.on('connect', function(){
-					socket.emit('amIController', '', function(data){
-						if(data !== true)
-							socket.emit('IAmController');
-					});
-				});
-
 				firstconnect = false;
 			} else {
 				socket.socket.reconnect();
