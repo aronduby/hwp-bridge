@@ -8,10 +8,22 @@
 
 require '../common.php';
 
+// make sure this matches the provider options
+$mediaServiceOptions = [
+    'App\\Services\\MediaServices\\ShutterflyMediaService' => 'Shutterfly',
+	'App\\Services\\MediaServices\\CloudinaryMediaService' => 'Cloudinary',
+];
+
 if (!empty($_POST)) {
 
 	try{
 		$dbh = PDODB::getInstance();
+
+		// Make sure we limit this it available values
+		$mediaService = $_POST['media_service'];
+		if (!in_array($mediaService, array_keys($mediaServiceOptions))) {
+			$mediaService = null;
+		}
 
 		$sql = "
 			INSERT INTO seasons SET
@@ -24,6 +36,7 @@ if (!empty($_POST)) {
 				ranking_tie = :ranking_tie,
 				ranking_title = :ranking_title,			                        
                 ranking_updated = NOW(),
+                media_service = :media_service,
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
                 site_id = VALUES(site_id),
@@ -34,6 +47,7 @@ if (!empty($_POST)) {
 				ranking_tie = VALUES(ranking_tie),
                 ranking_title = VALUES(ranking_title),
                 ranking_updated = NOW(),
+                media_service = VALUES(media_service),
 				updated_at = NOW(),
 				id = LAST_INSERT_ID(id)
 		";
@@ -47,6 +61,7 @@ if (!empty($_POST)) {
         $insert_update_stmt->bindValue(':ranking', $_POST['ranking'], PDO::PARAM_INT);
         $insert_update_stmt->bindValue(':ranking_tie', $_POST['ranking_tie'], PDO::PARAM_BOOL);
         $insert_update_stmt->bindValue(':ranking_title', empty($_POST['ranking_title']) ? null : $_POST['ranking_title']);
+		$insert_update_stmt->bindValue(':media_service', $mediaService);
 		$inserted = $insert_update_stmt->execute();
 		$season_id = $dbh->lastInsertId();
 
@@ -139,6 +154,19 @@ require '_pre.php';
 					<label for="ranking_title">Title:</label>
 					<input type="text" name="ranking_title" id="ranking_title" placeholder="ranking title" value="<?= $editSeason->ranking_title ?>" />
 					<p class="helper-text ui-li-desc">manually set the ranking title, overriding the ranking parser values above</p>
+				</li>
+
+				<li role="list-divider" data-theme="c">Season Settings</li>
+
+				<li data-role="fieldcontain">
+					<label for="media_service">Media Provider:</label>
+					<select name="media_service" id="media_service" data-theme="d">
+						<?php
+						foreach($mediaServiceOptions as $val => $label) {
+							?><option value="<?= $val ?>" <?= $editSeason->media_service === $val ? 'selected="selected"' : '' ?>><?= $label ?><?php
+						}
+						?>
+					</select>
 				</li>
 
 

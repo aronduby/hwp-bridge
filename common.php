@@ -29,6 +29,7 @@ try {
 
 } catch (Exception $e) {
     print 'could not find that site and/or season';
+    // print_p($e);
     exit;
 }
 

@@ -43,7 +43,7 @@ class Site
         $stmt = $this->dbh->query($sql);
         $stmt->setFetchMode(PDO::FETCH_INTO, $this);
         if(!$stmt->fetch()){
-            throw new Exception('No Site Found');
+            throw new Exception('No Site Found: ' . $domain);
         }
     }
 
