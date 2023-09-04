@@ -28,7 +28,7 @@ class Site
         }
 
         if (strpos($domain, 'ngrok') !== false) {
-            $domain = 'girls.hudsonvillewaterpolo';
+            $domain = 'hudsonvillewaterpolo';
             self::$ngrok = implode('.', $host);
         }
 
@@ -62,12 +62,16 @@ class Site
     }
 
     /**
-     * Get's the settings data from site storage
+     * Gets the settings data for this site
      */
     public function getSettings() {
-        $file = SETTINGS_PATH.'/'.$this->domain.'.json';
-        $siteSettings = file_get_contents($file);
-        return json_decode($siteSettings);
+        $stmt = $this->dbh->prepare("SELECT settings FROM settings WHERE has_settings_type = :type AND has_settings_id = :id");
+        $stmt->bindValue(':type', self::SETTINGS_KEY);
+        $stmt->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $settings = $stmt->fetchColumn();
+        return json_decode($settings);
     }
 
     /**
@@ -75,7 +79,24 @@ class Site
      * @return false|int
      */
     public function saveSettings($settings) {
-        return file_put_contents(SETTINGS_PATH.'/'.$this->domain.'.json', json_encode($settings));
+        $sql = <<<SQL
+INSERT INTO settings SET
+    settings = :settings,
+    has_settings_type = :type,
+    has_settings_id = :id
+ON DUPLICATE KEY UPDATE
+     settings = VALUES(settings),
+     updated_at = NOW()
+SQL;
+
+        $stmt = $this->dbh->prepare($sql);
+        $stmt->bindValue(':type', self::SETTINGS_KEY);
+        $stmt->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $stmt->bindValue(':settings', json_encode($settings));
+
+        return $stmt->execute();
     }
+
+    const SETTINGS_KEY = 'App\Models\Site';
 
 }
