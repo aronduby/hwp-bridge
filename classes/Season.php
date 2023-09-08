@@ -1,6 +1,10 @@
 <?php /** @noinspection SqlResolve */
 
 class Season {
+
+    use \Traits\HasSettings;
+
+    const SETTINGS_KEY = 'App\Models\Season';
 	
 	public $id;
 	public $title;

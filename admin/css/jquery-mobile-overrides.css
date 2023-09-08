@@ -12,6 +12,10 @@
     margin-top:15px;
 }
 
+.ui-listview + .ui-listview {
+    margin-top: 15px;
+}
+
 /* view more on upcoming events */
 .ul-li--view-more .ui-btn-inner {
     text-align: center;

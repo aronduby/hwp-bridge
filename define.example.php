@@ -19,6 +19,7 @@ define('TOKEN_PATH', BRIDGE_PATH.'/parsers/tmp/token');
 define('JSON_PATH', BRIDGE_PATH.'/parsers/tmp/tags.json');
 define('SITE_DEFINES_PATH', 'PATH/TO/hwp-bridge/site-defines');
 define('SETTINGS_PATH', MASTER_PATH.'/storage/sites');
+define('SCHEMA_PATH', MASTER_PATH.'/resources/schemas');
 
 define('MANDRILL_API_KEY', 'XXXXX');
 

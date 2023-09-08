@@ -24,7 +24,7 @@ require '_pre.php';
             foreach($seasons as $s){
             	?>
 	            <li>
-		            <a href="addedit-season.php?season_id=<?= $s->id ?>" title="edit season">
+		            <a href="addedit-season.php?season_id=<?= $s->id ?>" title="edit season" data-ajax="false">
 			            <?= $s->title ?>
 			            <?= $s->current ? ' <span class="ui-icon-inline ui-icon ui-icon-star" title="current season">&nbsp;</span>' : '' ?>
 			            <?= $s->id === $season->id ? ' <span class="ui-icon-inline ui-icon ui-icon-check" title="editing season">&nbsp;</span>' : '' ?>
