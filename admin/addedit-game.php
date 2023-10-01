@@ -79,7 +79,14 @@ if (!empty($_POST)) {
 			}
 
 			if ($redirect) {
-                if (intval($_POST['tournament_id'])) {
+				if ($_POST['action'] === 'saveAndNew') {
+					$location = 'addedit-game.php';
+					if (intval($_POST['tournament_id'])) {
+						$location .= '?tournament_id='.$_POST['tournament_id'];
+					}
+					header("Location: ".$location);
+
+				} elseif (intval($_POST['tournament_id'])) {
                     header("Location: tournament.php?tournament_id=".$_POST['tournament_id']);
 
                 } elseif (strtotime($end) < time()) {
@@ -238,14 +245,14 @@ require '_pre.php';
 
 				<li>
 					<?php
-					$saveBtn = '<button type="submit" name="action" value="save">Save</button>';
+					$saveBtns = '<button type="submit" name="action" value="save">Save</button><button type="submit" name="action" value="saveAndNew">Save &amp; New</button>';
 					$saveAndPostBtn = '<button type="submit" name="action" value="saveAndPost" data-theme="d">Save And Post</button>';
 
 					if (!$game->is_posted) {
 						?>
 						<div class="ui-grid-a">
 							<div class="ui-block-a">
-								<?= $saveBtn ?>
+								<?= $saveBtns ?>
 							</div>
 							<div class="ui-block-b">
                                 <?= $saveAndPostBtn ?>
@@ -253,7 +260,7 @@ require '_pre.php';
 						</div>
 						<?php
 					} else {
-						print $saveBtn;
+						print $saveBtns;
 					}
 					?>
 				</li>
