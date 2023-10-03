@@ -2,9 +2,10 @@
     "name": "aronduby/hudsonvillewaterpolo",
     "description": "",
     "require": {
+        "ext-pdo": "*",
         "predis/predis": "^1.0",
         "slim/slim": "~2.0",
-        "aronduby/dump": "*",
+        "aronduby/dump": "^0.9.1",
         "monolog/monolog": "*",
         "swiftmailer/swiftmailer": "^5.4",
         "symfony/console": "^2.7",
@@ -15,7 +16,9 @@
         "fusonic/opengraph": "^1.0",
         "fusonic/linq": "@dev",
         "clue/socks-react": "^1.3",
-        "react/http": "^1.6"
+        "react/http": "^1.6",
+        "cloudinary/cloudinary_php": "^2",
+        "justinrainbow/json-schema": "^5.2"
     },
     "authors": [
         {

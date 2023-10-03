@@ -42,7 +42,7 @@ if(!empty($_POST)){
 					team = ".$dbh->quote(implode(',',$_POST['team'])).",
 					position = ".$dbh->quote($_POST['position']).",
 					number = ".$dbh->quote($_POST['number']).",
-					shutterfly_tag = ".$dbh->quote($_POST['shutterfly_tag']).",
+					media_tag = ".$dbh->quote($_POST['media_tag']).",
 					sort = ".(!empty($_POST['sort']) ? $dbh->quote($_POST['sort']) : 'null')."
 				ON DUPLICATE KEY UPDATE
 					site_id = VALUES(site_id),
@@ -52,7 +52,7 @@ if(!empty($_POST)){
 					team = VALUES(team),
 					position = VALUES(position),
 					number = VALUES(number),
-					shutterfly_tag = VALUES(shutterfly_tag),
+					media_tag = VALUES(media_tag),
 					sort = VALUES(sort)";
 
 			$dbh->exec($sql);
@@ -168,8 +168,8 @@ require '_pre.php';
 				</li>
 
 				<li data-role="fieldcontain">
-					<label for="p-shutterfly_tag">Shutterfly Tag:</label>
-		        	<input type="text" name="shutterfly_tag" id="p-shutterfly_tag" placeholder="shutterfly tag" value="<?php echo $player_season->shutterfly_tag ?>" />
+					<label for="p-media_tag">Media Tag:</label>
+		        	<input type="text" name="media_tag" id="p-media_tag" placeholder="media tag" value="<?php echo $player_season->media_tag ?>" />
 				</li>
 
 				<li data-role="fieldcontain">

@@ -1,6 +1,10 @@
 <?php /** @noinspection SqlResolve */
 
 class Season {
+
+    use \Traits\HasSettings;
+
+    const SETTINGS_KEY = 'App\Models\Season';
 	
 	public $id;
 	public $title;
@@ -11,6 +15,7 @@ class Season {
 	public $ranking_updated;
 	public $ranking_tie;
 	public $ranking_title;
+    public $media_service;
 
 	protected $stats;
 
@@ -55,7 +60,7 @@ class Season {
 		if($id === false){
 			$sql = "
 				SELECT 
-					id, title, short_title, current, ranking, ranking_updated, ranking_tie, ranking_title  
+					id, title, short_title, current, ranking, ranking_updated, ranking_tie, ranking_title, media_service  
 				FROM 
 					seasons
 				WHERE 
@@ -64,7 +69,7 @@ class Season {
 		} else {
 			$sql = "
 				SELECT 
-					id, title, short_title, current, ranking, ranking_updated, ranking_tie, ranking_title 
+					id, title, short_title, current, ranking, ranking_updated, ranking_tie, ranking_title, media_service 
 				FROM 
 					seasons 
 				WHERE 

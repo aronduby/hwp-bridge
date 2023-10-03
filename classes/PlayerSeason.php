@@ -11,7 +11,7 @@ class PlayerSeason {
 	public $team;
 	public $position;
 	public $number;
-	public $shutterfly_tag;
+	public $media_tag;
 	public $sort;
 	
 	public $season_title;

@@ -2,6 +2,10 @@
 
 class Site
 {
+    use \Traits\HasSettings;
+
+    const SETTINGS_KEY = 'App\Models\Site';
+
     public $id;
     public $domain;
     public $created_at;
@@ -28,7 +32,7 @@ class Site
         }
 
         if (strpos($domain, 'ngrok') !== false) {
-            $domain = 'girls.hudsonvillewaterpolo';
+            $domain = 'hudsonvillewaterpolo';
             self::$ngrok = implode('.', $host);
         }
 
@@ -43,7 +47,7 @@ class Site
         $stmt = $this->dbh->query($sql);
         $stmt->setFetchMode(PDO::FETCH_INTO, $this);
         if(!$stmt->fetch()){
-            throw new Exception('No Site Found');
+            throw new Exception('No Site Found: ' . $domain);
         }
     }
 
@@ -59,23 +63,6 @@ class Site
 
         $stmt->execute();
         return $stmt->fetchAll();
-    }
-
-    /**
-     * Get's the settings data from site storage
-     */
-    public function getSettings() {
-        $file = SETTINGS_PATH.'/'.$this->domain.'.json';
-        $siteSettings = file_get_contents($file);
-        return json_decode($siteSettings);
-    }
-
-    /**
-     * @param $settings
-     * @return false|int
-     */
-    public function saveSettings($settings) {
-        return file_put_contents(SETTINGS_PATH.'/'.$this->domain.'.json', json_encode($settings));
     }
 
 }

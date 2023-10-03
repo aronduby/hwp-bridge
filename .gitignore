@@ -13,7 +13,6 @@ composer.phar
 /node/node_modules/
 /node/mailoutput/
 /node/settings.js
-/parsers/shutterfly-cookies.txt
 /define.php
 /site-defines/*
 !/site-defines/readme
