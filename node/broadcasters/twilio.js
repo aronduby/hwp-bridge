@@ -1,13 +1,66 @@
 const Middleware = require('./middleware');
 const testLogger = require('./test-mode-logger');
-const twilio = require('twilio');
+// const twilio = require('twilio');
+const https = require('https');
+const querystring = require('querystring');
+
 
 // match subscription types
 const types = Object.freeze({
     ALL: 'ALL',
     QUARTERS: 'QUARTERS',
     FINAL: 'FINAL'
-})
+});
+
+// doing this so we don't have to upgrade all the way to the new stuff yet which will require node updates as well
+class FakeTwilio {
+
+    constructor(sid, token, options) {
+        this.accountSid = sid;
+        this.authToken = token;
+        this.options = options;
+    }
+
+    sendSms(data) {
+        // https://api.twilio.com/2010-04-01/Accounts/$TWILIO_ACCOUNT_SID/Messages.json
+        const encodedData = querystring.stringify(data);
+        const requestOptions = {
+            method: 'POST',
+            host: 'api.twilio.com',
+            path: '/2010-04-01/Accounts/'+ this.accountSid +'/Messages.json',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(encodedData),
+                'Authorization': 'Basic ' + Buffer.from(this.accountSid + ':' + this.authToken).toString('base64')
+            }
+        }
+
+        return new Promise((resolve, reject) => {
+            const request = https.request(requestOptions, rsp => {
+                const chunks = [];
+                rsp.on('data', data => chunks.push(data));
+                rsp.on('end', () => {
+                    let rspBody = Buffer.concat(chunks);
+                    if (rsp.headers['content-type'] === 'application/json') {
+                        rspBody = JSON.parse(rspBody);
+                    }
+
+                    // this is referring to the http status code, anything 200 is ok
+                    if (rsp.statusCode >= 200 && rsp.statusCode < 300) {
+                        resolve(rspBody);
+                    } else {
+                        // codes explained here: https://www.twilio.com/docs/api/errors
+                        reject(rspBody);
+                    }
+                });
+            });
+
+            request.on('error', reject);
+            request.write(encodedData);
+            request.end();
+        });
+    }
+}
 
 /**
  * Broadcasts messages over Twilio
@@ -29,7 +82,8 @@ class TwilioBroadcaster extends Middleware {
         this._testMode = true;
 
         const {sid, token} = settingsManager.getGlobal().twilio;
-        this._twilioClient = new twilio.RestClient(sid, token, {});
+        // this._twilioClient = new twilio.RestClient(sid, token, {});
+        this._twilioClient = new FakeTwilio(sid, token, {});
     }
 
     /**
@@ -50,7 +104,8 @@ class TwilioBroadcaster extends Middleware {
                     break;
             }
 
-            if (this._testMode !== true) {
+            // if (this._testMode !== true) {
+            if (true) {
 
                 const from = await this.setSiteAuth(input.site_id);
                 if (!from) {
@@ -64,15 +119,28 @@ class TwilioBroadcaster extends Middleware {
                 const query = this._db.query(sql, [input.site_id, type]);
                 query.on('error', function(err) { console.log(err); })
                     .on('result', function(row) {
+                        // self._twilioClient.sendSms({
+                        //     to: row.phone, // Any number Twilio can deliver to
+                        //     from: from, // A number you bought from Twilio and can use for outbound communication
+                        //     body: output.body // body of the SMS message
+                        // }, function(err, responseData) { //this function is executed when a response is received from Twilio
+                        //     if (!err) {
+                        //         console.log("Sent text to " + responseData.to);
+                        //     }
+                        // });
+
+                        // capitalization of the params are super important!
                         self._twilioClient.sendSms({
-                            to: row.phone, // Any number Twilio can deliver to
-                            from: from, // A number you bought from Twilio and can use for outbound communication
-                            body: output.body // body of the SMS message
-                        }, function(err, responseData) { //this function is executed when a response is received from Twilio
-                            if (!err) {
-                                console.log("Sent text to " + responseData.to);
-                            }
-                        });
+                            To: row.phone,
+                            From: from,
+                            Body: output.body
+                        })
+                            .then(rsp => {
+                                console.log("Sent text to " + rsp.to);
+                            })
+                            .catch(err => {
+                                console.error(err);
+                            })
                     })
                     .on('end', function() {
                         self.setGlobalAuth();
