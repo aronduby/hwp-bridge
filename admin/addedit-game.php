@@ -76,6 +76,8 @@ if (!empty($_POST)) {
                     if(isset($_POST['tournament_id']))
                         $tournament = new Tournament($_POST['tournament_id'], $register);
 				}
+
+                exec('php '.ARTISAN_PATH.' events:manual-game-results-notification '.$game_id);
 			}
 
 			if ($redirect) {
