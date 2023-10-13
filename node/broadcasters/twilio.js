@@ -104,8 +104,8 @@ class TwilioBroadcaster extends Middleware {
                     break;
             }
 
-            // if (this._testMode !== true) {
-            if (true) {
+            if (this._testMode !== true) {
+            // if (true) {
 
                 const from = await this.setSiteAuth(input.site_id);
                 if (!from) {
