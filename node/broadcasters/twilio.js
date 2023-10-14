@@ -79,7 +79,7 @@ class TwilioBroadcaster extends Middleware {
         this._db = db;
 
         this._settingsManager = settingsManager;
-        this._testMode = true;
+        this._testMode = testMode;
 
         const {sid, token} = settingsManager.getGlobal().twilio;
         // this._twilioClient = new twilio.RestClient(sid, token, {});
