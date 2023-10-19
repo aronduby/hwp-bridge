@@ -19,15 +19,20 @@ module.exports = {
 		'from': '+TWILIO_OUTBOUND_NUMBER'
 	},
 	twitter: {
-		enabled: 'false',
+		enabled: false,
 		consumerKey: 'TWITTER-CONSUMER-KEY',
 		consumerSecret: 'TWITTER-CONSUMER-SECRET',
 		accessToken: 'TWITTER-ACCESS-TOKEN',
 		accessTokenSecret: 'TWITTER-ACCESS-TOKEN-SECRET'
 	},
+	fcm: {
+		enabled: false,
+		credentialsPath: "/file/path/to/firebase/admin-sdk/json/file.json",
+		siteTopic: "topic.%d",
+	},
 	jwtAuth: {
 		publicKey: 'path/to/key/setup/on/hwp',
 		algorithm: 'RS256'
 	},
-	siteSettingsPath: "/web/hwp/storage/sites"
+	siteSettingsPath: "/web/hwp/storage/sites",
 };

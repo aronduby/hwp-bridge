@@ -47,6 +47,12 @@ TwilioBroadcaster
 	.use(mids.messageWithScore)
 	.use(mids.prefixJV);
 
+const FCMBroadcaster = new (require('./broadcasters/fcm'))(settingsManager, testMode)
+FCMBroadcaster
+	.use(mids.isDefined)
+	.use(mids.messageWithScore)
+	.use(mids.prefixJV);
+
 const SocketBroadcaster = new (require('./broadcasters/socket'))(testMode);
 SocketBroadcaster
 	.use(mids.isDefined)
@@ -78,6 +84,7 @@ function sendToBroadcasters(gameData, data, eventName) {
 	TwitterBroadcaster.broadcast(data);
 	TwilioBroadcaster.broadcast(data);
 	SocketBroadcaster.broadcast(data);
+	FCMBroadcaster.broadcast(data);
 }
 
 // GAME

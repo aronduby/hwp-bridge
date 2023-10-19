@@ -4,6 +4,7 @@
   "description": "HudsonvilleWaterPolo.com",
   "main": "gulpfile.js",
   "dependencies": {
+    "firebase-admin": "^11.11.0",
     "gulp": "~3.9.0"
   },
   "devDependencies": {
