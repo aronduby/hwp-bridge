@@ -15,7 +15,7 @@ class FCMBroadcaster extends Middleware {
         super();
 
         this._settingsManager = settingsManager;
-        this._testMode = testMode;
+        this._testMode = false;
 
         const serviceAccount = require(settingsManager.globalSettings.fcm.credentialsPath);
         this._app = initializeApp({
@@ -41,10 +41,15 @@ class FCMBroadcaster extends Middleware {
                 // data can only contain strings, so lets JSON encode it
                 data: {
                     liveScoringData: JSON.stringify(data),
-                },
-                notification: {
-                    title: 'Scoring Update',
-                    body: output.body
+                    notification: JSON.stringify({
+                        title: 'Scoring Update',
+                        body: output.body,
+                        // enabling the parameters below will make notifications replace the previous one
+                        // the renotify options makes it still play the sound
+                        // keeping these off for until I get feedback about it
+                        // tag: 'scoring',
+                        // renotify: true,
+                    })
                 }
             };
 
