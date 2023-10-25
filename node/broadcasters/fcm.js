@@ -15,7 +15,7 @@ class FCMBroadcaster extends Middleware {
         super();
 
         this._settingsManager = settingsManager;
-        this._testMode = false;
+        this._testMode = testMode;
 
         const serviceAccount = require(settingsManager.globalSettings.fcm.credentialsPath);
         this._app = initializeApp({
