@@ -21,6 +21,12 @@ require '_pre.php';
         include '_alerts.php';
         ?>
 
+		<ul data-role="listview" data-inset="true" data-theme="b">
+			<li data-icon="star">
+				<a href="shout.php" title="shout" data-rel="dialog">Shout</a>
+			</li>
+		</ul>
+
 		<ul data-role="listview" data-inset="true" data-theme="d" data-divider-theme="d">
 			<li><a href="events.php" title="events">Events</a></li>
 			<li><a href="players.php" title="players">Players</a></li>
