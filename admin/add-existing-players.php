@@ -37,6 +37,7 @@ sortByName($allPlayers);
 $allPlayers = groupBy($allPlayers, function($p) { return strtoupper($p->first_name[0]); });
 $seasonPlayersNoIndex = $season->getPlayerSeasons();
 $seasonPlayers = indexBy($seasonPlayersNoIndex, function($ps) { return $ps->player_id; });
+$importData = $season->getPreviousSeasonImport();
 
 if (!empty($_POST)) {
     try{
@@ -167,18 +168,44 @@ require '_pre.php';
     <link rel="stylesheet" href="css/add-existing-players.css" />
 
 	<script>
-        $('#page--add-existing-players').live( 'pageinit',function(event){
-            $("input.player-selected-cb").bind( "change", function(event, ui) {
+        $('#page--add-existing-players').live('pageinit',function(event){
+            $("input.player-selected-cb").bind("change", function(event, ui) {
                 $(this).parents('li.player').toggleClass('player--checked', this.checked);
             });
+
+            $('#import').bind('click', function() {
+                $.mobile.showPageLoadingMsg();
+
+                try {
+                    const script = document.getElementById('importData');
+                    const data = JSON.parse(script.textContent);
+
+                    data.forEach((d) => {
+                        const pid = d.player_id;
+
+                        $(`li.player[data-player-id="${pid}"]`).addClass('player--checked');
+                        $(`#player-${pid}`).prop('checked', true).checkboxradio('refresh');
+                        $(`#cap-${pid}`).val(d.number);
+                        $(`#team-${d.team.toLowerCase()}-${pid}`).prop('checked', true).checkboxradio('refresh');
+                        if (d.position !== '') {
+                            $(`#position-${d.position.toLowerCase()}-${pid}`).prop('checked', true).checkboxradio('refresh');
+                        }
+                    });
+                } finally {
+                    $.mobile.hidePageLoadingMsg();
+                }
+            })
         });
+        //# sourceURL=add-existing-players.js
 	</script>
+	<script id="importData" type="application/json"><?= json_encode($importData) ?></script>
 
 	<form action="add-existing-players.php" method="POST" data-ajax="false" autocomplete="off" enctype="multipart/form-data">
 
 	    <div data-role="header" data-theme="b">
 	        <a href="index.php" data-rel="back" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
 	        <h1>Batch Existing Players</h1>
+		    <a id="import" href="#" data-role="button" data-icon="forward" data-iconpos="notext" style="transform: rotate(90deg)">import</a>
 	    </div><!-- /header -->
 
 	    <div data-role="content">
@@ -197,7 +224,7 @@ require '_pre.php';
 	                    		$ps->team = explode(',', $ps->team);
 		                    }
 	                        ?>
-					        <li class="player <?= $ps ? 'player--checked' : '' ?>">
+					        <li class="player <?= $ps ? 'player--checked' : '' ?>" data-player-id="<?= $p->id ?>">
 						        <input type="hidden" name="playerSeasonId[<?=$p->id?>]" value="<?= $ps ? $ps->id : '' ?>" />
 						        <input
 							        type="checkbox"

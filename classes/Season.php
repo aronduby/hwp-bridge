@@ -302,4 +302,70 @@ class Season {
         return $stmt->fetchAll();
     }
 
+    /**
+     * Gets data from the previous season to be able to import using the add-existing-players.php interface
+     *
+     * @return array{
+     *     seasonsCount: int,
+     *     player_id: int,
+     *     last_team: string,
+     *     team: string,
+     *     number: string,
+     *     position: string
+     * }
+     */
+    public function getPreviousSeasonImport()
+    {
+        $stmt = $this->dbh->prepare("
+            SELECT 
+                COUNT(IF(player_season.team = 'STAFF', null, 1)) AS seasonsCount, 
+                player_season.player_id, 
+                last_season.team AS last_team,
+                CASE 
+                    WHEN last_season.team = 'STAFF' THEN 'STAFF'
+                    WHEN last_season.team = 'V' THEN 'V'	
+                    WHEN COUNT(IF(player_season.team = 'STAFF', null, 1)) >= 2 THEN 'V'
+                    ELSE last_season.team
+                END AS team,
+                last_season.number,
+                last_season.position
+            FROM
+                (
+                    SELECT 
+                        player_id, team, number, position
+                    FROM 
+                        player_season
+                    WHERE 
+                        season_id = (
+                            SELECT 
+                                seasons.id
+                            FROM
+                                seasons
+                            WHERE 
+                                seasons.site_id = :site_id
+                                AND seasons.id < :season_id
+                            ORDER BY 
+                                id DESC
+                        LIMIT 1
+                    ) 
+                    ORDER BY 
+                        season_id DESC
+                ) AS last_season
+                LEFT JOIN 
+                    player_season USING (player_id)
+            GROUP BY 
+                player_id
+            HAVING 
+                seasonsCount < 4
+                OR last_season.team = 'STAFF'
+        ");
+
+        $stmt->bindValue(':site_id', $this->site->id, PDO::PARAM_INT);
+        $stmt->bindValue(':season_id', $this->id, PDO::PARAM_INT);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
 }
