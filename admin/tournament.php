@@ -12,7 +12,7 @@ require '_pre.php';
 <div data-role="page" data-theme="b">
 
 	<div data-role="header" data-theme="b">
-		<a href="index.php" title="home" data-icon="home" data-iconpos="notext" data-direction="reverse">home</a>
+		<a href="events.php" title="events" data-icon="back" data-iconpos="notext" data-direction="reverse">home</a>
 		<h1><?php echo $tournament !== false ? $tournament->title : 'Error' ?></h1>
 		<a href="addedit-tournament.php?tournament_id=<?php echo $tournament->id ?>" title="edit" class="ui-btn-right" data-icon="gear" data-iconpos="notext" data-direction="reverse">edit</a>
 	</div><!-- /header -->
