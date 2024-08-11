@@ -13,6 +13,9 @@ define('USER_DATETIME_FORMAT_LONG', 'M jS, Y \a\t g:ia');
 define('USER_DATE_FORMAT_LONG', 'M jS, Y');
 define('FALLBACK_IMG_SRC', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNsbKy0AgAEvQG3xtuP6AAAAABJRU5ErkJggg==');
 
+const MEDIA_SOURCE_SHUTTERFLY = 'App\\Services\\MediaServices\\ShutterflyMediaService';
+const MEDIA_SOURCE_CLOUDINARY = 'App\\Services\\MediaServices\\CloudinaryMediaService';
+
 require __DIR__ . '/define.php';
 require __DIR__ . '/vendor/autoload.php';
 

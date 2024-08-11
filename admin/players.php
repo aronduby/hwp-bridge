@@ -7,6 +7,9 @@ require '_pre.php';
 ?>
 
 <div data-role="page" data-theme="b">
+    <?php
+    include "_flash.php";
+    ?>
 
 	<div data-role="header" data-theme="b">
 		<a href="index.php" title="back" data-icon="home" data-iconpos="notext" data-direction="reverse">back</a>

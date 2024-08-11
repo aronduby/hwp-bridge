@@ -15,8 +15,8 @@ require '../common.php';
 
 // make sure this matches the provider options
 $mediaServiceOptions = [
-    'App\\Services\\MediaServices\\ShutterflyMediaService' => 'Shutterfly',
-    'App\\Services\\MediaServices\\CloudinaryMediaService' => 'Cloudinary',
+    MEDIA_SOURCE_SHUTTERFLY => 'Shutterfly',
+    MEDIA_SOURCE_CLOUDINARY => 'Cloudinary',
 ];
 
 if (!empty($_POST)) {

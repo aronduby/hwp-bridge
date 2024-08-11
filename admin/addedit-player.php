@@ -1,11 +1,14 @@
 <?php /** @noinspection SqlResolve */
+
+use Cloudinary\Cloudinary;
+
 require '../common.php';
 
 if(!empty($_POST)){
 
 	$dbh = PDODB::getInstance();
 
-	if(isset($_POST['first_name']) && isset($_POST['last_name'])){
+	if (isset($_POST['first_name']) && isset($_POST['last_name'])) {
 
 		$sql = "INSERT INTO players SET
 				id = ".($_POST['player_id'] ? $dbh->quote($_POST['player_id']) : 'null').",
@@ -57,10 +60,43 @@ if(!empty($_POST)){
 
 			$dbh->exec($sql);
 
-			// clear the artisan cache so playerlist is regened
-			// also regen the JS player list
-			exec('php '.ARTISAN_PATH.' cache:clear');
-			exec('php '.ARTISAN_PATH.' generate:js-player-list');
+            // clear the artisan cache so playerlist is regened
+            // also regen the JS player list
+            exec('php '.ARTISAN_PATH.' cache:clear');
+            exec('php '.ARTISAN_PATH.' generate:js-player-list');
+
+			// if we're using cloudinary as media service, add/update the players field for tagging
+			if (!$_POST['player_id'] && $season->media_service === MEDIA_SOURCE_CLOUDINARY) {
+                $seasonSettings = $season->getSettings()->cloudinary ?? null;
+                $siteSettings = $site->getSettings()->cloudinary ?? null;
+                $settings = $seasonSettings ?? $siteSettings ?? false;
+
+                if ($settings) {
+                    $cloudinary = new Cloudinary([
+                        'cloud' => [
+                            'cloud_name' => $settings->cloud_name,
+                            'api_key' => $settings->api_key,
+                            'api_secret' => $settings->api_secret,
+                            'url' => [
+                                'secure' => true
+                            ]
+                        ]
+                    ]);
+
+                    $tagId = !empty($_POST['media_tag']) ? $_POST['media_tag'] : strtolower($_POST['first_name'].'_'.$_POST['last_name']);
+                    $tagValue = $_POST['first_name'].' '.$_POST['last_name'];
+                    $cloudinary->adminApi()->updateMetadataFieldDatasource('players', [
+                        'values' => [
+                            'external_id' => $tagId,
+                            'value' => $tagValue,
+                        ]
+                    ]);
+
+                } else {
+                    // flash message about adding manually
+                    $_SESSION['flashMsg'] = 'Player added successfully, but Cloudinary tag unable to be added. Please add this players tag manually';
+                }
+			}
 
 			header("Location: players.php");
 			die();
@@ -170,6 +206,11 @@ require '_pre.php';
 				<li data-role="fieldcontain">
 					<label for="p-media_tag">Media Tag:</label>
 		        	<input type="text" name="media_tag" id="p-media_tag" placeholder="media tag" value="<?php echo $player_season->media_tag ?>" />
+					<?php
+					if ($season->media_service === MEDIA_SOURCE_CLOUDINARY) {
+                        ?><p class="helper-text">Leave blank to use players name. Only updates Cloudinary on initial creation, updates after have to be done manually</p><?php
+					}
+					?>
 				</li>
 
 				<li data-role="fieldcontain">

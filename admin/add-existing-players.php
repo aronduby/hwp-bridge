@@ -1,6 +1,8 @@
 <?php /** @noinspection SqlResolve */
 require '../common.php';
 
+use Cloudinary\Cloudinary;
+
 function sortByName(&$arr) {
 	return usort($arr, function ($a, $b) {
 		return strnatcmp ( strtoupper($a->name_key), strtoupper($b->name_key) );
@@ -77,6 +79,7 @@ if (!empty($_POST)) {
 
         $dbh = PDODB::getInstance();
 
+		$savedIds = [];
         if (count($write)) {
         	$sql = "
         	    INSERT INTO player_season SET
@@ -110,6 +113,7 @@ if (!empty($_POST)) {
 
 			foreach($write as $v) {
 				$writeStmt->execute($v);
+				$savedIds[] = $dbh->lastInsertId();
 			}
         }
 
@@ -123,6 +127,92 @@ if (!empty($_POST)) {
         // also regen the JS player list
         exec('php '.ARTISAN_PATH.' cache:clear');
         exec('php '.ARTISAN_PATH.' generate:js-player-list');
+
+		// if it's cloudinary make sure to sync any changes to the player field
+		if ($season->media_service === MEDIA_SOURCE_CLOUDINARY) {
+            $seasonSettings = $season->getSettings()->cloudinary ?? null;
+            $siteSettings = $site->getSettings()->cloudinary ?? null;
+            $settings = $seasonSettings ?? $siteSettings ?? false;
+
+            if ($settings) {
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => $settings->cloud_name,
+                        'api_key' => $settings->api_key,
+                        'api_secret' => $settings->api_secret,
+                        'url' => [
+                            'secure' => true
+                        ]
+                    ]
+                ]);
+
+                $playersField = $cloudinary->adminApi()->metadataFieldByFieldId('players');
+				$cloudinaryTags = array_column($playersField['datasource']['values'], 'state', 'external_id');
+				$cloudinaryTagKeys = array_keys($cloudinaryTags);
+
+				$tagsToAdd = [];
+				$tagsToDelete = [];
+				$tagsToRestore = [];
+
+				$stmt = $dbh->prepare("
+					SELECT 
+						IF(
+							ps.media_tag IS NULL OR ps.media_tag = '',
+							LOWER(CONCAT(p.first_name, '_', p.last_name)),
+							ps.media_tag
+						) AS external_id,
+						CONCAT(p.first_name, ' ', p.last_name) AS value
+					FROM 
+						player_season ps 
+						JOIN players p ON ps.player_id = p.id 
+					WHERE 
+						ps.season_id = :season_id
+				");
+				$stmt->bindValue(':season_id', $season->id, PDO::PARAM_INT);
+				$stmt->setFetchMode(PDO::FETCH_ASSOC);
+				$stmt->execute();
+                $localTags = $stmt->fetchAll();
+				$localTags = array_column($localTags, null, 'external_id');
+				$localTagKeys = array_keys($localTags);
+
+				// delete is anything in cloudinary with active state that isn't in local - just external_id
+	            $deleteIds = array_diff($cloudinaryTagKeys, $localTagKeys);
+				foreach ($deleteIds as $id) {
+                    if ($cloudinaryTags[$id] === 'active') {
+                        $tagsToDelete[] = $id;
+                    }
+				}
+				if (count($tagsToDelete)) {
+					$cloudinary->adminApi()->deleteDatasourceEntries('players', $tagsToDelete);
+				}
+
+                // restore is anything in local that's in cloudinary with inactive state - just external id
+	            $intersection = array_intersect($localTagKeys, $cloudinaryTagKeys);
+				foreach ($intersection as $id) {
+					if ($cloudinaryTags[$id] === 'inactive') {
+						$tagsToRestore[] = $id;
+					}
+				}
+				if (count($tagsToRestore)) {
+					$cloudinary->adminApi()->restoreMetadataFieldDatasource('players', $tagsToRestore);
+				}
+
+                // add is anything in local that isn't in cloudinary - whole array
+	            $addIds = array_diff($localTagKeys, $cloudinaryTagKeys);
+				$tagsToAdd = array_map(function($k) use($localTags) {
+					return $localTags[$k];
+				}, $addIds);
+				if (count($tagsToAdd)) {
+					$cloudinary->adminApi()->updateMetadataFieldDatasource('players', [
+						'values' => $tagsToAdd
+					]);
+				}
+
+            } else {
+                // flash message about adding manually
+                $_SESSION['flashMsg'] = 'Players added successfully, but Cloudinary tags unable to be updated. Please manually handle tags';
+            }
+		}
 
         header("Location: players.php");
         die();
