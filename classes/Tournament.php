@@ -65,7 +65,7 @@ class Tournament
     public function getGames()
     {
         if (!isset($this->games)) {
-            $sql = "SELECT * FROM games WHERE site_id = " . intval($this->site->id) . " AND  tournament_id=" . intval($this->id);
+            $sql = "SELECT * FROM games WHERE tournament_id=" . intval($this->id)." ORDER BY start ASC";
             $stmt = $this->dbh->query($sql);
             $stmt->setFetchMode(PDO::FETCH_CLASS, 'Game', [null, $this->register]);
 
