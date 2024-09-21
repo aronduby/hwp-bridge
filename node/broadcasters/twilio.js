@@ -6,7 +6,7 @@ const querystring = require('querystring');
 
 
 // match subscription types
-const types = Object.freeze({
+const SUBSCRIPTION_TYPES = Object.freeze({
     ALL: 'ALL',
     QUARTERS: 'QUARTERS',
     FINAL: 'FINAL'
@@ -93,14 +93,15 @@ class TwilioBroadcaster extends Middleware {
      */
     broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, async function(input, output) {
-            let type = '';
+            const types = [SUBSCRIPTION_TYPES.ALL];
             switch (data.eventName) {
                 case 'final':
-                    type = types.FINAL;
+                    types.push(SUBSCRIPTION_TYPES.QUARTERS);
+                    types.push(SUBSCRIPTION_TYPES.FINAL);
                     break;
 
                 case 'setQuartersPlayed':
-                    type = types.QUARTERS;
+                    types.push(SUBSCRIPTION_TYPES.QUARTERS);
                     break;
             }
 
@@ -114,9 +115,9 @@ class TwilioBroadcaster extends Middleware {
                 }
 
                 const self = this;
-                const sql = 'SELECT phone FROM subscriptions WHERE site_id = ? AND (type = "ALL" OR type = ?)';
+                const sql = 'SELECT phone FROM subscriptions WHERE site_id = ? AND type IN (?)';
 
-                const query = this._db.query(sql, [input.site_id, type]);
+                const query = this._db.query(sql, [input.site_id, types]);
                 query.on('error', function(err) { console.log(err); })
                     .on('result', function(row) {
                         // self._twilioClient.sendSms({
