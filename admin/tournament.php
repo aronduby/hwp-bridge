@@ -10,6 +10,9 @@ require '_pre.php';
 ?>
 
 <div data-role="page" data-theme="b">
+    <?php
+    include "_flash.php";
+    ?>
 
 	<div data-role="header" data-theme="b">
 		<a href="events.php" title="events" data-icon="back" data-iconpos="notext" data-direction="reverse">home</a>

@@ -8,20 +8,21 @@ require '../common.php';
 
 if (!empty($_POST)) {
 
-	$dbh = PDODB::getInstance();
+	if (substr($_POST['action'], 0, 4) === 'save') {
+        $dbh = PDODB::getInstance();
 
-	$start = strtotime(str_replace('-', '/', $_POST['start']));
-	$end = strtotime(str_replace('-', '/', $_POST['end']));
+        $start = strtotime(str_replace('-', '/', $_POST['start']));
+        $end = strtotime(str_replace('-', '/', $_POST['end']));
 
-	if($start !== false && $end !== false && isset($_POST['team']) && isset($_POST['location_id']) && isset($_POST['opponent'])){
+        if($start !== false && $end !== false && isset($_POST['team']) && isset($_POST['location_id']) && isset($_POST['opponent'])){
 
-		$start = date('Y-m-d G:i:s', $start);
-		$end = date('Y-m-d G:i:s', $end);
+            $start = date('Y-m-d G:i:s', $start);
+            $end = date('Y-m-d G:i:s', $end);
 
-		$score_us = $_POST['score_us']!=='' ? intval($_POST['score_us']) : 'null';
-		$score_them = $_POST['score_them']!=='' ? intval($_POST['score_them']) : 'null';
+            $score_us = $_POST['score_us']!=='' ? intval($_POST['score_us']) : 'null';
+            $score_them = $_POST['score_them']!=='' ? intval($_POST['score_them']) : 'null';
 
-		$sql = "INSERT INTO games SET
+            $sql = "INSERT INTO games SET
 				id = ".($_POST['game_id'] ? $dbh->quote($_POST['game_id']) : 'null').",
 				site_id = ".intval($site->id).", 
 				season_id = ".$dbh->quote($_POST['season_id']).",
@@ -55,61 +56,90 @@ if (!empty($_POST)) {
 				updated_at = NOW(),
 				id = LAST_INSERT_ID(id)";
 
-		$inserted  = $dbh->exec($sql);
-		$game_id = $dbh->lastInsertId();
+            $inserted  = $dbh->exec($sql);
+            $game_id = $dbh->lastInsertId();
 
-		if ($inserted !== false) {
-			$redirect = true;
+            if ($inserted !== false) {
+                $redirect = true;
 
-			// also add to the recent listing
-			if ($_POST['action'] === 'saveAndPost') {
-				$json = json_encode([intval($game_id)]);
-				$recentStmt = $dbh->prepare('INSERT INTO recent (site_id, season_id, renderer, content, created_at, updated_at) VALUES (:site_id, :season_id, "game", :content, NOW(), NOW())');
-				$recentStmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);
-				$recentStmt->bindValue(':season_id', $_POST['season_id'], PDO::PARAM_INT);
-				$recentStmt->bindValue(':content', $json);
+                // also add to the recent listing
+                if ($_POST['action'] === 'saveAndPost') {
+                    $json = json_encode([intval($game_id)]);
+                    $recentStmt = $dbh->prepare('INSERT INTO recent (site_id, season_id, renderer, content, created_at, updated_at) VALUES (:site_id, :season_id, "game", :content, NOW(), NOW())');
+                    $recentStmt->bindValue(':site_id', $site->id, PDO::PARAM_INT);
+                    $recentStmt->bindValue(':season_id', $_POST['season_id'], PDO::PARAM_INT);
+                    $recentStmt->bindValue(':content', $json);
 
-				$posted = $recentStmt->execute();
-				if (!$posted) {
-					$redirect = false;
-					$form_errors = 'Game was saved, but we were unable to post it to the recent listing';
-                    if(isset($_POST['tournament_id']))
-                        $tournament = new Tournament($_POST['tournament_id'], $register);
-				}
+                    $posted = $recentStmt->execute();
+                    if (!$posted) {
+                        $redirect = false;
+                        $form_errors = 'Game was saved, but we were unable to post it to the recent listing';
+                        if(isset($_POST['tournament_id']))
+                            $tournament = new Tournament($_POST['tournament_id'], $register);
+                    }
 
-                exec('php '.ARTISAN_PATH.' events:manual-game-results-notification '.$game_id);
-			}
-
-			if ($redirect) {
-				if ($_POST['action'] === 'saveAndNew') {
-					$location = 'addedit-game.php';
-					if (intval($_POST['tournament_id'])) {
-						$location .= '?tournament_id='.$_POST['tournament_id'];
-					}
-					header("Location: ".$location);
-
-				} elseif (intval($_POST['tournament_id'])) {
-                    header("Location: tournament.php?tournament_id=".$_POST['tournament_id']);
-
-                } elseif (strtotime($end) < time()) {
-                    header("Location: pastevents.php");
-
-                } else {
-                    header("Location: events.php");
+                    exec('php '.ARTISAN_PATH.' events:manual-game-results-notification '.$game_id);
                 }
 
-                die();
-			}
+                if ($redirect) {
+                    if ($_POST['action'] === 'saveAndNew') {
+                        $location = 'addedit-game.php';
+                        if (intval($_POST['tournament_id'])) {
+                            $location .= '?tournament_id='.$_POST['tournament_id'];
+                        }
+                        header("Location: ".$location);
 
+                    } elseif (intval($_POST['tournament_id'])) {
+                        header("Location: tournament.php?tournament_id=".$_POST['tournament_id']);
+
+                    } elseif (strtotime($end) < time()) {
+                        header("Location: pastevents.php");
+
+                    } else {
+                        header("Location: events.php");
+                    }
+
+                    die();
+                }
+
+            } else {
+                $form_errors = 'Could not save the form. Please try again later';
+                if(isset($_POST['tournament_id']))
+                    $tournament = new Tournament($_POST['tournament_id'], $register);
+            }
+
+        } else {
+            $form_errors = 'You are missing some required fields, please try again.';
+            $tournament = new Tournament($_POST['tournament_id'], $register);
+        }
+
+	} else if ($_POST['action'] == 'delete') {
+        $game = new Game($_POST['game_id'] ?? null, $register);
+		$dbh = PDODB::getInstance();
+
+		$sql = "DELETE FROM games WHERE id = ".$_POST['game_id'];
+		$deleted  = $dbh->exec($sql);
+
+		if ($deleted !== false) {
+            // where are we going now that it worked?
+            if (intval($game->tournament_id)) {
+                $location = 'tournament.php?tournament_id=' . $game->tournament_id;
+            } elseif ($game->end->getTimestamp() < time()) {
+                $location = 'pastevents.php';
+            } else {
+                $location = 'events.php';
+            }
+
+            $_SESSION['flashMsg'] = 'Event Deleted';
+            header("Location: ".$location);
+            die();
 		} else {
-			$form_errors = 'Could not save the form. Please try again later';
-			if(isset($_POST['tournament_id']))
-				$tournament = new Tournament($_POST['tournament_id'], $register);
+			$form_errors = 'Could not delete the game. Please try again later';
+            $tournament = $game->tournament_id ? new Tournament($_GET['tournament_id'], $register) : false;
 		}
 
 	} else {
-		$form_errors = 'You are missing some required fields, please try again.';
-		$tournament = new Tournament($_POST['tournament_id'], $register);
+        $form_errors = 'I don\'t know what you are doing!';
 	}
 
 }
@@ -130,11 +160,16 @@ else {
 require '_pre.php';
 ?>
 
-<div data-role="page" data-theme="b">
+<div id="page--addedit-game" data-role="page" data-theme="b">
 
 	<div data-role="header" data-theme="b">
 		<a href="events.php" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
 		<h1>Edit <?php echo $game->title ?></h1>
+		<?php
+		if ($game->id) {
+			?><a id="button--delete-game" href="#page--delete-game-confirm" title="delete" class="ui-btn-right" data-icon="alert" data-rel="dialog" data-theme="e">Delete</a><?php
+		}
+		?>
 	</div><!-- /header -->
 
 	<div data-role="content">	
@@ -272,5 +307,28 @@ require '_pre.php';
 	</div><!-- /content -->
 
 </div><!-- /page -->
+
+<div id="page--delete-game-confirm" data-role="page" data-theme="b">
+	<div data-role="header" data-theme="b">
+		<h1>Confirm Delete Event</h1>
+	</div><!-- /header -->
+
+	<div data-role="content" data-theme="d">
+        <?php
+        include '_form-errors.php';
+        ?>
+		<h2>Are You Sure?</h2>
+		<p>Please confirm that you'd like to delete this event:</p>
+
+		<form action="addedit-game.php" method="POST" data-ajax="false">
+			<input type="hidden" name="game_id" value="<?php echo $game->id ?>" />
+			<input type="hidden" name="season_id" value="<?php echo isset($game->season_id) ? $game->season_id : $season->id?>" />
+
+			<a href="#" data-role="button" data-rel="back">Cancel</a>
+
+			<button type="submit" name="action" value="delete" data-theme="e">Delete</button>
+		</form>
+	</div><!-- /content -->
+</div><!-- /confirm page -->
 
 <?php require '_post.php'; ?>
