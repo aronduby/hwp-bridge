@@ -203,9 +203,7 @@ if (!empty($_POST)) {
 					return $localTags[$k];
 				}, $addIds);
 				if (count($tagsToAdd)) {
-					$cloudinary->adminApi()->updateMetadataFieldDatasource('players', [
-						'values' => $tagsToAdd
-					]);
+					$cloudinary->adminApi()->updateMetadataFieldDatasource('players', $tagsToAdd);
 				}
 
             } else {

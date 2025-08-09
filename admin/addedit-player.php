@@ -86,7 +86,7 @@ if(!empty($_POST)){
                     $tagId = !empty($_POST['media_tag']) ? $_POST['media_tag'] : strtolower($_POST['first_name'].'_'.$_POST['last_name']);
                     $tagValue = $_POST['first_name'].' '.$_POST['last_name'];
                     $cloudinary->adminApi()->updateMetadataFieldDatasource('players', [
-                        'values' => [
+                        [
                             'external_id' => $tagId,
                             'value' => $tagValue,
                         ]
