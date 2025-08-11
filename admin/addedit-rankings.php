@@ -297,7 +297,7 @@ require '_pre.php';
 						</fieldset>
 						<fieldset data-role="controlgroup" class="rankRow-points ui-hide-label">
 							<label for="rank.<?= $i ?>.points">Points</label>
-							<input type="number" name="rank[<?= $i ?>][points]" id="rank.<?= $i ?>.points" max="1000" placeholder="points" value="<?= $rank->points ?>" />
+							<input type="number" name="rank[<?= $i ?>][points]" id="rank.<?= $i ?>.points" placeholder="points" value="<?= $rank->points ?>" />
 						</fieldset>
 						<fieldset data-role="controlgroup" class="rankRow-self ui-hide-label">
 							<label for="rank.<?= $i ?>.self" data-theme="d">&nbsp;</label>
