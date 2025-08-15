@@ -148,7 +148,7 @@ class TwilioBroadcaster extends Middleware {
                     });
 
             } else {
-                testLogger('TWILIO', '('+type+') ' + output.body);
+                testLogger('TWILIO', '('+types+') ' + output.body);
             }
         }.bind(this));
     }
