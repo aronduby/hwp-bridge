@@ -615,6 +615,24 @@ angular.module('myApp.controllers', [])
       $scope.playerToAdd = null;
     };
 
+    $scope.addRemainingPlayers = function() {
+      $scope.addablePlayers.forEach(player => {
+        if (player.inCurrent === false && player.team !== 'STAFF') {
+          const cloned = {
+            ... player,
+            status: 1,
+            orgStatus: 1
+          };
+
+          $scope.currentPlayers[cloned.name_key] = cloned;
+          // since they can be in multiple teams, loop through to set current
+          $scope.addablePlayers
+              .find(p => p.name_key === cloned.name_key)
+              .inCurrent = true;
+        }
+      });
+    };
+
     $scope.save = function() {
       const toAdd = Object.values($scope.currentPlayers)
           .filter(p => p.status === 1);

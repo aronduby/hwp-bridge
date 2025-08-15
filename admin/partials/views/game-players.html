@@ -8,6 +8,7 @@
 			ng-options="player | capAndName group by player.team disable when player.inCurrent for player in addablePlayers | orderBy:'number_sort'"
 			ng-change="addPlayer()"
 		></select>
+		<button class="btn btn-info" ng-click="addRemainingPlayers()"><i class="glyphicon glyphicon-globe"></i></button>
 	</section>
 </section>
 
