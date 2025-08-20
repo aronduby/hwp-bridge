@@ -29,8 +29,15 @@ class DateRange extends \FilterIterator{
 	}
 
 	public function accept(){
-		$start = strtotime(parent::current()->start);
-		$end = strtotime(parent::current()->end);
+        $item = parent::current();
+		$start = strtotime($item->start);
+		$end = strtotime($item->end);
+
+        if ($item->type === 'tournament') {
+            // tournament end dates have no time, so by default they get treating of ending at midnight the morning of
+            // the final date, which we don't want, so extend it out through the end of the day
+            $end += 24 * 60 * 60;
+        }
 		
 		if(isset($this->start) && isset($this->end)){
 			return $end >= $this->start && $start <= $this->end;
