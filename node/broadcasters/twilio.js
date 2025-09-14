@@ -41,6 +41,7 @@ class FakeTwilio {
                 rsp.on('data', data => chunks.push(data));
                 rsp.on('end', () => {
                     let rspBody = Buffer.concat(chunks);
+                    rspBody = rspBody.toString();
                     if (rsp.headers['content-type'] === 'application/json') {
                         rspBody = JSON.parse(rspBody);
                     }

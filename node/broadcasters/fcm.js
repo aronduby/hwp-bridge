@@ -36,8 +36,11 @@ class FCMBroadcaster extends Middleware {
             }
 
             const topic = util.format(this._settingsManager.globalSettings.fcm.siteTopic, data.site_id);
+            const analyticsLabel = `${topic}.game.${data.game_id}`;
             const message = {
                 topic: topic,
+                // this is required to show up in the reporting since we're going to a web client
+                analyticsLabel: analyticsLabel,
                 // data can only contain strings, so lets JSON encode it
                 data: {
                     liveScoringData: JSON.stringify(data),
@@ -50,7 +53,7 @@ class FCMBroadcaster extends Middleware {
                         // tag: 'scoring',
                         // renotify: true,
                     })
-                }
+                },
             };
 
             if (this._testMode !== true) {
