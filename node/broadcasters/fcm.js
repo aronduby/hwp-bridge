@@ -32,6 +32,7 @@ class FCMBroadcaster extends Middleware {
     broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, async function(input, output) {
             if (!this._settingsManager.globalSettings.fcm.enabled) {
+                console.log('fcm not enabled');
                 return;
             }
 
@@ -39,8 +40,6 @@ class FCMBroadcaster extends Middleware {
             const analyticsLabel = `${topic}.game.${data.game_id}`;
             const message = {
                 topic: topic,
-                // this is required to show up in the reporting since we're going to a web client
-                analyticsLabel: analyticsLabel,
                 // data can only contain strings, so lets JSON encode it
                 data: {
                     liveScoringData: JSON.stringify(data),
@@ -50,14 +49,20 @@ class FCMBroadcaster extends Middleware {
                         // enabling the parameters below will make notifications replace the previous one
                         // the renotify options makes it still play the sound
                         // keeping these off for until I get feedback about it
+                        // update: have gotten feedback - keep them off, parents want to see everything so they don't
+                        // miss anything their kid might have done, even if it means lots of notifications
                         // tag: 'scoring',
                         // renotify: true,
                     })
                 },
+                // this is required to show up in the reporting since we're going to a web client
+                fcmOptions: {
+                    analyticsLabel: analyticsLabel,
+                }
             };
 
-            if (this._testMode !== true) {
-                getMessaging().send(message)
+            if (this._testMode !== true || this._settingsManager.globalSettings.dev) {
+                getMessaging().send(message, this._testMode === true)
                     .then(response => {
                         console.log('FCM: Successfully sent message', response);
                     })

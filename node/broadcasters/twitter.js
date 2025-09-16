@@ -35,6 +35,11 @@ class TwitterBroadcaster extends Middleware {
      */
     broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, async function(input, output) {
+            if (!this._settingsManager.globalSettings.twitter.enabled) {
+                console.log('twitter not enabled');
+                return;
+            }
+
             if (this._testMode !== true) {
 
                 const authed = await this.setSiteAuth(input.site_id);

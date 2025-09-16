@@ -94,6 +94,11 @@ class TwilioBroadcaster extends Middleware {
      */
     broadcast(data, initialOut = {body: ""}) {
         this.go(data, initialOut, async function(input, output) {
+            if (!this._settingsManager.globalSettings.twilio.enabled) {
+                console.log('twilio not enabled');
+                return;
+            }
+
             const types = [SUBSCRIPTION_TYPES.ALL];
             switch (data.eventName) {
                 case 'final':
