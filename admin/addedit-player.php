@@ -10,6 +10,24 @@ if(!empty($_POST)){
 
 	if (isset($_POST['first_name']) && isset($_POST['last_name'])) {
 
+		$otherNumbers = $_POST['other_numbers'];
+		if (!$otherNumbers['V']) {
+			unset($otherNumbers['V']);
+		}
+		if (!$otherNumbers['JV']) {
+			unset($otherNumbers['JV']);
+		}
+		$otherNumbers['other'] = array_filter($otherNumbers['other']);
+		if (empty($otherNumbers['other'])) {
+			unset($otherNumbers['other']);
+		}
+
+		if (empty($otherNumbers)) {
+			$otherNumbers = null;
+		} else {
+			$otherNumbers = json_encode($otherNumbers);
+		}
+
 		$sql = "INSERT INTO players SET
 				id = ".($_POST['player_id'] ? $dbh->quote($_POST['player_id']) : 'null').",
 				site_id = ".intval($site->id).",
@@ -45,6 +63,7 @@ if(!empty($_POST)){
 					team = ".$dbh->quote(implode(',',$_POST['team'])).",
 					position = ".$dbh->quote($_POST['position']).",
 					number = ".$dbh->quote($_POST['number']).",
+					other_numbers = ".($otherNumbers ? $dbh->quote($otherNumbers) : 'null').",
 					media_tag = ".$dbh->quote($_POST['media_tag']).",
 					sort = ".(!empty($_POST['sort']) ? $dbh->quote($_POST['sort']) : 'null')."
 				ON DUPLICATE KEY UPDATE
@@ -55,6 +74,7 @@ if(!empty($_POST)){
 					team = VALUES(team),
 					position = VALUES(position),
 					number = VALUES(number),
+					other_numbers = VALUES(other_numbers),
 					media_tag = VALUES(media_tag),
 					sort = VALUES(sort)";
 
@@ -127,7 +147,7 @@ if(!empty($_POST)){
 require '_pre.php';
 ?>
 
-<div data-role="page" data-theme="b">
+<div data-role="page" data-theme="b" id="page--addedit-player">
 
 	<div data-role="header" data-theme="b">
 		<a href="index.php" data-rel="back" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
@@ -201,9 +221,44 @@ require '_pre.php';
 				<li data-role="fieldcontain">
 					<label for="p-number">Number:</label>
 		        	<input type="text" name="number" id="p-number" placeholder="cap number" value="<?php echo $player_season->number ?>" />
+					<p class="helper-text">The main number to use, must be supplied even if you do other numbers below.</p>
 				</li>
 
 				<li data-role="fieldcontain">
+					<label for="p-sort">Sort:</label>
+					<input type="number" name="sort" id="p-sort" placeholder="sort order" value="<?php echo $player_season->sort ?>" />
+				</li>
+
+				<li role="list-divider" data-theme="c">Other Numbers <em>optional</em></li>
+				<li data-role="fieldcontain">
+					<label for="p-other_numbers-v">Varsity:</label>
+					<input type="text" name="other_numbers[V]" id="p-other_numbers-v" placeholder="Varsity cap number" value="<?php echo $player_season->other_numbers['V'] ?>" />
+				</li>
+				<li data-role="fieldcontain">
+					<label for="p-other_numbers-jv">JV:</label>
+					<input type="text" name="other_numbers[JV]" id="p-other_numbers-jv" placeholder="JV cap number" value="<?php echo $player_season->other_numbers['JV'] ?>" />
+				</li>
+				<?php
+				foreach (($player_season->other_numbers['other'] ?? [null]) as $k => $number) {
+					?>
+					<li data-role="fieldcontain" class="otherNumber" data-i="<?= $k ?>">
+						<label for="p-other_numbers-other-<?= $k ?>">Other:</label>
+						<div>
+							<input type="text" name="other_numbers[other][]" id="p-other_numbers-other-<?= $k ?>" placeholder="other cap number" value="<?= $number ?>" />
+							<button data-theme="e" type="button" class="removeOtherNumber" data-icon="minus" data-iconpos="notext">remove number</button>
+						</div>
+					</li>
+					<?php
+				}
+				?>
+				<li data-role="fieldcontain">
+					<label for="addAnotherNumber" class="ui-input-text"></label>
+					<button type="button" data-theme="c" data-inline="true" id="addAnotherNumber">Add Another Number</button>
+				</li>
+
+				<li role="list-divider" data-theme="c">Media</li>
+
+				<li data-role="fieldcontain" class="rankRow">
 					<label for="p-media_tag">Media Tag:</label>
 		        	<input type="text" name="media_tag" id="p-media_tag" placeholder="media tag" value="<?php echo $player_season->media_tag ?>" />
 					<?php
@@ -211,11 +266,6 @@ require '_pre.php';
                         ?><p class="helper-text">Leave blank to use players name. Only updates Cloudinary on initial creation, updates after have to be done manually</p><?php
 					}
 					?>
-				</li>
-
-				<li data-role="fieldcontain">
-					<label for="p-sort">Sort:</label>
-					<input type="number" name="sort" id="p-sort" placeholder="sort order" value="<?php echo $player_season->sort ?>" />
 				</li>
 
 
@@ -226,6 +276,40 @@ require '_pre.php';
 			</ul>
 		</form>
 	</div><!-- /content -->
+
+	<link rel="stylesheet" href="css/addedit-player.css" />
+	<script>
+		$('#page--addedit-player').live('pageinit', function() {
+
+            $('#addAnotherNumber').bind('click', function() {
+				const lastOther = $('.otherNumber').last();
+                const newOther = lastOther.clone();
+
+                const lastI = parseInt(newOther.data('i'), 10);
+                const newI = lastI + 1;
+                newOther.attr('data-i', newI);
+
+                newOther.find('label[for]').each(function() {
+                    $(this).attr('for', $(this).attr('for').replace('-'+lastI, '-'+newI));
+                });
+
+                newOther.find('input').each(function() {
+                    $(this).attr('id', $(this).attr('id').replace('-'+lastI, '-'+newI));
+                    $(this).val('');
+                });
+
+                newOther.insertAfter(lastOther);
+            });
+
+            $('form').on('click', '.removeOtherNumber' , function(e) {
+                if ($('.otherNumber').length > 1) {
+                    $(e.target).closest('.otherNumber').remove();
+                } else {
+                    $('.otherNumber input').val('');
+                }
+            });
+		})
+	</script>
 
 </div><!-- /page -->
 

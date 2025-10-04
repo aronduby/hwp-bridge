@@ -1,8 +1,11 @@
 <?php /** @noinspection SqlResolve */
 
+use Traits\HasOtherNumbers;
+
 class Player{
 
 	use Outputable;
+    use HasOtherNumbers;
 
 	public $id;
 	public $first_name;
@@ -14,6 +17,7 @@ class Player{
 	public $name;
 	public $seasons;
 	public $number; // copy it over from the most recent season
+    public $other_numbers; // copy it over from the most recent season
 	public $title; // copy it over from the most recent season
 
 	public $alex = false;
@@ -51,6 +55,7 @@ class Player{
 
 		$copy_from_season = $this->getValuesFromSeason($register->season->id);
 		$this->number = $copy_from_season['number'];
+        $this->other_numbers = json_decode($copy_from_season['other_numbers'], true);
 		$this->title = $copy_from_season['title'];
 	}
 
@@ -138,7 +143,7 @@ class Player{
 
 	private function getValuesFromSeason($seasonId){
 		$sql = "SELECT 
-            title, number 
+            title, number, other_numbers
         FROM 
             player_season 
         WHERE 

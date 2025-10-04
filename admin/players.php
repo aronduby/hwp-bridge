@@ -1,7 +1,7 @@
 <?php
 require '../common.php';
 
-$player_list = $season->getPlayersByTeam('V,JV,STAFF', "sort IS NOT NULL DESC,	sort, CAST(pts.number as INT)");
+$player_list = $season->getPlayersByTeam('V,JV,STAFF', "sort IS NOT NULL DESC, sort, CAST(pts.number as INT)");
 
 require '_pre.php';
 ?>
@@ -35,8 +35,9 @@ require '_pre.php';
 
                 foreach($player_list as $team => $players){
                     print '<li data-role="list-divider">'.($team=='V' ? 'Varsity' : $team).'</li>';
-                    foreach($players as $p){
-                        print '<li><a href="addedit-player.php?player_id='.$p->id.'" title="edit player">'.(strlen($p->number) ? '#'.$p->number : '').' '.$p->name.'</a></li>';
+                    foreach ($players as $p) {
+						$number = $p->getNumber($team);
+                        print '<li><a href="addedit-player.php?player_id='.$p->id.'" title="edit player">'.(strlen($number) ? '#'.$number : '').' '.$p->name.'</a></li>';
                     }
                 }
 

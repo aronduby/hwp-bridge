@@ -1,8 +1,11 @@
 <?php
 
+use Traits\HasOtherNumbers;
+
 class PlayerSeason {
 
 	use Outputable;
+    use HasOtherNumbers;
 
 	public $id;
 	public $player_id;
@@ -11,6 +14,7 @@ class PlayerSeason {
 	public $team;
 	public $position;
 	public $number;
+    public $other_numbers;
 	public $media_tag;
 	public $sort;
 	
@@ -46,6 +50,10 @@ class PlayerSeason {
             $s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_OBJ);
             $this->season_title = $s->title;
             $this->season_short_title = $s->short_title;
+        }
+
+        if ($this->other_numbers !== null) {
+            $this->other_numbers = json_decode($this->other_numbers, true);
         }
 	}
 

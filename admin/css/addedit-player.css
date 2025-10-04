@@ -1,0 +1,25 @@
+.otherNumber {
+    > div {
+        display: flex;
+        align-items: center;
+        gap: 0 15px;
+
+        > .ui-btn {
+            margin: 0;
+        }
+
+        @media (min-width: 450px) {
+            display: inline-flex;
+            width: 60%;
+
+            .ui-input-text {
+                flex: 1;
+                width: auto;
+            }
+
+            > .ui-btn {
+                margin-right: 15px;
+            }
+        }
+    }
+}

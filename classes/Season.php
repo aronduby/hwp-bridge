@@ -116,12 +116,25 @@ class Season {
 		$teams = [];
 		foreach(explode(',',$team) as $t)
 			$teams[$t] = [];
-		
+
+        $resort = array();
 		$players = $this->dbh->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 		foreach($players as $r){
-			foreach(explode(',', $r['team']) as $t)
-				$teams[$t][] = new Player($r['id'], $this->register);
+			foreach(explode(',', $r['team']) as $t) {
+                $p = new Player($r['id'], $this->register);
+                $teams[$t][] = $p;
+
+                if (!in_array($t, $resort) && $p->other_numbers && isset($p->other_numbers[$t])) {
+                    $resort[] = $t;
+                }
+            }
 		}
+
+        foreach ($resort as $t) {
+            usort($teams[$t], function($a, $b) use ($t) {
+                return $a->getNumber($t) > $b->getNumber($t);
+            });
+        }
 
 		return $teams;
 	}
