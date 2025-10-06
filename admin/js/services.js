@@ -69,6 +69,7 @@ angular.module('myApp.services', [])
 			site_id: 0,
 			version: '1.1',
 			us: 'Hudsonville', // TODO -- not hardcoded at some point
+			team: null,
 			opponent: null,
 			status: null,
 			quarters_played: 0,
@@ -184,6 +185,7 @@ angular.module('myApp.services', [])
 						'season_id',
 						'version',
 						'us',
+						'team',
 						'opponent',
 						'status',
 						'quarters_played',

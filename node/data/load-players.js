@@ -5,6 +5,7 @@
  * @property {string} last_name
  * @property {string} number
  * @property {int} number_sort
+ * @property {{'V': int?, 'JV': int?, 'other': int[]?}} other_numbers
  * @property {'V', 'JV'} team
  */
 
@@ -21,10 +22,10 @@ function loadPlayers(pool, seasonId, team) {
         let sql, params;
 
         if (team) {
-            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET (?, team)";
+            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.other_numbers, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET (?, team)";
             params = [seasonId, team];
         } else {
-            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
+            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.other_numbers, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
             params = [seasonId];
         }
 
@@ -37,7 +38,8 @@ function loadPlayers(pool, seasonId, team) {
                 return {
                     ...r,
                     team: r.team.split(','),
-                    number_sort: parseInt(r.number, 10)
+                    number_sort: parseInt(r.number, 10),
+                    other_numbers: r.other_numbers ? JSON.parse(r.other_numbers) : null
                 };
             });
 

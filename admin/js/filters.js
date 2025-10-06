@@ -28,9 +28,9 @@ angular.module('myApp.filters', [])
 		}
 	})
 
-	.filter('capAndName', function(){
+	.filter('capAndName', function(...args){
 		return function(player){
-			return '#'+player.number+' - '+player.first_name+' '+player.last_name;
+			return `${player.number ? `#${player.number} ` : ''}${player.first_name} ${player.last_name}`;
 		}
 	})
 

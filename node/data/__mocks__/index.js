@@ -12,6 +12,7 @@ const players = [
         last_name: 'Boonstra',
         number: "1",
         number_sort: 1,
+        other_numbers: null,
         team: ['V']
     },
     {
@@ -20,7 +21,12 @@ const players = [
         last_name: 'Jones',
         number: "2",
         number_sort: 2,
-        team: ['V']
+        other_numbers: {
+            V: 22,
+            JV: 222,
+            other: [2222]
+        },
+        team: ['JV', 'V']
     },
     {
         name_key: nameKeys.Ian,
@@ -28,17 +34,27 @@ const players = [
         last_name: 'Worst',
         number: "3",
         number_sort: 3,
-        team: ['V']
+        other_numbers: {
+            V: 33,
+            JV: 333
+        },
+        team: ['JV', 'V']
     }
 ];
+
+const playersByNameKey = players.reduce((acc, player) => {
+    acc[player.name_key] = player;
+    return acc;
+}, {});
 
 const baseData = {
     "name_key": "",
     "first_name": "",
     "last_name": "",
     "number": "",
-    "team": ["V"],
     "number_sort": 0,
+    "other_numbers": null,
+    "team": ["V"],
     "updated_at": 0,
     "created_at": 0,
     "advantage_goals_allowed": 0,
@@ -76,7 +92,7 @@ const baseData = {
 
 module.exports = function dataHandler(pool) {
     return {
-        nameKeys, players, baseData,
+        nameKeys, players, playersByNameKey, baseData,
 
         describeStats: () => {
             return Promise.resolve(Object.keys(baseData));
@@ -86,7 +102,7 @@ module.exports = function dataHandler(pool) {
             return Promise.resolve(true);
         },
 
-        getGameData: (gameId) => {
+        getGameData: (gameId, team = 'V') => {
             const data = {
                 game_id: gameId,
                 season_id: 10,
@@ -95,7 +111,7 @@ module.exports = function dataHandler(pool) {
                 us: 'Hudsonville',
                 opponent: 'Rockford',
                 title: null,
-                team: null,
+                team: team,
                 status: null,
                 quarters_played: 0,
                 stats: {},
@@ -112,8 +128,8 @@ module.exports = function dataHandler(pool) {
 
             data.stats = players.reduce((acc, player) => {
                 acc[player.name_key] = {
+                    ...baseData,
                     ...player,
-                    ...baseData
                 };
 
                 return acc;

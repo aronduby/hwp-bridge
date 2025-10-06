@@ -567,6 +567,7 @@ angular.module('myApp.controllers', [])
         pronouns: player.pronouns,
         number: player.number,
         number_sort: player.number_sort,
+        other_numbers: player.other_numbers,
         status: 0,
         orgStatus: 0
       }))
@@ -577,13 +578,14 @@ angular.module('myApp.controllers', [])
 
     $scope.addablePlayers = allPlayers.reduce((acc, player) => {
       acc.push(
-          ...player.team.map((team) => ({
+          ...player.team.map((team) => setPlayerNumber(team, {
               name_key: player.name_key,
               first_name: player.first_name,
               last_name: player.last_name,
               pronouns: player.pronouns,
               number: player.number,
               number_sort: player.number_sort,
+              other_numbers: player.other_numbers,
               team: team,
               inCurrent: $scope.currentPlayers.hasOwnProperty(player.name_key)
           }))
@@ -601,16 +603,16 @@ angular.module('myApp.controllers', [])
     };
 
     $scope.addPlayer = function() {
-      const cloned = {
+      const cloned = setPlayerNumber(game.team, {
         ...$scope.playerToAdd,
         status: 1,
         orgStatus: 1
-      };
+      });
 
       $scope.currentPlayers[cloned.name_key] = cloned;
       $scope.addablePlayers
-          .find(p => p.name_key === cloned.name_key)
-          .inCurrent = true;
+          .filter(p => p.name_key === cloned.name_key)
+          .forEach(p => p.inCurrent = true);
 
       $scope.playerToAdd = null;
     };
@@ -618,17 +620,17 @@ angular.module('myApp.controllers', [])
     $scope.addRemainingPlayers = function() {
       $scope.addablePlayers.forEach(player => {
         if (player.inCurrent === false && player.team !== 'STAFF') {
-          const cloned = {
+          const cloned = setPlayerNumber(game.team, {
             ... player,
             status: 1,
             orgStatus: 1
-          };
+          });
 
           $scope.currentPlayers[cloned.name_key] = cloned;
           // since they can be in multiple teams, loop through to set current
           $scope.addablePlayers
-              .find(p => p.name_key === cloned.name_key)
-              .inCurrent = true;
+              .filter(p => p.name_key === cloned.name_key)
+              .forEach(p => p.inCurrent = true);
         }
       });
     };
@@ -650,6 +652,19 @@ angular.module('myApp.controllers', [])
       } else {
         window.history.back();
       }
+    }
+
+    function setPlayerNumber(team, player) {
+      if (team !== 'STAFF') {
+        const number = team && player?.other_numbers?.[team]
+            ? player.other_numbers[team]
+            : player.number;
+
+        player.number = number;
+        player.number_sort = parseInt(number, 10);
+      }
+
+      return player;
     }
 
   }])
