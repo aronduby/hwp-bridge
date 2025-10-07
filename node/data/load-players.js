@@ -19,13 +19,15 @@
  */
 function loadPlayers(pool, seasonId, team) {
     return new Promise((resolve, reject) => {
-        let sql, params;
+        let params;
+
+        let sql = "SELECT p.id AS player_id, pts.id AS player_season_id, p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.other_numbers, pts.team";
 
         if (team) {
-            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.other_numbers, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET (?, team)";
+            sql += " FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ? AND FIND_IN_SET (?, team)";
             params = [seasonId, team];
         } else {
-            sql = "SELECT p.name_key, p.first_name, p.last_name, p.pronouns, pts.number, pts.other_numbers, pts.team FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
+            sql += " FROM player_season pts JOIN players p ON(pts.player_id = p.id) WHERE pts.season_id = ?";
             params = [seasonId];
         }
 
