@@ -232,11 +232,11 @@ require '_pre.php';
 				<li role="list-divider" data-theme="c">Other Numbers <em>optional</em></li>
 				<li data-role="fieldcontain">
 					<label for="p-other_numbers-v">Varsity:</label>
-					<input type="text" name="other_numbers[V]" id="p-other_numbers-v" placeholder="Varsity cap number" value="<?php echo $player_season->other_numbers['V'] ?>" />
+					<input type="text" name="other_numbers[V]" id="p-other_numbers-v" placeholder="Varsity cap number" value="<?php echo $player_season->other_numbers['V'] ?? '' ?>" />
 				</li>
 				<li data-role="fieldcontain">
 					<label for="p-other_numbers-jv">JV:</label>
-					<input type="text" name="other_numbers[JV]" id="p-other_numbers-jv" placeholder="JV cap number" value="<?php echo $player_season->other_numbers['JV'] ?>" />
+					<input type="text" name="other_numbers[JV]" id="p-other_numbers-jv" placeholder="JV cap number" value="<?php echo $player_season->other_numbers['JV'] ?? '' ?>" />
 				</li>
 				<?php
 				foreach (($player_season->other_numbers['other'] ?? [null]) as $k => $number) {

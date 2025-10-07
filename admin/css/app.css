@@ -395,25 +395,32 @@ li {
     padding-left: .75rem;
 }
 
-.stats .btn {
-    box-shadow: none;
-    border: 1px solid #62868f;
-    border-top: none;
-    background: rgba(86, 174, 194, .75);
-    padding: .5em 1.25em;
-    min-width: 60px;
-}
+.stats,
+.btn-row {
+    .btn {
+        box-shadow: none;
+        border: 1px solid;
+        border-top: none;
+        padding: .5em 1.25em;
+        min-width: 60px;
 
-.stats .btn[disabled] {
-    opacity: .75 !important;
-}
+        &[disabled] {
+            opacity: .75 !important;
+        }
 
-.stats .btn-warning {
-    background: rgba(233, 171, 50, .75);
-}
+        &.btn-info {
+            border-color: #62868f;
+            background: rgba(86, 174, 194, .75);
+        }
 
-.stats .btn-danger {
-    background: rgba(185, 57, 57, .75);
+        &.btn-warning {
+            background: rgba(233, 171, 50, .75);
+        }
+
+        &.btn-danger {
+            background: rgba(185, 57, 57, .75);
+        }
+    }
 }
 
 .stats .btn-group {
@@ -437,7 +444,8 @@ li {
     grid-template-columns: repeat(13, minmax(min-content, 1fr));
 }
 
-.field .stats .btn {
+.field .stats .btn,
+.btn-row .btn {
     padding-top: 0;
     padding-bottom: 0;
     height: 50px;
@@ -457,6 +465,16 @@ li {
 
 .field .stats hwp-total-field-stats .btn {
     filter: grayscale(1);
+}
+
+.btn-row {
+    display: flex;
+
+    .btn {
+        width: auto;
+        min-width: 0;
+        flex: 1;
+    }
 }
 
 /* keep the totals KO button from changing color */
@@ -785,4 +803,33 @@ ol.history {
 
 .player-status--added .player-name {
     font-style: italic;
+}
+
+/*
+ * Player Numbers
+ */
+.playerNumbers.modal-container {
+
+    .modal-body {
+        text-align: center;
+        padding-top: 0;
+
+        > div.btn-row {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    .modal-footer {
+        text-align: center;
+    }
+
+    .notPersistentWarning {
+        font-size: .8em;
+        line-height: 1em;
+        background: rgba(233, 171, 50, .75);
+        margin: .5em -15px -15px;
+        padding: .5em;
+        text-align: center;
+    }
 }

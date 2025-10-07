@@ -462,7 +462,7 @@ Game.prototype = {
         const statKeys = Object.keys(
             this.data.stats[
                 Object.keys(this.data.stats)[0]
-                ]
+            ]
         );
 
 
@@ -478,6 +478,21 @@ Game.prototype = {
         remove.forEach(player => {
             delete this.data.stats[player.name_key];
         });
+    },
+
+    /**
+     * Sets the player number, number_sort, and other_numbers
+     * @param player
+     */
+    updatePlayerNumbers(player) {
+        const saved = this.data.stats[player.name_key];
+        const otherNumbersChanged = JSON.stringify(player.other_numbers) !== JSON.stringify(saved.other_numbers);
+
+        saved.number = player.number;
+        saved.number_sort = player.number_sort;
+        saved.other_numbers = player.other_numbers;
+
+        return otherNumbersChanged;
     },
 
     // endregion

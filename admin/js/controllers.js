@@ -250,6 +250,19 @@ angular.module('myApp.controllers', [])
         });
     }
 
+    // Player Info
+    $scope.showPlayerInfo = function (player) {
+      $modal.open({
+        templateUrl: 'partials/modals/player-info.html',
+        controller: PlayerInfoCtrl,
+        resolve: {
+          $modal: () => $modal,
+          player: () => player,
+          game: () => game,
+        }
+      });
+    }
+
     // region Totals
     const statKeys = Object.keys(Object.values(game.stats)[0]);
     function resetTotals() {
@@ -562,6 +575,8 @@ angular.module('myApp.controllers', [])
     $scope.currentPlayers = Object.values(game.stats)
       .map((player) => ({
         name_key: player.name_key,
+        player_id: player.player_id,
+        player_season_id: player.player_season_id,
         first_name: player.first_name,
         last_name: player.last_name,
         pronouns: player.pronouns,
@@ -580,6 +595,8 @@ angular.module('myApp.controllers', [])
       acc.push(
           ...player.team.map((team) => setPlayerNumber(team, {
               name_key: player.name_key,
+              player_id: player.player_id,
+              player_season_id: player.player_season_id,
               first_name: player.first_name,
               last_name: player.last_name,
               pronouns: player.pronouns,
@@ -748,5 +765,58 @@ var TimeOutCtrl = function ($scope, $modalInstance, title) {
   $scope.cancel = function () {
     $modalInstance.dismiss('cancel');
   }
+};
 
+var PlayerInfoCtrl = function ($scope, $modalInstance, $modal, player, game) {
+  $scope.title = 'Player Info';
+  $scope.player = player;
+
+  $scope.cancel = () => $modalInstance.dismiss('cancel');
+
+  $scope.addAnother = () => {
+    try {
+      const numberInstance = $modal.open({
+        templateUrl: 'partials/modals/number-input.html',
+        controller: NumberInputCtrl,
+        resolve: {
+          title: () => 'Add Another Number',
+        }
+      });
+
+      numberInstance.result.then(newNumber => {
+        if (!$scope.player.other_numbers) {
+          const defaultTeam = Array.isArray(player.team)
+              // they're on multiple teams - if they are on the current game's team, use that otherwise use the first team
+              ? (player.team.includes(game.team) ? game.team : player.team[0])
+              // only on one team, use that
+              : player.team;
+
+          $scope.player.other_numbers = {
+            [defaultTeam]: $scope.player.number,
+          };
+        }
+
+        if (! $scope.player.other_numbers[game.team]) {
+          $scope.player.other_numbers[game.team] = newNumber;
+        } else {
+          if (!$scope.player.other_numbers.other) {
+            $scope.player.other_numbers.other = [];
+          }
+          $scope.player.other_numbers.other.push(newNumber);
+        }
+
+        $scope.setNumber(newNumber);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  $scope.setNumber = (number) => {
+    $scope.player.number = number;
+    $scope.player.number_sort = parseInt(number, 10);
+
+    // sent event to update the server
+    game.updatePlayerNumbers($scope.player);
+  }
 };

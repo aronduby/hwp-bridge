@@ -142,6 +142,10 @@ module.exports = function dataHandler(pool) {
             return Promise.resolve(players);
         },
 
+        updatePlayerSeason: (data, id) => {
+            return Promise.resolve(true);
+        },
+
         saveGameState: (gameData) => {
             return Promise.resolve(true);
         }

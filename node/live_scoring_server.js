@@ -227,6 +227,30 @@ io.of((name, query, next) => {
 			}
 		});
 
+		/**
+		 * Its own method because it needs to write to the player season table, which is outside the scope of the game
+		 *
+		 */
+		socket.on('updatePlayerNumbers', async (func, args, cb) => {
+			const player = args[0];
+			console.log('Controller sent updatePlayerNumbers', socket.openGameId, func, player);
+			try {
+				// do the normal call to the game
+				const game = gameFactory.get(socket.openGameId, socket.request.user.sub);
+				const otherNumbersChanged = game.updatePlayerNumbers(player);
+				await dataHandler.saveGameState(game.data);
+
+				// now update the player season table if necessary
+				if (otherNumbersChanged) {
+					await dataHandler.updatePlayerSeason(player.player_season_id, { other_numbers: JSON.stringify(player.other_numbers) });
+				}
+
+				cb(null, true);
+			} catch (err) {
+				console.error(err);
+				cb(err);
+			}
+		});
 
 		/**
 		 * "Undo" back to the given state

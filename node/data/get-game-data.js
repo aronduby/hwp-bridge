@@ -1,5 +1,5 @@
 const describeStats = require('./describe-stats');
-const loadPlayers = require('./load-players');
+const loadPlayers = require('./player-data').loadPlayers;
 
 /**
  * Get existing or new data for the given game

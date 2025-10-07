@@ -607,28 +607,58 @@ describe('game methods', () => {
             expect(game.data.stats).not.toHaveProperty(nameKeys.Eli);
         });
     });
+
+    it('updatePlayerNumbers', () => {
+        const eli = { ...playersByNameKey[nameKeys.Eli] };
+        eli.number = '111';
+        eli.number_sort = 111;
+        eli.other_numbers = {
+            V: 1,
+            other: [111]
+        };
+
+        game.updatePlayerNumbers(eli);
+        expect(game.data.stats[nameKeys.Eli].number).toBe('111');
+        expect(game.data.stats[nameKeys.Eli].number_sort).toBe(111);
+        expect(game.data.stats[nameKeys.Eli].other_numbers).toMatchObject({
+            V: 1,
+            other: [111]
+        });
+    });
 });
 
 describe('other numbers', () => {
-    const eli = playersByNameKey[nameKeys.Eli];
-    const chandler = playersByNameKey[nameKeys.Chandler];
-    const ian = playersByNameKey[nameKeys.Ian];
-    const henry = {
-        name_key: nameKeys.Henry,
-        first_name: 'Henry',
-        last_name: 'Booker',
-        number: '13',
-        number_sort: 13,
-        other_numbers: {
-            V: 133,
-            JV: 331
-        }
-    };
+    let game, eli, chandler, ian, henry, mockEmit, mockEmitter;
 
-    const mockEmit = jest.fn();
-    const mockEmitter = {
-        emit: mockEmit
-    };
+    beforeAll(async () => {
+        eli = playersByNameKey[nameKeys.Eli];
+        chandler = playersByNameKey[nameKeys.Chandler];
+        ian = playersByNameKey[nameKeys.Ian];
+        henry = {
+            name_key: nameKeys.Henry,
+            first_name: 'Henry',
+            last_name: 'Booker',
+            number: '13',
+            number_sort: 13,
+            other_numbers: {
+                V: 133,
+                JV: 331
+            }
+        };
+
+        mockEmit = jest.fn();
+        mockEmitter = {
+            emit: mockEmit
+        };
+
+        mockUpdateManager = {
+            get: jest.fn().mockReturnValue([]),
+            clear: jest.fn()
+        };
+
+        const gameFactory = require('./game-factory')(dataHandler, mockEmitter, mockUpdateManager);
+        game = await gameFactory.open(1, 1);
+    });
 
     function testInitialNumbers(game, team) {
         expect(game.data.stats[eli.name_key].number).toBe(eli.number);

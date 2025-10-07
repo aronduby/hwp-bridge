@@ -1,5 +1,7 @@
 /**
  * @typedef {object} PlayerData
+ * @property {int} player_id
+ * @property {int} player_season_id
  * @property {string} name_key
  * @property {string} first_name
  * @property {string} last_name
@@ -50,4 +52,23 @@ function loadPlayers(pool, seasonId, team) {
     });
 }
 
-module.exports = loadPlayers;
+function updatePlayerSeason(pool, playerSeasonId, data) {
+    return new Promise((resolve, reject) => {
+
+        const sql = "UPDATE player_season SET ? WHERE id = ?";
+        const params = [data, playerSeasonId];
+
+        pool.query(sql, params, (err, result) => {
+            if (err) {
+                throw err;
+            }
+
+            resolve(true);
+        });
+    });
+}
+
+module.exports = {
+    loadPlayers,
+    updatePlayerSeason,
+};

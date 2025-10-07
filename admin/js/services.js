@@ -212,7 +212,8 @@ angular.module('myApp.services', [])
 				this.boxscore[idx][this.quarters_played][player]++;
 			},
 
-			push: function (func, args, cb) {
+			// you generally don't need the socketEvent except in rare use cases
+			push: function (func, args, cb = null, socketEvent = 'update') {
 				console.info(func, args);
 				var data = this.export();
 
@@ -226,7 +227,7 @@ angular.module('myApp.services', [])
 
 				this._local_copy.save(data);
 				this._history.save(func, args, JSON.stringify(data));
-				this._socket.emit('update', func, Array.prototype.slice.call(args), cb);
+				this._socket.emit(socketEvent, func, Array.prototype.slice.call(args), cb);
 			},
 
 			final: function () {
@@ -482,10 +483,11 @@ angular.module('myApp.services', [])
 				// do the server first
 				this.push('updatePlayers', [add, remove], function(err, rsp) {
 					// then do local
-					var keys = Object.keys(Object.values(game.stats)[0]);
+					const keys = Object.keys(Object.values(game.stats)[0]);
+					const nullable = ['other_numbers'];
 					add.forEach((player) => {
 						game.stats[player.name_key] = keys.reduce((acc, key) => {
-							acc[key] = 	player[key] || 0;
+							acc[key] = 	player[key] || (!nullable.includes(key) ? 0 : null);
 							return acc;
 						}, {});
 					});
@@ -499,6 +501,11 @@ angular.module('myApp.services', [])
 				});
 
 				return d.promise;
+			},
+
+			updatePlayerNumbers: function(player) {
+				// player data was already updated locally in the modal, just sending to server
+				this.push('updatePlayerNumbers', [player], null, 'updatePlayerNumbers');
 			}
 		};
 

@@ -1,7 +1,7 @@
 const describeStats = require('./describe-stats');
 const finalizeGameData = require('./finalize-game-data');
 const getGameData = require('./get-game-data');
-const loadPlayers = require('./load-players');
+const playerDataMethods = require('./player-data');
 const saveGameState = require('./save-game-state');
 
 
@@ -37,7 +37,15 @@ function dataHandler(pool) {
          * @param {'V','JV'}team
          * @returns {Promise<PlayerData[], Error>}
          */
-        loadPlayers: (seasonId, team) => loadPlayers(pool, seasonId, team),
+        loadPlayers: (seasonId, team) => playerDataMethods.loadPlayers(pool, seasonId, team),
+
+        /**
+         *
+         * @param playerSeasonId
+         * @param data
+         * @return {Promise<boolean, Error>}
+         */
+        updatePlayerSeason: (playerSeasonId, data) => playerDataMethods.updatePlayerSeason(pool, playerSeasonId, data),
 
         /**
          *

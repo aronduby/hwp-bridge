@@ -1,0 +1,28 @@
+<div class="modal-container playerNumbers">
+	<header class="modal-header">
+		<button type="button" class="close" aria-hidden="true" ng-click="cancel()">&times;</button>
+		<h4 class="modal-title">{{ player|capAndName }}</h4>
+	</header>
+	<section class="modal-body">
+		<div ng-if="player.other_numbers" class="btn-group btn-row scroll-x">
+			<button
+				ng-repeat="team in ['V', 'JV']"
+				ng-if="player.other_numbers[team]"
+				ng-click="setNumber(player.other_numbers[team])"
+				class="btn"
+				ng-class="{'btn-info': player.number == player.other_numbers[team]}"
+			>{{ team==='V' ? 'Varsity' : 'JV' }} <span class="badge">{{ player.other_numbers[team] }}</span></button>
+			<button
+				ng-repeat="number in player.other_numbers.other"
+				ng-click="setNumber(number)"
+				class="btn"
+				ng-class="{'btn-info': player.number == number}"
+			>Other <span class="badge">{{ number }}</span></button>
+		</div>
+		<p ng-if="!player.other_numbers" style="opacity: .75;">no other numbers were found</p>
+		<p ng-if="!player.player_season_id" class="notPersistentWarning">old data detected, number changes won't persist outside this game.</p>
+	</section>
+	<footer class="modal-footer">
+		<button class="btn btn-link" ng-click="addAnother()">add another number</button>
+	</footer>
+</div>

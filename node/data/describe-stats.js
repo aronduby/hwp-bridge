@@ -13,7 +13,12 @@ function describeStats(pool) {
             /**
              * @var {array<string>} fields
              */
-            const fields = results.map(r => r.Field);
+            const fields = results.map(r => r.Field)
+                .filter(f =>
+                    !f.endsWith('_id') // note one of our join fields
+                    && f !== 'id' // not the pk
+                    && !f.endsWith('_at') // not a timestamp
+                );
 
             resolve(fields);
         });

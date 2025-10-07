@@ -45,7 +45,7 @@
 	<section>
 		<ul class="names">
 			<li ng-repeat="player in game.stats | toArray | orderBy:order_by:reverse" ng-class="{muted: isKickedOut(player), 'text-warning': player.kickouts==2, 'text-error': player.kickouts>=3}">
-				<strong class="player-name" hwp-player-name player="player"></strong>
+				<strong class="player-name" hwp-player-name player="player" ng-click="showPlayerInfo(player)"></strong>
 			</li>
 			<li style="text-align: right"><strong class="player-name">Totals</strong></li>
 		</ul><ul class="stats">
