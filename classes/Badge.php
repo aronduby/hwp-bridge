@@ -8,6 +8,7 @@ class Badge {
 	public $title;
 	public $image;
 	public $description;
+    public $shiny;
 	public $display_order;
 
 	private $register;
@@ -17,7 +18,7 @@ class Badge {
 	public static function getAll(Register $register){
 	    $dbh = $register->dbh;
 
-		$stmt = $dbh->query("SELECT id, title, image, description, display_order FROM badges ORDER BY display_order IS NULL, display_order, title");
+		$stmt = $dbh->query("SELECT id, title, image, description, shiny, display_order FROM badges ORDER BY display_order IS NULL, display_order, title");
 		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Badge', [null, $register]);
 		return $stmt->fetchAll();
 	}
@@ -29,7 +30,7 @@ class Badge {
 		$this->site = $register->site;
 
 		if(!isset($this->id) && $badge_id != null){
-			$stmt = $this->dbh->query("SELECT id, title, image, description, display_order FROM badges WHERE id=".intval($badge_id));
+			$stmt = $this->dbh->query("SELECT id, title, image, description, shiny, display_order FROM badges WHERE id=".intval($badge_id));
 			$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 			if(!$stmt->fetch()){
 				throw new Exception('Badge Not Found');

@@ -31,12 +31,14 @@ if(!empty($_POST)){
 				title = :title,
 				image = :image,
 				description = :description,
+				shiny = :shiny,
 				display_order = :display_order,
 				created_at = NOW()
 			ON DUPLICATE KEY UPDATE
 				title = VALUES(title),
 				image = VALUES(image),
 				description = VALUES(description),
+				shiny = VALUES(shiny),
 				display_order = VALUES(display_order),
 				updated_at = NOW(),
 				id = LAST_INSERT_ID(id)
@@ -47,6 +49,7 @@ if(!empty($_POST)){
 		$insert_update_stmt->bindValue(':title', $_POST['title'], PDO::PARAM_STR);
 		$insert_update_stmt->bindValue(':image', $_POST['image'], PDO::PARAM_STR);
 		$insert_update_stmt->bindValue(':description', $_POST['description'], PDO::PARAM_STR);
+		$insert_update_stmt->bindValue(':shiny', $_POST['shiny'], PDO::PARAM_BOOL);
 		$insert_update_stmt->bindValue(':display_order', $_POST['display_order']);
 
 		$inserted = $insert_update_stmt->execute();
@@ -120,9 +123,9 @@ require '_pre.php';
         include '_form-errors.php';
 		?>
 		<form action="addedit-badge.php<?= isset($_GET['badge_id']) ? '?badge_id='.$_GET['badge_id'] : ''?>" method="POST" data-ajax="false" autocomplete="off" enctype="multipart/form-data">
-			<input type="hidden" name="badge_id" value="<?php echo $badge->id ?>" />
-			<input type="hidden" name="season_id" value="<?php echo $season->id?>" />
-			<input type="hidden" name="image" value="<?php echo $badge->image ?>" />
+			<input type="hidden" name="badge_id" value="<?= $badge->id ?>" />
+			<input type="hidden" name="season_id" value="<?= $season->id?>" />
+			<input type="hidden" name="image" value="<?= $badge->image ?>" />
 
 			<div data-role="header" data-theme="e"> 
 				<h2>About the Badge</h2> 
@@ -145,6 +148,13 @@ require '_pre.php';
 				<li data-role="fieldcontain">
 					<label for="description">Description:</label>
 					<textarea name="description" id="description" placeholder="description (optional)"><?= $badge->description ?></textarea>
+				</li>
+				<li data-role="fieldcontain">
+					<label for="shiny">Shiny:</label>
+					<select name="shiny" id="shiny" data-role="slider" data-theme="d" data-track-theme="d">
+						<option value="0" <?= $badge->shiny == false ? 'selected' : '' ?>>No</option>
+						<option value="1" <?= $badge->shiny == true ? 'selected' : '' ?>>Yes</option>
+					</select>
 				</li>
 				<li data-role="fieldcontain">
 					<label for="display_order">Display Order:</label>
