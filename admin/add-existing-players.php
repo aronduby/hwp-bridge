@@ -56,9 +56,12 @@ if (!empty($_POST)) {
         foreach($_POST['player'] as $pid) {
             $psid = intval($_POST['playerSeasonId'][$pid]);
 
-        	// team and position could not exists
+        	// team and position could not exist
             $team = array_key_exists($pid, $_POST['team']) ? implode(',', $_POST['team'][$pid]) : '';
-            $position = array_key_exists($pid, $_POST['position']) ? $_POST['position'][$pid] : '';
+			// if its only staff, then even the position variable in post might not exist
+            $position = array_key_exists('position', $_POST)
+	            ? (array_key_exists($pid, $_POST['position']) ? $_POST['position'][$pid] : '')
+                : '';
 
         	$write[] = [
         	    ':id' => $psid ?: null,
@@ -239,7 +242,7 @@ if (!empty($_POST)) {
 		    }
 	    }
 
-	    if ($delete && count($delete)) {
+	    if (!empty($delete)) {
 	    	$spsBySpId = indexBy($seasonPlayersNoIndex, function($sp) { return $sp->id; });
 	    	foreach($delete as $spId) {
 	    		unset($seasonPlayers[$spsBySpId[$spId]->player_id]);
