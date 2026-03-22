@@ -118,7 +118,12 @@ if(!empty($_POST)){
                 }
 			}
 
-			header("Location: players.php");
+			if ($_POST['action'] === 'saveAndNew') {
+				header("Location: addedit-player.php");
+			} else {
+				header("Location: players.php");
+			}
+
 			die();
 
 		} else {
@@ -150,7 +155,7 @@ require '_pre.php';
 <div data-role="page" data-theme="b" id="page--addedit-player">
 
 	<div data-role="header" data-theme="b">
-		<a href="index.php" data-rel="back" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
+		<a href="index.php" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
 		<h1>Edit <?php echo $player->name ?></h1>
 	</div><!-- /header -->
 
@@ -166,7 +171,7 @@ require '_pre.php';
 			<ul data-role="listview">
 				<li data-role="fieldcontain">
 					<label for="p-first_name">First Name:</label>
-		        	<input type="text" name="first_name" id="p-first_name" placeholder="first name" value="<?php echo $player->first_name ?>" required />
+		        	<input type="text" name="first_name" id="p-first_name" placeholder="first name" value="<?php echo $player->first_name ?>" required autofocus />
 				</li>
 
 				<li data-role="fieldcontain">
@@ -174,9 +179,12 @@ require '_pre.php';
 		        	<input type="text" name="last_name" id="p-last_name" placeholder="last_name" value="<?php echo $player->last_name ?>" required />
 				</li>
 
-				<li data-role="fieldcontain">
+				<li data-role="fieldcontain" class="nameKey">
 					<label for="p-name_key">Name Key:</label>
-		        	<input type="text" name="name_key" id="p-name_key" placeholder="name key" value="<?php echo $player->name_key ?>" required pattern="^[a-zA-Z]+$" title="letters only - used for the url" />
+					<div>
+						<button data-theme="b" type="button" id="generateNameKey" data-icon="forward" data-iconpos="notext">generate name key</button>
+						<input type="text" name="name_key" id="p-name_key" placeholder="name key" value="<?php echo $player->name_key ?>" required pattern="^[a-zA-Z]+$" title="letters only - used for the url" />
+					</div>
 				</li>
 
 				<li data-role="fieldcontain">
@@ -269,8 +277,15 @@ require '_pre.php';
 				</li>
 
 
-				<li data-role="fieldcontain">
-					<button type="submit">Save</button>
+				<li>
+					<div class="ui-grid-a">
+						<div class="ui-block-a">
+							<button type="submit" name="action" value="save">Save</button>
+						</div>
+						<div class="ui-block-b">
+							<button type="submit" name="action" value="saveAndNew" data-theme="d">Save &amp; New</button>
+						</div>
+					</div>
 				</li>
 
 			</ul>
@@ -280,6 +295,16 @@ require '_pre.php';
 	<link rel="stylesheet" href="css/addedit-player.css" />
 	<script>
 		$('#page--addedit-player').live('pageinit', function() {
+
+            $('#generateNameKey').bind('click', function() {
+                const firstName = $('#p-first_name').val();
+                const lastName = $('#p-last_name').val();
+
+                let nameKey = firstName + lastName
+	            nameKey = nameKey.replaceAll(' ', '');
+
+                $('#p-name_key').val(nameKey);
+            });
 
             $('#addAnotherNumber').bind('click', function() {
 				const lastOther = $('.otherNumber').last();

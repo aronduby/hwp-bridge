@@ -1,4 +1,5 @@
-.otherNumber {
+.otherNumber,
+.nameKey {
     > div {
         display: flex;
         align-items: center;
@@ -22,4 +23,9 @@
             }
         }
     }
+}
+
+/* nameKey button is before so we don't want any margin  */
+.nameKey > div > .ui-btn {
+    margin: 0;
 }
