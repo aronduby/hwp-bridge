@@ -157,13 +157,15 @@ else {
     }
 }
 
+$isPast = isset($game) && ($game->end->getTimestamp() < time());
+
 require '_pre.php';
 ?>
 
 <div id="page--addedit-game" data-role="page" data-theme="b">
 
 	<div data-role="header" data-theme="b">
-		<a href="events.php" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
+		<a href="<?= $isPast ? 'pastevents.php' : 'events.php' ?>" title="back" data-icon="back" data-iconpos="notext" data-direction="reverse">back</a>
 		<h1>Edit <?php echo $game->title ?></h1>
 		<?php
 		if ($game->id) {
