@@ -21,13 +21,17 @@ $mediaServiceOptions = [
 
 if (!empty($_POST)) {
 
-	// confirm the settings schema
-    $validator = new JsonSchema\Validator();
-    $settings = (object) $_POST['settings']['cloudinary'];
-    $schema = json_decode(file_get_contents(SCHEMA_PATH.'/cloudinary.json'));
+	if ($_POST['media_service'] === MEDIA_SOURCE_CLOUDINARY) {
+		// confirm the settings schema
+		$validator = new JsonSchema\Validator();
+		$settings = (object) $_POST['settings']['cloudinary'];
+		$schema = json_decode(file_get_contents(SCHEMA_PATH.'/cloudinary.json'));
 
-	$validator->validate($settings, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
-    $valid = $validator->isValid();
+		$validator->validate($settings, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
+		$valid = $validator->isValid();
+	} else {
+		$valid = true;
+	}
 
 	if (!$valid) {
 		$form_errors = '<p>Settings validation failed:</p><ul>';
@@ -55,7 +59,7 @@ if (!empty($_POST)) {
 
             // Make sure we limit this it available values
             $mediaService = $_POST['media_service'];
-            if (!in_array($mediaService, array_keys($mediaServiceOptions))) {
+            if ($mediaService == null || !in_array($mediaService, array_keys($mediaServiceOptions))) {
                 $mediaService = null;
             }
 
@@ -113,11 +117,13 @@ if (!empty($_POST)) {
                     }
                 }
 
-				// save the settings
-	            $savedSeason = new Season($season_id, $register);
-				if (!$savedSeason->saveSettings(['cloudinary' => $settings])) {
-					throw new Exception('Season was saved, but could not save the settings. Please try again shortly.');
-				}
+				// save the cloudinary settings if applicable
+	            if ($mediaService === MEDIA_SOURCE_CLOUDINARY && !empty($settings)) {
+		            $savedSeason = new Season($season_id, $register);
+		            if (!$savedSeason->saveSettings(['cloudinary' => $settings])) {
+			            throw new Exception('Season was saved, but could not save the settings. Please try again shortly.');
+		            }
+	            }
 
                 header("Location: seasons.php");
                 die();
