@@ -4,14 +4,15 @@ class Change {
 
 	use Outputable;
 
-	public $change_id;
-	public $changes;
-	public $ts;
-	public $suggestions = [];
+	public ?int $change_id = null;
+	public array|null $changes = null;
+	public ?string $ts = null;
+	public array $suggestions = [];
 
-	private $dbh;
+	private ?PDO $dbh = null;
 
-	public function __construct($change_id = null, PDO $dbh){
+	public function __construct(?int $change_id = null, PDO $dbh)
+	{
 		$this->dbh = $dbh;
 
 		if($change_id !== null){
@@ -27,7 +28,7 @@ class Change {
 		// $this->suggestions = $this->getSuggestions();
 	}
 
-	public function getSuggestions(){
+	public function getSuggestions(): array{
 		$stmt = $this->dbh->query("SELECT s.* FROM changelog_to_suggestion cts LEFT JOIN suggestion s USING(suggestion_id) WHERE cts.change_id=".intval($this->change_id)." ORDER BY s.submitted");
 		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Suggestion', [null, $this->dbh]);
 
@@ -35,5 +36,3 @@ class Change {
 	}
 
 }
-
-?>

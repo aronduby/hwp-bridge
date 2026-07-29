@@ -4,17 +4,17 @@
 class Register
 {
     /**
-     * @var PDO
+     * @var ?PDO
      */
-    public $dbh;
+    public ?PDO $dbh = null;
 
     /**
-     * @var Site
+     * @var ?Site
      */
-    public $site;
+    public ?Site $site = null;
 
     /**
-     * @var Season
+     * @var ?Season
      */
-    public $season;
+    public ?Season $season = null;
 }

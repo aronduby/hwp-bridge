@@ -2,33 +2,33 @@
 
 class Config {
 
-	private static $dbh;
-	private static $site;
+	private static ?PDO $dbh = null;
+	private static ?Site $site = null;
 
-	private static $data = [];
+	private static array $data = [];
 
-	public static function setDbh(PDO $dbh){
+	public static function setDbh(PDO $dbh): void{
 		self::$dbh = $dbh;
 	}
 
-	public static function setSite(Site $site) {
+	public static function setSite(Site $site): void {
 	    self::$site = $site;
     }
 
-	public static function get($key){
+	public static function get(string|int|float $key){
 		if($key != 'dbh'){
 			if(isset(self::$data[$key]))
 				return self::$data[$key];
 			else {
-				self::$data[$key] = self::$dbh->query("SELECT value FROM config WHERE title=".self::$dbh->quote($key))->fetch(PDO::FETCH_COLUMN);
+				self::$data[(string)$key] = self::$dbh->query("SELECT value FROM config WHERE title=".self::$dbh->quote((string)$key))->fetch(PDO::FETCH_COLUMN);
 				return self::$data[$key];
 			}
 		}
 	}
 
-	public static function set($key, $val){
-		self::$data[$key] = $val;
-		self::$dbh->query("REPLACE INTO config SET title=".self::$dbh->quote($key).", value=".self::$dbh->quote($val));
+	public static function set(string|int|float $key, mixed $val): void{
+		self::$data[(string)$key] = $val;
+		self::$dbh->query("REPLACE INTO config SET title=".self::$dbh->quote((string)$key).", value=".(is_string($val) ? self::$dbh->quote($val) : $val));
 	}
 
     /**
@@ -36,23 +36,21 @@ class Config {
      * @param PDO $dbh
      * @param Site $site
      */
-	public function __construct(\PDO $dbh, Site $site)
+	public function __construct(PDO $dbh, Site $site)
 	{
 		self::setDbh($dbh);
 		self::setSite($site);
 	}
 
-	public function __get($name)
+	public function __get(string $name): mixed
 	{
 		$name = strtoupper($name);
-		return self::get($name);
+		return self::get((string)$name);
 	}
 
-	function __set($name, $value)
+	public function __set(string|int|float $name, mixed $value): void
 	{
-		$name = strtoupper($name);
-		self::set($name, $value);
+		$name = strtoupper((string)$name);
+		self::set((string)$name, $value);
 	}
 }
-
-?>

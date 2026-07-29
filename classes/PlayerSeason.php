@@ -7,32 +7,33 @@ class PlayerSeason {
 	use Outputable;
     use HasOtherNumbers;
 
-	public $id;
-	public $player_id;
-	public $season_id;
-	public $title;
-	public $team;
-	public $position;
-	public $number;
-    public $other_numbers;
-	public $media_tag;
-	public $sort;
+	public ?int $id = null;
+	public int $player_id;
+	public int $season_id;
+	public string $title;
+	public string $team;
+	public ?string $position = null;
+	public ?int $number = null;
+    public ?array $other_numbers = null;
+	public ?string $media_tag = null;
+	public ?int $sort = null;
 	
-	public $season_title;
-	public $season_short_title;
-	public $player;
+	public ?string $season_title = null;
+	public ?string $season_short_title = null;
+	public Player|null $player = null;
 
 
-	protected $photos;
-	protected $badges;
-	protected $articles;
-	protected $stats;
+	protected array|null $photos = null;
+	protected array|null $badges = null;
+	protected array|null $articles = null;
+	protected ?Stats $stats = null;
 
-	private $register;
-	private $dbh;
-	private $site;
+	private ?Register $register = null;
+	private ?PDODB $dbh = null;
+	private ?Site $site = null;
 
-	public function __construct(Player $player = null, $season_id = null, Register $register){
+	public function __construct(?Player $player = null, ?int $season_id = null, Register $register)
+	{
 		$this->player = $player;
 
 		$this->register = $register;
@@ -48,8 +49,10 @@ class PlayerSeason {
 
 		if ($season_id) {
             $s = $this->dbh->query("SELECT title, short_title FROM seasons WHERE id=".intval($season_id)." AND site_id = ".intval($this->site->id))->fetch(PDO::FETCH_OBJ);
-            $this->season_title = $s->title;
-            $this->season_short_title = $s->short_title;
+            if ($s) {
+                $this->season_title = $s->title;
+                $this->season_short_title = $s->short_title;
+            }
         }
 
         if ($this->other_numbers !== null) {
@@ -57,7 +60,7 @@ class PlayerSeason {
         }
 	}
 
-	public function getPhotos(){
+	public function getPhotos(): array{
 		if(!isset($this->photos)){
 			$sql = "
 				SELECT 
@@ -73,15 +76,22 @@ class PlayerSeason {
 					p.created_at DESC";
 			$stmt = $this->dbh->query($sql);
 
-			while($photo_id = $stmt->fetch(PDO::FETCH_COLUMN))
-				$this->photos[] = !$this->player->alex ? new Photo($photo_id, $this->register) : new AlexPhoto($photo_id, $this->register);
+			while($photo_id = $stmt->fetch(PDO::FETCH_COLUMN)){
+				if ($photo_id !== false) {
+					if ($this->player && $this->player->alex) {
+						$this->photos[] = new AlexPhoto((int)$photo_id, $this->register);
+					} else {
+						$this->photos[] = new Photo((int)$photo_id, $this->register);
+					}
+				}
+			}
 			
 		}
 
-		return $this->photos;
+		return $this->photos ?? [];
 	}
 
-	public function getBadges(){
+	public function getBadges(): array{
 		if(!isset($this->badges)){
 			$stmt = $this->dbh->query("
 				SELECT 
@@ -102,10 +112,10 @@ class PlayerSeason {
 			$this->badges = $stmt->fetchAll();
 		}
 
-		return $this->badges;
+		return $this->badges ?? [];
 	}
 
-	public function getArticles(){
+	public function getArticles(): array{
 		if(!isset($this->articles)){
 			$stmt = $this->dbh->query("
 				SELECT 
@@ -125,15 +135,15 @@ class PlayerSeason {
 			$this->articles = $stmt->fetchAll();
 		}
 
-		return $this->articles;
+		return $this->articles ?? [];
 	}
 
-	public function getStats(){
+	public function getStats(): ?Stats{
 		if(!isset($this->stats)){
 			try{
 				$this->stats = Stats::getPlayerForSeason($this->player->id, $this->season_id, $this->register);
 			} catch(Exception $e){
-				$this->stats = false;
+				$this->stats = null;
 			}
 		}
 
@@ -141,5 +151,3 @@ class PlayerSeason {
 	}
 
 }
-
-?>

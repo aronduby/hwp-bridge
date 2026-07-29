@@ -5,25 +5,25 @@ class Tournament
 
     use Outputable;
 
-    public $id;
-    public $season_id;
-    public $title;
-    public $location_id;
-    public $team;
-    public $start;
-    public $end;
-    public $result;
-    public $note;
-    public $album_id;
+    public ?int $id = null;
+    public int $season_id;
+    public string $title;
+    public int $location_id;
+    public string $team;
+    public ?string $start = null;
+    public ?string $end = null;
+    public ?string $result = null;
+    public ?string $note = null;
+    public ?int $album_id = null;
 
-    public $location;
-    public $games;
+    public Location|null $location = null;
+    public array|null $games = null;
 
-    private $register;
-    private $dbh;
-    private $site;
+    private ?Register $register = null;
+    private ?PDODB $dbh = null;
+    private ?Site $site = null;
 
-    public static function getOptionsForSelect(Register $register)
+    public static function getOptionsForSelect(Register $register): array
     {
         $dbh = $register->dbh;
         $sql = "
@@ -41,7 +41,7 @@ class Tournament
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public function __construct($id = null, Register $register)
+    public function __construct(?int $id = null, Register $register)
     {
         $this->register = $register;
         $this->dbh = $register->dbh;
@@ -53,8 +53,12 @@ class Tournament
             $stmt->fetch();
         }
 
-        $this->start = new DateTime($this->start);
-        $this->end = new DateTime($this->end);
+        if ($this->start !== null) {
+            $this->start = new DateTime($this->start);
+        }
+        if ($this->end !== null) {
+            $this->end = new DateTime($this->end);
+        }
 
         if (strlen($this->title) == 0)
             $this->title = 'Tournament';
@@ -62,8 +66,7 @@ class Tournament
         $this->location = new Location($this->location_id, $this->register);
     }
 
-    public function getGames()
-    {
+    public function getGames(): array|Game{
         if (!isset($this->games)) {
             $sql = "SELECT * FROM games WHERE tournament_id=" . intval($this->id)." ORDER BY start ASC";
             $stmt = $this->dbh->query($sql);
@@ -75,28 +78,26 @@ class Tournament
         return $this->games;
     }
 
-    public function hasStats()
+    public function hasStats(): bool
     {
         $sql = "SELECT 
 			COUNT(*) 
 		FROM 
 			stats 
 		WHERE 
-           site_id = " . intval($site->id) . " AND 
+           site_id = " . intval($this->site->id) . " AND 
 			game_id IN (
-				SELECT id FROM games WHERE site_id = " . intval($site->id) . " AND tournament_id=" . intval($this->id) . "
+				SELECT id FROM games WHERE site_id = " . intval($this->site->id) . " AND tournament_id=" . intval($this->id) . "
 			)";
         // print_p($sql);
         return (bool)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
     }
 
-    public function getPhotoAlbum()
+    public function getPhotoAlbum(): PhotoAlbum|false
     {
         if (isset($this->album_id))
-            return new PhotoAlbum($this->album_id, $this->register);
+            return new PhotoAlbum((int)$this->album_id, $this->register);
         else
             return false;
     }
 }
-
-?>

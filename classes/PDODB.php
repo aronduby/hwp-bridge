@@ -5,9 +5,9 @@ class PDODB {
 	/**
 	 * @var PDO
 	 */
-	private static $dbh = null;
+	private static ?PDO $dbh = null;
 
-	private static function connect() {
+	private static function connect(): void {
 		try {
 			$dsn = DB_TYPE.":host=".DB_SERVER.";dbname=".DB_NAME;
 
@@ -25,7 +25,7 @@ class PDODB {
 	 *
 	 * @return PDO
 	 */
-	public static function getInstance() {
+	public static function getInstance(): ?PDO {
 		if(!isset(self::$dbh)){
 			self::connect();
 		}
@@ -34,5 +34,3 @@ class PDODB {
 	}
 
 }
-
-?>

@@ -4,26 +4,27 @@ class PlayerCareer {
 
 	use Outputable;
 
-	public $player;
-	public $number;
-	public $position;
-	public $badges;
-	public $stats;
-	public $photos;
-	public $articles;
+	public Player $player;
+	public int|null $number = null;
+	public ?string $position = null;
+	public array $badges = [];
+	public ?Stats $stats = null;
+	public AppendIterator $photos;
+	public AppendIterator $articles;
 
-	public $seasons = [];
+	public array $seasons = [];
 
-	public function __construct(Player $player){
+	public function __construct(Player $player)
+	{
 		$this->player = $player;
-		$this->number = $this->player->number;
+		$this->number = $this->player->number ?? null;
 
 		$this->badges = [];
 		$this->photos = new AppendIterator();
 		$this->articles = new AppendIterator();
 	}
 
-	public function addSeason(PlayerSeason $season){
+	public function addSeason(PlayerSeason $season): void{
 		$this->position = $season->position;
 
 		$this->addBadges((array)$season->getBadges());
@@ -31,7 +32,7 @@ class PlayerCareer {
 		$this->addArticles((array)$season->getArticles());
 	}
 
-	public function addBadges(array $badges){
+	public function addBadges(array $badges): void{
 		foreach($badges as $badge){
 			if(isset($this->badges[$badge->badge_id])){
 				$this->badges[$badge->badge_id]['count']++;
@@ -44,18 +45,16 @@ class PlayerCareer {
 		}
 	}
 
-	public function addPhotos(array $photos){
+	public function addPhotos(array $photos): void{
 		$this->photos->append(new ArrayIterator($photos));
 	}
 
-	public function addArticles(array $articles){
+	public function addArticles(array $articles): void{
 		$this->articles->append(new ArrayIterator($articles));
 	}
 
-	public function setStats(Stats $stats){
+	public function setStats(Stats $stats): void{
 		$this->stats = $stats;
 	}
 
 }
-
-?>

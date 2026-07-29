@@ -1,24 +1,24 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 class User {
 
-	public $user_id = 0;
-	public $email;
-	public $name;
-	public $email_verified;
-	public $verification_method;
-	public $verification_key;
-	public $auto_checkin;
+	public ?int $user_id = null;
+	public string $email;
+	public string $name;
+	public bool $email_verified;
+	public string $verification_method;
+	public string $verification_key;
+	public bool $auto_checkin;
 	
-	public $logged_in = false;
-	public $integrations = [];
-	public $error;
+	public bool $logged_in = false;
+	public array $integrations = [];
+	public ?string $error = null;
 
-	private $PasswordLib;
-	private $db_fields = ['user_id', 'email', 'name', 'email_verified', 'verification_method', 'verification_key', 'auto_checkin'];
+	private PasswordLib|null $PasswordLib = null;
+	private array $db_fields = ['user_id', 'email', 'name', 'email_verified', 'verification_method', 'verification_key', 'auto_checkin'];
 
 
-	public function __construct($id = null){
+	public function __construct(?int $id = null) {
 		if($id === null){
 			if(isset($_COOKIE['id_hash'])){
 				$this->loginFromCookie($_COOKIE['id_hash']);
@@ -29,14 +29,14 @@ class User {
 		}
 	}
 
-	public function __sleep(){
+	public function __sleep(): array{
 		$this->PasswordLib = null;
 		
 		$return = array_merge(["logged_in", "integrations"], $this->db_fields);
 		return $return;
 	}
 
-	public function save(){
+	public function save(): bool{
 		$dbh = PDODB::getInstance();
 		
 		$sql = "INSERT INTO user 
@@ -72,24 +72,24 @@ class User {
 		//}
 	}
 
-	public function registerUser($email, $password, $name = false, $remember_me = false){
+	public function registerUser(string $email, string $password, bool|string|null $name = false, bool $remember_me = false): bool{
 		$dbh = PDODB::getInstance();
 		$this->getPasswordLib();
 
 		$password = $this->PasswordLib->createPasswordHash($password);
 		
 		$sql = "INSERT INTO user SET email=".$dbh->quote($email).", password=".$dbh->quote($password);
-		if($name !== false)
-			$sql .= ", name=".$dbh->quote($name);
+		if($name !== false && $name !== null)
+			$sql .= ", name=".$dbh->quote((string)$name);
 		
 		try{		
 			$user_id = $dbh->exec($sql);
-			if($user_id != false){
-				$this->user_id = $dbh->lastInsertId();
+			if($user_id !== false){
+				$this->user_id = (int)$dbh->lastInsertId();
 				$this->logged_in = true;
 				$this->getUserData();
 
-				if($remember_me !== false)
+				if($remember_me)
 					$this->saveLoginCookie();
 
 				return true;
@@ -111,7 +111,7 @@ class User {
 		}		
 	}
 
-	public function setNewPassword($password){
+	public function setNewPassword(string $password): bool{
 		$dbh = PDODB::getInstance();
 		$this->getPasswordLib();
 
@@ -121,7 +121,7 @@ class User {
 		return (bool)$dbh->exec($sql);
 	}
 
-	public function loginFromRegistry($email, $password, $remember_me = false){		
+	public function loginFromRegistry(string $email, string $password, bool $remember_me = false): bool{		
 		$dbh = PDODB::getInstance();
 		$this->getPasswordLib();
 
@@ -131,11 +131,11 @@ class User {
 		$matched = $this->PasswordLib->verifyPasswordHash($password, $data->password);
 		
 		if($matched !== false){
-			$this->user_id = $data->user_id;
+			$this->user_id = (int)$data->user_id;
 			$this->logged_in = true;
 			$this->getUserData();
 
-			if($remember_me !== false)
+			if($remember_me)
 				$this->saveLoginCookie();
 
 			return true;
@@ -146,7 +146,7 @@ class User {
 		}	
 	}
 
-	public function loginFromIntegration($integration_user_id, $integration_id){
+	public function loginFromIntegration(int $integration_user_id, int $integration_id): bool{
 		$dbh = PDODB::getInstance();
 
 		$sql = "SELECT
@@ -154,12 +154,12 @@ class User {
 		FROM
 			user_to_integration
 		WHERE
-			id=".$dbh->quote($integration_user_id)."
+			id=".$dbh->quote((string)$integration_user_id)."
 			AND integration_id=".intval($integration_id);
 
-		$user_id = $dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
-		if($user_id !== false){
-			$this->user_id = $user_id;
+		$user_id_result = $dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+		if($user_id_result !== false){
+			$this->user_id = (int)$user_id_result;
 			$this->logged_in = true;
 			$this->getUserData();
 
@@ -173,7 +173,7 @@ class User {
 		}
 	}
 
-	public function loginFromCookie($val){
+	public function loginFromCookie(string $val): bool{
 		$dbh = PDODB::getInstance();
 
 		$sql = "SELECT 
@@ -185,9 +185,9 @@ class User {
 			ulc.id_hash=".$dbh->quote($val)." 
 			AND ulc.expires > '".date('Y-m-d G:i:s', time())."'";
 
-		$user_id = $dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
-		if($user_id !== false){
-			$this->user_id = $user_id;
+		$user_id_result = $dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+		if($user_id_result !== false){
+			$this->user_id = (int)$user_id_result;
 			$this->logged_in = true;
 			$this->getUserData();
 			$this->saveLoginCookie();
@@ -200,23 +200,23 @@ class User {
 		}
 	}
 
-	public function setVerificationKey(){
+	public function setVerificationKey(): string|false{
 		$dbh = PDODB::getInstance();
 		
 		$token = $this->generateUniqueToken(32, 'user', 'verification_key');
 		if($dbh->exec("UPDATE user SET verification_key=".$dbh->quote($token)." WHERE user_id=".intval($this->user_id)) !== false)
 			return $token;
 		else
-			return $false;
+			return false;
 	}
 
-	public function getUserIdForVerificationKey($key){
+	public function getUserIdForVerificationKey(string $key): ?int{
 		$dbh = PDODB::getInstance();
 
-		return $dbh->query("SELECT user_id FROM user WHERE verification_key = ".$dbh->quote($key))->fetch(PDO::FETCH_COLUMN);
+		return (int)$dbh->query("SELECT user_id FROM user WHERE verification_key = ".$dbh->quote($key))->fetch(PDO::FETCH_COLUMN);
 	}
 
-	public function getUserData(){
+	public function getUserData(): void{
 		$dbh = PDODB::getInstance();
 
 		$sql = "SELECT ".implode(', ', $this->db_fields)." FROM user WHERE user_id=".intval($this->user_id);
@@ -230,18 +230,18 @@ class User {
 		}
 	}
 
-	public function checkIn(Stop $stop){
+	public function checkIn(Stop $stop): int|false{
 		$dbh = PDODB::getInstance();
 
 		$rows = $dbh->exec("INSERT INTO checkin SET user_id=".intval($this->user_id).", stop_id=".intval($stop->stop_id));
 		if($rows !== false){
-			return $dbh->lastInsertId();
+			return (int)$dbh->lastInsertId();
 		} else {
 			return false;
 		}
 	}
 
-	private function saveLoginCookie(){
+	private function saveLoginCookie(): void{
 		$dbh = PDODB::getInstance();
 		$this->getPasswordLib();
 		
@@ -249,43 +249,80 @@ class User {
 		$expires = date('Y-m-d G:i:s', strtotime('+1 week'));
 		$dbh->exec("REPLACE INTO user_login_cookie SET user_id=".intval($this->user_id).", id_hash=".$dbh->quote($hash).", expires='".$expires."'");
 
-		setcookie('id_hash', $hash, strtotime($expires));
-	}
+		if (isset($this->user_id) && !empty($this->user_id)) {
+			$token = $this->generateUniqueToken(32, 'session_token', null, true);
+			$dbh->exec("REPLACE INTO session_tokens SET user_id=".intval($this->user_id).", token=".$dbh->quote($token)." AND expires='".$expires."'");
+		}
 
-	private function getPasswordLib(){
-		if(!$this->PasswordLib instanceof \PasswordLib\PasswordLib){
-			require_once SITE_ROOT.'/classes/PasswordLib.phar';
-			$this->PasswordLib = new \PasswordLib\PasswordLib;
+		if (isset($_COOKIE['remember_me'])) {
+			$rememberMeToken = $this->generateUniqueToken(32, 'remember_me_token', null, true);
+			setcookie('remember_me', $rememberMeToken, strtotime('+1 week'), '/');
+			$dbh->exec("INSERT INTO remember_me SET token=".$dbh->quote($rememberMeToken));
 		}
 	}
 
-	private function generateUniqueToken($length, $tbl, $fld, $hash = false){
+	public function getPasswordLib(): PasswordLib {
+		if ($this->PasswordLib === null) {
+			$this->PasswordLib = new \PasswordLib\PasswordLib();
+		}
+		return $this->PasswordLib;
+	}
+
+	private function generateUniqueToken(int $length, string $tbl, string $fld, bool $hash = false): string{
 		$dbh = PDODB::getInstance();
 		$this->getPasswordLib();
 
-		$unique_stmt = $dbh->prepare("SELECT COUNT(*) FROM ".$tbl." WHERE ".$fld."=:token");
-		$unique_stmt->bindParam(':token', $token);
-		$unique_stmt->setFetchMode(PDO::FETCH_COLUMN, 0);
-
-		$keep_going = true;
-		while($keep_going === true){
-			$token = $this->PasswordLib->getRandomToken($length);
-			if($hash === true)
-				$token = $this->PasswordLib->createPasswordHash($token);
-			
-			$unique_stmt->execute();
-			$total = $unique_stmt->fetch();
-			if($total == '0'){
-				$keep_going = false;
-			}
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i=0; $i<$length; $i++) {
+			$randomString .= $characters[rand(0, $charactersLength-1)];
 		}
 
-		// make sure there aren't ./
-		$token = str_replace(['.','/'], '0', $token);
+		return (string)$randomString;
+	}
 
-		return $token;
+	public function getStop(): ?Stop {
+		if(!isset($this->stop_id)){
+			$dbh = PDODB::getInstance();
+			
+			$sql = "SELECT stop_id FROM user_stop WHERE user_id=".intval($this->user_id);
+			$result = $dbh->query($sql)->fetch(PDO::FETCH_OBJ);
+			
+			if($result === false){
+				return null;
+			}
+
+			$this->stop_id = (int)$result->stop_id;
+		}
+
+		return new Stop($this->stop_id);
+	}
+
+	public function getStopId(): ?int {
+	    return $this->stop_id ?? null;
+	}
+
+	public function reset(): bool {
+		$dbh = PDODB::getInstance();
+
+		$this->user_id = 0;
+		$this->logged_in = false;
+		$this->error = '';
+
+		$stmt = $dbh->query("SELECT id FROM user WHERE email=".$dbh->quote($this->email));
+		$result = $stmt->fetch(PDO::FETCH_COLUMN);
+
+		if ($result !== false) {
+			$this->user_id = (int)$result;
+			$this->getUserData();
+		}
+
+		return true;
+	}
+
+	public function isVerified(): bool {
+		return $this->email_verified;
 	}
 
 }
-
-?>

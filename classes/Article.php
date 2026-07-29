@@ -5,19 +5,19 @@ class Article
 
     use Outputable;
 
-    public $id;
-    public $title;
-    public $url;
-    public $photo;
-    public $description;
-    public $published;
-    public $mentions = [];
+    public ?int $id = null;
+    public string $title;
+    public string $url;
+    public Photo|null $photo = null;
+    public string $description;
+    public ?string $published = null;
+    public array $mentions = [];
 
-    public $dbh;
-    private $register;
-    private $site;
+    public ?Register $register = null;
+    private ?PDODB $dbh = null;
+    private ?Site $site = null;
 
-    public static function getAll(Register $register)
+    public static function getAll(Register $register): array
     {
         $dbh = $register->dbh;
 
@@ -40,7 +40,7 @@ SQL;
         return $stmt->fetchAll();
     }
 
-    public static function findByUrl(string $url, Register $register) {
+    public static function findByUrl(string $url, Register $register): ?Article {
         $dbh = $register->dbh;
 
         $siteId = intval($register->site->id);
@@ -63,7 +63,7 @@ SQL;
         return $stmt->fetch();
     }
 
-    public function __construct($article_id = null, Register $register)
+    public function __construct(?int $article_id = null, Register $register)
     {
         $this->register = $register;
         $this->dbh = $register->dbh;
@@ -82,13 +82,15 @@ SQL;
         $this->mentions = $this->getMentions();
     }
 
-    private function getMentions()
+    private function getMentions(): array
     {
+        if ($this->id === null) return [];
+        
         $stmt = $this->dbh->query("SELECT player_id, highlight FROM article_player WHERE article_id=" . $this->id);
         $mentions = [];
         while ($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $mentions[$r['player_id']] = [
-                'player' => new Player($r['player_id'], $this->register),
+                'player' => new Player((int)$r['player_id'], $this->register),
                 'highlight' => $r['highlight']
             ];
         }
@@ -98,5 +100,3 @@ SQL;
 
 
 }
-
-?>

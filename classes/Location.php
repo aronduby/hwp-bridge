@@ -2,20 +2,20 @@
 
 class Location {
 
-	public $location_id;
-	public $title;
-	public $street;
-	public $city;
-	public $state;
-	public $zipcode;
-	public $notes;
-	public $full_address;
+	public ?int $location_id = null;
+	public string $title;
+	public string $street;
+	public string $city;
+	public string $state;
+	public string $zipcode;
+	public ?string $notes = null;
+	public string $full_address;
 
-	private $register;
-	private $dbh;
-	private $google_api_key;
+	private ?Register $register = null;
+	private ?PDODB $dbh = null;
+	public ?string $google_api_key = null;
 
-    public static function getOptionsForSelect(Register $register)
+    public static function getOptionsForSelect(Register $register): array
     {
         $dbh = $register->dbh;
         $sql = "SELECT id, title FROM locations WHERE site_id = ".intval($register->site->id)." ORDER BY title";
@@ -23,7 +23,8 @@ class Location {
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-	public function __construct($id = null, Register $register){
+	public function __construct(?int $id = null, Register $register)
+	{
 	    $this->register = $register;
 		$this->dbh = $register->dbh;
 
@@ -36,7 +37,7 @@ class Location {
 		$this->full_address = $this->street.' '.$this->city.', '.$this->state.' '.$this->zipcode;
 	}
 
-	public function __sleep(){
+	public function __sleep(): array{
 		$arr = get_object_vars($this);
 		unset( $arr['dbh'], $arr['google_api_key'] );
 
@@ -47,7 +48,7 @@ class Location {
 		return $arr;
 	}
 
-	public function googleStaticMap($width=200, $height=200, $zoom = null){
+	public function googleStaticMap(int $width=200, int $height=200, ?int $zoom = null): string{
 
 		$url = 'http://maps.googleapis.com/maps/api/staticmap?';
 		$url .= 'size='.$width.'x'.$height;
@@ -59,14 +60,12 @@ class Location {
 		return $url;
 	}
 
-	public function googleMapLink(){
+	public function googleMapLink(): string{
 		return 'http://maps.google.com/?q='.urlencode($this->full_address);
 	}
 
-	public function googleDirectionsLink(){
+	public function googleDirectionsLink(): string{
 		return 'http://maps.google.com/?daddr='.urlencode($this->full_address);
 	}
 
 }
-
-?>

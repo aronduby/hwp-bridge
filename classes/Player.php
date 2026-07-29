@@ -7,43 +7,44 @@ class Player{
 	use Outputable;
     use HasOtherNumbers;
 
-	public $id;
-	public $first_name;
-	public $last_name;
-	public $pronouns;
-	public $name_key;
-	public $last_update;
+	public ?int $id = null;
+	public string $first_name;
+	public string $last_name;
+	public ?string $pronouns = null;
+	public string $name_key;
+	public ?string $last_update = null;
 		
-	public $name;
-	public $seasons;
-	public $number; // copy it over from the most recent season
-    public $other_numbers; // copy it over from the most recent season
-	public $title; // copy it over from the most recent season
+	public string $name;
+	public ?array $seasons = null;
+	public ?int $number = null; // copy it over from the most recent season
+    public ?array $other_numbers = null; // copy it over from the most recent season
+	public ?string $title = null; // copy it over from the most recent season
 
-	public $alex = false;
+	public bool $alex = false;
 
-	private $register;
-	private $dbh;
-	private $site;
+	private ?Register $register = null;
+	private ?PDODB $dbh = null;
+	private ?Site $site = null;
 
 	// Static Controller Function
-	public static function createFromNameKey($key, Register $register){
+	public static function createFromNameKey(string $key, Register $register): Player{
 		$sql = "SELECT id FROM players WHERE name_key=".$register->dbh->quote($key)." AND site_id = ".intval($register->site->id);
-		$player_id = $register->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
-		if($player_id === false){
+		$player_id_result = $register->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+		if($player_id_result === false){
 			throw new Exception('Could not find a player with that name.');
 		} else {
-			return new Player($player_id, $register);
+			return new Player((int)$player_id_result, $register);
 		}
 	}
 
 
-	public function __construct($player_id = null, Register $register){
+	public function __construct(?int $player_id = null, Register $register)
+	{
 	    $this->register = $register;
 		$this->dbh = $register->dbh;
 		$this->site = $register->site;
 
-		if(!isset($this->id) && $player_id != null){
+		if(!isset($this->id) && $player_id !== null){
 			$sql = "SELECT * FROM players WHERE id=".intval($player_id)." AND site_id = ".intval($this->site->id);
 			$stmt = $this->dbh->query($sql);
 			$stmt->setFetchMode(PDO::FETCH_INTO, $this);
@@ -59,7 +60,7 @@ class Player{
 		$this->title = $copy_from_season['title'];
 	}
 
-	public function getRandomPhoto(){
+	public function getRandomPhoto(): Photo{
 		$stmt = $this->dbh->query("
 			SELECT 
 				ptp.photo_id 
@@ -77,11 +78,11 @@ class Player{
 		if($photo_id === false){
 			return new Photo(0, $this->register);
 		} else {
-			return new Photo($photo_id, $this->register);
+			return new Photo((int)$photo_id, $this->register);
 		}
 	}
 
-	public function getActiveSeasons(){
+	public function getActiveSeasons(): array{
 		if($this->seasons === null){
 			$sql = "
 				SELECT 
@@ -97,38 +98,40 @@ class Player{
 			
 			$this->seasons = [];
 			while($season_id = $stmt->fetch(PDO::FETCH_COLUMN)){
-				$this->seasons[$season_id] = new PlayerSeason($this, $season_id, $this->register);
+				if ($season_id !== false) {
+					$this->seasons[(int)$season_id] = new PlayerSeason($this, (int)$season_id, $this->register);
+				}
 			}
 		}
 
-		return $this->seasons;
+		return array_values($this->seasons ?? []);
 	}
 
-	private function addSiteAndSeason($seasonId = null) {
-	    $parts = ['AND site_id = '.intVal($this->site->id)];
-	    if ($seasonId) {
-	        $parts[] = 'AND season_id = '.intval($seasonId);
+	private function addSiteAndSeason(string|int|null $seasonId = null): string {
+	    $parts = ['AND site_id = '.intval($this->site->id)];
+	    if ($seasonId !== null) {
+	        $parts[] = 'AND season_id = '.intval((string)$seasonId);
         }
 
 	    return implode(' ', $parts);
     }
 
-	public function countPhotos($season_id = null){
+	public function countPhotos(string|int|null $season_id = null): int|false{
 		$sql = "SELECT COUNT(*) AS total FROM photo_player WHERE player_id=".$this->addSiteAndSeason($season_id);
-		return $this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+		return (int)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
 	}
 
-	public function countArticles($season_id = null){
+	public function countArticles(string|int|null $season_id = null): int|false{
 		$sql = "SELECT COUNT(*) AS total FROM article_player WHERE player_id=".$this->addSiteAndSeason($season_id);
-		return $this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+		return (int)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
 	}
 
-	public function countBadges($season_id = null){
+	public function countBadges(string|int|null $season_id = null): int|false{
 		$sql = "SELECT COUNT(*) AS total FROM badge_player WHERE player_id=".$this->addSiteAndSeason($season_id);
-		return $this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
+		return (int)$this->dbh->query($sql)->fetch(PDO::FETCH_COLUMN);
 	}
 
-	public function getCareer($full = false){
+	public function getCareer(PlayerCareer|null $full = null): PlayerCareer{
 		$career = new PlayerCareer($this);
 
 		if($full === true){
@@ -141,7 +144,7 @@ class Player{
 		return $career;
 	}
 
-	private function getValuesFromSeason($seasonId){
+	private function getValuesFromSeason(int $seasonId): array{
 		$sql = "SELECT 
             title, number, other_numbers
         FROM 
@@ -153,9 +156,7 @@ class Player{
         ORDER BY 
             season_id DESC 
         LIMIT 1";
-		return $this->dbh->query($sql)->fetch(PDO::FETCH_ASSOC);
+		return $this->dbh->query($sql)->fetch(PDO::FETCH_ASSOC) ?? [];
 	}
 
 }
-
-?>

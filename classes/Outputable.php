@@ -2,7 +2,7 @@
 
 trait Outputable{
 
-	public function output($tpl, $extra = null){
+	public function output(string $tpl, mixed $extra = null): string{
 		$path = TEMPLATE_PATH.str_replace('\\', '/', strtolower(get_class($this))).'-'.$tpl.'.php';
 		if(file_exists($path)){
 			ob_start();
@@ -15,5 +15,3 @@ trait Outputable{
 	}
 
 }
-
-?>

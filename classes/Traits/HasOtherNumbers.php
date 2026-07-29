@@ -8,14 +8,14 @@ namespace Traits;
 trait HasOtherNumbers
 {
     /**
-     * @var int $number
+     * @var ?int $number
      */
-    public $number;
+    public ?int $number;
 
     /**
      * @var array{ V: int, JV: int, other: int[]} $other_numbers
      */
-    public $other_numbers;
+    public ?array $other_numbers;
 
     /**
      * @param 'V'|'JV'|null $team

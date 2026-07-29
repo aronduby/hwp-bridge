@@ -2,20 +2,21 @@
 
 class RecentFactory {
 
-	public $season_id;
-	public $limit = 10;
-	public $offset = 0;
+	public int $season_id;
+	public int $limit = 10;
+	public int $offset = 0;
 
-	private $dbh;
+	private ?PDO $dbh = null;
 
-	public function __construct(\PDO $dbh, $season_id){
+	public function __construct(PDO $dbh, int $season_id)
+	{
 		$this->dbh = $dbh;
 		$this->season_id = $season_id;
 	}
 
-	public function load($page){
-		if($page != null)
-			$this->setPage($page);
+	public function load(int $page): array{
+		if($page !== null)
+			$this->setPage((int)$page);
 
 		// Use mysql string functions to make the template into the offical (fully qualified) class name
 		$sql = "
@@ -34,24 +35,22 @@ class RecentFactory {
 
 		$stmt = $this->dbh->prepare($sql);
 		
-		$stmt->bindParam(':season_id', $this->season_id, \PDO::PARAM_INT);
-		$stmt->bindParam(':offset', $this->offset, \PDO::PARAM_INT);
-		$stmt->bindParam(':limit', $this->limit, \PDO::PARAM_INT);
+		$stmt->bindParam(':season_id', $this->season_id, PDO::PARAM_INT);
+		$stmt->bindParam(':offset', $this->offset, PDO::PARAM_INT);
+		$stmt->bindParam(':limit', $this->limit, PDO::PARAM_INT);
 		$stmt->execute();
 
 		$objs = [];
-		foreach($stmt->fetchAll(\PDO::FETCH_OBJ) as $r){
+		foreach($stmt->fetchAll(PDO::FETCH_OBJ) as $r){
 			$class = 'RecentRenderers\\'.$r->class;
-			$objs[] = new $class($r->recent_id, $r->content, $r->inserted, $this->dbh);
+			$objs[] = new $class((int)$r->recent_id, (string)$r->content, $r->inserted, $this->dbh);
 		}
 		return $objs;
 
 	}
 
-	public function setPage($page){
+	public function setPage(int $page): void{
 		$this->offset = $this->limit * $page;
 	}
 
 }
-
-?>

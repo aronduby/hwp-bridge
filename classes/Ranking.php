@@ -4,22 +4,22 @@
 class Ranking
 {
 
-    public $id;
-    public $site_id;
-    public $season_id;
-    public $week;
-    public $start;
-    public $end;
-    public $created_at;
-    public $updated_at;
+    public ?int $id = null;
+    public int $site_id;
+    public int $season_id;
+    public int|null $week = null;
+    public ?string $start = null;
+    public ?string $end = null;
+    public ?string $created_at = null;
+    public ?string $updated_at = null;
 
-    public $ranks = [];
+    public array|null $ranks = null;
 
-    protected $register;
-    protected $dbh;
-    protected $site;
+    protected ?Register $register = null;
+    protected ?PDODB $dbh = null;
+    protected ?Site $site = null;
 
-    public static function getAll(Register $register)
+    public static function getAll(Register $register): array
     {
         $dbh = $register->dbh;
 
@@ -40,13 +40,13 @@ SQL;
         $stmt = $dbh->query($sql);
         $rankings = [];
         foreach($stmt->fetchAll(PDO::FETCH_COLUMN) as $id) {
-            $rankings[] = new Ranking($id, $register);
+            $rankings[] = new Ranking((int)$id, $register);
         }
 
         return $rankings;
     }
 
-    public static function getLatest(Register $register)
+    public static function getLatest(Register $register): ?Ranking
     {
         $dbh = $register->dbh;
 
@@ -76,7 +76,7 @@ SQL;
      * @param int $id
      * @param Register $register
      */
-    public function __construct($id = false, Register $register)
+    public function __construct(int|false|null $id = false, Register $register)
     {
         $this->register = $register;
         $this->dbh = $register->dbh;
@@ -94,14 +94,28 @@ SQL;
             $this->ranks = $this->getRanks();
         }
 
-        $this->start = $this->start ? DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->start.' 00:00:00') : new DateTime();
-        $this->end = $this->end ? DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->end.' 00:00:00') : (new DateTime())->add(new DateInterval('P7D'));
+        if ($this->start !== null) {
+            $this->start = DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->start.' 00:00:00');
+        }
+        if ($this->end !== null) {
+            $this->end = DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->end.' 00:00:00');
+        } else {
+            $this->end = (new DateTime())->add(new DateInterval('P7D'));
+        }
 
-        $this->created_at = $this->created_at ? DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->created_at) : new DateTime();
-        $this->updated_at = $this->updated_at ? DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->updated_at) : new DateTime();
+        if ($this->created_at !== null) {
+            $this->created_at = DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->created_at);
+        } else {
+            $this->created_at = new DateTime();
+        }
+        if ($this->updated_at !== null) {
+            $this->updated_at = DateTime::createFromFormat(MYSQL_DATETIME_FORMAT, $this->updated_at);
+        } else {
+            $this->updated_at = new DateTime();
+        }
     }
 
-    public function getRanks()
+    public function getRanks(): array
     {
         $dbh = $this->register->dbh;
 

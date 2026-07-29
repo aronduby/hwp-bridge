@@ -4,25 +4,25 @@ class PhotoAlbum {
 	
 	use Outputable;
 
-	public $album_id;
-	public $season_id;
-	public $title;
-	public $modified;
-	public $cover_photo_id;
+	public ?int $album_id = null;
+	public int $season_id;
+	public string $title;
+	public ?string $modified = null;
+	public ?int $cover_photo_id = null;
 
-	protected $photos;
+	protected array|null $photos = null;
 
-	private $register;
-	private $dbh;
-	private $site;
+	private ?Register $register = null;
+	private ?PDODB $dbh = null;
+	private ?Site $site = null;
 
-    public static function getOptionsForSelect(Register $register)
+    public static function getOptionsForSelect(Register $register): array
     {
         return $register->dbh->query("SELECT id, title FROM albums WHERE site_id=".intval($register->site->id)." AND season_id=".intval($register->season->id)." ORDER BY title")
             ->fetchAll(PDO::FETCH_KEY_PAIR);
     }
 
-	public function __construct($album_id = null, Register $register){
+	public function __construct(?int $album_id = null, Register $register) {
 	    $this->register = $register;
 		$this->dbh = $register->dbh;
 		$this->site = $register->site;
@@ -35,14 +35,17 @@ class PhotoAlbum {
 			}	
 		}
 
-		$this->modified = new DateTime($this->modified);
+		if ($this->modified !== null) {
+		    $this->modified = new DateTime($this->modified);
+		}
 	}
 
-	public function getCoverPhoto(){
-		return new Photo($this->cover_photo_id, $this->register);
+	public function getCoverPhoto(): ?Photo{
+		if($this->cover_photo_id === null) return null;
+		return new Photo((int)$this->cover_photo_id, $this->register);
 	}
 
-	public function getPhotos(){
+	public function getPhotos(): array{
 		if(!isset($this->photos)){
 			$stmt = $this->dbh->query('
 				SELECT
@@ -51,18 +54,20 @@ class PhotoAlbum {
 					album_photo pta
 					JOIN photos p ON(pta.photo_id = p.id)
 				WHERE
-					pta.album_id = '.$this->dbh->quote($this->album_id).'
+					pta.album_id = '.$this->dbh->quote((string)$this->album_id).'
 					AND pta.site_id = '.intval($this->site->id).'
 			');
 			$this->photos = [];
 			foreach($stmt->fetchAll(PDO::FETCH_COLUMN) as $photo_id){
-				$this->photos[] = new Photo($photo_id, $this->register);
+				if ($photo_id !== false) {
+					$this->photos[] = new Photo((int)$photo_id, $this->register);
+				}
 			}
 		}
-		return $this->photos;
+		return $this->photos ?? [];
 	}
 
-	public function getRandomPhotos($limit = 5){
+	public function getRandomPhotos(int $limit = 5): array{
 		$stmt = $this->dbh->query('
 			SELECT
 				photo_id
@@ -70,7 +75,7 @@ class PhotoAlbum {
 				album_photo pta
 				JOIN photos p ON(pta.photo_id = p.id)
 			WHERE
-				pta.album_id = '.$this->dbh->quote($this->album_id).'
+				pta.album_id = '.$this->dbh->quote((string)$this->album_id).'
 				AND pta.site_id = '.intval($this->site->id).'
 			ORDER BY
 				RAND()
@@ -78,13 +83,15 @@ class PhotoAlbum {
 		');
 		$photos = [];
 		foreach($stmt->fetchAll(PDO::FETCH_COLUMN) as $photo_id){
-			$photos[] = new Photo($photo_id, $this->register);
+			if ($photo_id !== false) {
+				$photos[] = new Photo((int)$photo_id, $this->register);
+			}
 		}
 
 		return $photos;
 	}
 
-	public function getTopPhotos($limit = 5){
+	public function getTopPhotos(int $limit = 5): array{
 		$stmt = $this->dbh->query('
 			SELECT
 				photo_id
@@ -92,22 +99,25 @@ class PhotoAlbum {
 				album_photo pta
 				JOIN photos p ON(pta.photo_id = p.id)
 			WHERE
-				pta.album_id = '.$this->dbh->quote($this->album_id).'
+				pta.album_id = '.$this->dbh->quote((string)$this->album_id).'
 				AND pta.site_id = '.intval($this->site->id).'
 			ORDER BY
 				RAND()
 			LIMIT '.$limit.'
 		');
+
 		$photos = [];
 		foreach($stmt->fetchAll(PDO::FETCH_COLUMN) as $photo_id){
-			$photos[] = new Photo($photo_id, $this->register);
+			if ($photo_id !== false) {
+				$photos[] = new Photo((int)$photo_id, $this->register);
+			}
 		}
 
 		return $photos;
 	}
 
 
-	public function getGames(){
+	public function getGames(): array{
 		$stmt = $this->dbh->query("SELECT * FROM games WHERE album_id=".intval($this->album_id)." AND site_id = ".intval($this->site->id));
 		$stmt->setFetchMode(PDO::FETCH_CLASS, 'Game', [null, $this->register]);
 		return $stmt->fetchAll();
@@ -115,5 +125,3 @@ class PhotoAlbum {
 
 
 }
-
-?>
