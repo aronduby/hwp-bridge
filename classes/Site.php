@@ -36,6 +36,11 @@ class Site
             self::$ngrok = implode('.', $host);
         }
 
+        // work around the temporary domain situation
+        if ($domain === 'guys.hudsonvillewaterpolo') {
+            $domain = 'hudsonvillewaterpolo';
+        }
+
         return $domain;
     }
 
